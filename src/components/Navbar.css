@@ -1,0 +1,30 @@
+.lims-navbar {
+  background: linear-gradient(90deg, var(--lims-navy-900), var(--lims-navy-800));
+}
+
+.lims-brand-icon {
+  color: var(--bs-success);
+  font-size: 1.15rem;
+}
+
+.lims-brand-text {
+  color: #ffffff;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.lims-nav-link {
+  color: rgba(255, 255, 255, 0.8) !important;
+  font-weight: 500;
+}
+
+.lims-nav-link:hover,
+.lims-nav-link.active {
+  color: #ffffff !important;
+}
+
+.lims-navbar :focus-visible {
+  outline: 2px solid var(--bs-success);
+  outline-offset: 2px;
+  border-radius: 2px;
+}

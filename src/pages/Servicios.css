@@ -1,0 +1,18 @@
+.lims-eyebrow-dark {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--bs-success);
+}
+
+.lims-servicios-title {
+  font-size: clamp(1.6rem, 3vw, 2.25rem);
+  font-weight: 700;
+  color: var(--lims-ink);
+}
+
+.lims-servicios-text {
+  color: var(--lims-muted);
+  max-width: 60ch;
+}
