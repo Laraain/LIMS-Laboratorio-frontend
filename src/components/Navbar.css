@@ -28,3 +28,28 @@
   outline-offset: 2px;
   border-radius: 2px;
 }
+
+.lims-btn-ghost {
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  color: #ffffff;
+}
+
+.lims-btn-ghost:hover,
+.lims-btn-ghost:focus-visible {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.lims-btn-accent {
+  background: var(--bs-success);
+  border: 1px solid var(--bs-success);
+  color: var(--lims-navy-900) !important;
+  font-weight: 600;
+}
+
+.lims-btn-accent:hover,
+.lims-btn-accent:focus-visible {
+  background: #35a374;
+  border-color: #35a374;
+  color: var(--lims-navy-900) !important;
+}

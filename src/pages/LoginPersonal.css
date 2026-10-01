@@ -1,0 +1,24 @@
+.lims-login-personal-main {
+  min-height: calc(100vh - 350px);
+}
+
+.lims-login-personal-card {
+  max-width: 450px;
+  margin-inline: auto;
+}
+
+.lims-login-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 0.75rem;
+  background: var(--lims-navy-900);
+  color: var(--bs-success);
+  font-size: 1.3rem;
+}
+
+.lims-login-note {
+  background: var(--lims-surface-2);
+}

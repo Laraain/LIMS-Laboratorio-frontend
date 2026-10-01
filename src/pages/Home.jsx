@@ -74,6 +74,37 @@ function Home() {
           </div>
         </div>
       </section>
+
+      <section className="pb-5">
+        <div className="container px-3 px-lg-4">
+          <div className="row row-cols-1 row-cols-md-2 g-3">
+            <div className="col">
+              <Link to="/login-paciente" className="lims-access lims-access--patient h-100">
+                <span className="lims-access-icon">
+                  <i className="fa-solid fa-user" aria-hidden="true"></i>
+                </span>
+                <span className="flex-grow-1">
+                  <span className="d-block lims-access-title">Soy paciente</span>
+                  <span className="d-block lims-access-sub">Ingrese con su DNI para ver resultados y turnos</span>
+                </span>
+                <i className="fa-solid fa-arrow-right" aria-hidden="true"></i>
+              </Link>
+            </div>
+            <div className="col">
+              <Link to="/login-personal" className="lims-access lims-access--staff h-100">
+                <span className="lims-access-icon">
+                  <i className="fa-solid fa-user-shield" aria-hidden="true"></i>
+                </span>
+                <span className="flex-grow-1">
+                  <span className="d-block lims-access-title">Soy del personal</span>
+                  <span className="d-block lims-access-sub">Acceso al sistema de gestión de muestras</span>
+                </span>
+                <i className="fa-solid fa-arrow-right" aria-hidden="true"></i>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }

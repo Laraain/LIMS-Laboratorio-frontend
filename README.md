@@ -45,6 +45,16 @@ npm run preview   # sirve el build de producción localmente
 npm run lint      # corre ESLint sobre el proyecto
 ```
 
+## Login simulado — credenciales de prueba
+
+No hay backend: la autenticación es simulada en el cliente, con las
+credenciales fijas en el código y la sesión guardada en `sessionStorage`.
+
+| Portal | Usuario | Contraseña |
+|---|---|---|
+| Paciente (`/login-paciente`) | DNI `30123456` | `Paciente2026` |
+| Personal interno (`/login-personal`) | `bioq_perez` | `Lab2026!` |
+
 ## Ramas
 
 - `main`: rama de despliegue (deploy).
