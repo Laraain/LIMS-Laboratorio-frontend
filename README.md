@@ -10,13 +10,11 @@ El sitio presenta los servicios del laboratorio y da acceso a dos portales: el *
 
 - **Inicio** con presentación del laboratorio, contador animado de estadísticas, servicios destacados y accesos directos a los dos portales.
 - **Servicios**: listado completo de los servicios del laboratorio, generado a partir de un arreglo de datos.
-- **Login del paciente** con DNI (acepta el DNI con puntos o espacios) y contraseña, validación de campos, mensajes de error y botón para mostrar u ocultar la contraseña.
+- **Login del paciente** con DNI (acepta el DNI con puntos o espacios) y contraseña, validación de campos, mensajes de error y botón para mostrar u ocultar la contraseña. En el primer ingreso se le pide elegir una contraseña propia y cargar su email real.
 - **Login del personal** con usuario y contraseña, con la misma validación.
-- **Sesión simulada** guardada en `sessionStorage`: se mantiene al recargar la página y se puede cerrar.
+- **Autenticación real con Supabase Auth**: la sesión se mantiene al recargar la página y se puede cerrar.
 - **Navegación sin recargar la página** entre las distintas vistas, con barra de navegación y pie comunes a todo el sitio.
 - **Diseño adaptable** a celular, tablet y escritorio.
-
-> Los logins de esta versión son simulados: validan contra credenciales fijas en el código y todavía no se conectan a una base de datos.
 
 ## Tecnologías
 
@@ -26,6 +24,7 @@ El sitio presenta los servicios del laboratorio y da acceso a dos portales: el *
 | [Vite 8](https://vite.dev/) | Servidor de desarrollo y compilación |
 | [React Router 7](https://reactrouter.com/) | Navegación entre páginas (`react-router-dom`) |
 | [Bootstrap 5.3](https://getbootstrap.com/) y [React Bootstrap](https://react-bootstrap.github.io/) | Grilla, formularios y barra de navegación |
+| [Supabase](https://supabase.com/) | Base de datos PostgreSQL y autenticación (`@supabase/supabase-js`) |
 | [Font Awesome 6](https://fontawesome.com/) | Íconos |
 | CSS propio | Paleta de colores, tipografía (IBM Plex Sans) y estilos de cada componente |
 | ESLint | Control de calidad del código |
@@ -42,7 +41,10 @@ cd LIMS-Laboratorio-frontend
 # 2. Instalar las dependencias
 npm install
 
-# 3. Levantar el servidor de desarrollo
+# 3. Configurar las variables de entorno (ver "Autenticación con Supabase")
+cp .env.example .env.local
+
+# 4. Levantar el servidor de desarrollo
 npm run dev
 ```
 
@@ -54,13 +56,6 @@ El sitio queda disponible en http://localhost:5173.
 | `npm run build` | Compila el sitio para producción en la carpeta `dist/` |
 | `npm run preview` | Sirve localmente la versión compilada |
 | `npm run lint` | Revisa el código con ESLint |
-
-### Credenciales de prueba
-
-| Acceso | Usuario | Contraseña |
-|---|---|---|
-| Portal del paciente (`/login-paciente`) | DNI `30123456` | `Paciente2026` |
-| Personal interno (`/login-personal`) | `bioq_perez` | `Lab2026!` |
 
 ## Rutas
 
@@ -82,12 +77,16 @@ El sitio queda disponible en http://localhost:5173.
 │   │   ├── Footer.jsx           Pie con contacto y redes
 │   │   ├── ServiceCard.jsx      Tarjeta de un servicio
 │   │   ├── StatsCounter.jsx     Contador animado de estadísticas
-│   │   └── LoginSuccess.jsx     Mensaje de sesión iniciada (lo usan los dos logins)
+│   │   ├── LoginSuccess.jsx     Mensaje de sesión iniciada (lo usan los dos logins)
+│   │   └── PrimerIngreso.jsx    Primer ingreso del paciente: contraseña propia y email real
 │   ├── data/                Contenido separado de los componentes
 │   │   ├── servicios.js         Servicios del laboratorio
 │   │   └── estadisticas.js      Números del contador
 │   ├── hooks/
 │   │   └── useMetadatos.js      Título y metadatos SEO de cada página
+│   ├── lib/                 Conexión con Supabase
+│   │   ├── supabase.js          Cliente de Supabase (lee las variables de .env.local)
+│   │   └── auth.js              Inicio y cierre de sesión, y el hook useSesion
 │   ├── pages/               Una vista por ruta
 │   │   ├── Home.jsx
 │   │   ├── Servicios.jsx
@@ -96,6 +95,7 @@ El sitio queda disponible en http://localhost:5173.
 │   ├── App.jsx              Definición de rutas
 │   ├── main.jsx             Punto de entrada (envuelve la app en BrowserRouter)
 │   └── index.css            Variables de color y estilos globales
+├── .env.example             Variables de entorno necesarias (se copia como .env.local)
 └── index.html               Metadatos SEO y Open Graph
 ```
 
@@ -106,10 +106,11 @@ El sitio queda disponible en http://localhost:5173.
 - **Props:** `ServiceCard` recibe foto, ícono, título y descripción; `StatsCounter` recibe la lista de estadísticas; `LoginSuccess` recibe el texto, la fecha y la función para cerrar sesión, así lo comparten los dos logins.
 - **`map()`:** las tarjetas de servicios (en Inicio y en Servicios) y las estadísticas se generan recorriendo los arreglos de `src/data/`, sin repetir código. Para sumar un servicio alcanza con agregarlo al arreglo.
 - **React Router:** `BrowserRouter` en `main.jsx`; `Routes` y `Route` en `App.jsx`; `NavLink` en el menú (marca la página actual) y `Link` en los botones; `useLocation` para bajar hasta una sección cuando la URL trae un ancla (`/#contacto`).
-- **`useState`:** en los logins guarda lo que escribe el usuario, los errores de validación, si se muestra la contraseña y la sesión iniciada. Cada cambio de estado vuelve a dibujar la pantalla.
+- **`useState`:** en los logins guarda lo que escribe el usuario, los errores de validación, si se muestra la contraseña y si se está enviando el formulario. Cada cambio de estado vuelve a dibujar la pantalla.
 - **`useEffect`:**
   - `useMetadatos` actualiza el título y la descripción de la página; sus dependencias (`titulo`, `descripcion`, `indexar`) hacen que solo se vuelva a ejecutar si esos datos cambian.
   - `App.jsx` baja hasta la sección indicada cada vez que cambia la ruta o el ancla (dependencias `[pathname, hash]`).
+  - `useSesion` (`src/lib/auth.js`) se suscribe a los cambios de sesión de Supabase y se desuscribe al desmontar el componente.
   - `StatsCounter` arranca la animación cuando el contador entra en pantalla, con un `IntersectionObserver` que se desconecta al desmontar el componente.
 
 ## SEO
@@ -121,3 +122,48 @@ El sitio queda disponible en http://localhost:5173.
 - Open Graph en `index.html` para que el enlace se vea con título y descripción al compartirlo.
 - `robots.txt` y `sitemap.xml` en `public/`.
 - Las páginas de login llevan `noindex`, para que los buscadores no las muestren en los resultados.
+
+## Autenticación con Supabase
+
+El login usa [Supabase Auth](https://supabase.com/docs/guides/auth). La base de
+datos, sus migraciones y las políticas de seguridad (RLS) viven en la carpeta
+`LIMS-Laboratorio-db`, separada de este repositorio.
+
+### Configuración
+
+1. Copiar `.env.example` como `.env.local`.
+2. Completar `VITE_SUPABASE_URL` y `VITE_SUPABASE_PUBLISHABLE_KEY` con los datos
+   del proyecto (Supabase → Project Settings → API Keys).
+3. Reiniciar `npm run dev` (Vite lee las variables solo al arrancar).
+
+`.env.local` no se sube a git. La clave *publishable* es pública por diseño: lo
+que protege los datos son las políticas RLS de la base.
+
+### Cómo ingresa cada usuario
+
+Supabase Auth trabaja con email, pero nadie escribe uno para entrar: el
+frontend arma un email interno que nunca recibe correos.
+
+| Portal | Ingresa con | Email interno |
+|---|---|---|
+| Paciente (`/login-paciente`) | DNI | `<dni>@pacientes.lims.local` |
+| Personal interno (`/login-personal`) | Usuario (ej: `bioq_perez`) | `<usuario>@personal.lims.local` |
+
+- **Pacientes:** recepción les crea la cuenta con una contraseña provisoria
+  (Edge Function `crear-paciente`). En el primer ingreso se les pide elegir una
+  contraseña propia y cargar su email real, que se usa para avisarles cuando sus
+  resultados están listos.
+- **Personal:** cada cuenta tiene un rol (`admin`, `bioquimico`, `tecnico`,
+  `recepcion`) que define qué puede ver y modificar.
+
+### Usuarios de prueba
+
+Se crean ejecutando `seed_usuarios_prueba.sql` (en `LIMS-Laboratorio-db`) en el
+SQL Editor de Supabase.
+
+| Portal | Usuario | Contraseña | Rol |
+|---|---|---|---|
+| Paciente | DNI `30123456` | `Paciente2026` (provisoria) | paciente |
+| Personal interno | `bioq_perez` | `Lab2026!` | bioquimico |
+| Personal interno | `recepcion` | `Recep2026!` | recepcion |
+| Personal interno | `admin` | `Admin2026!` | admin |
