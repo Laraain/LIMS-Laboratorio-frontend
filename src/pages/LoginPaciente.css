@@ -1,0 +1,26 @@
+.lims-login-card {
+  max-width: 860px;
+}
+ 
+.lims-login-aside {
+  background: linear-gradient(135deg, var(--lims-navy-900), var(--lims-navy-800));
+}
+ 
+.lims-login-aside-text {
+  color: rgba(255, 255, 255, 0.85);
+}
+ 
+.lims-login-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.9rem;
+  border-radius: 999px;
+  background: #e8eef6;
+  color: var(--bs-primary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  align-self: flex-start;
+}
