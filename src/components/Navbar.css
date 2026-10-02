@@ -1,0 +1,66 @@
+.lims-navbar {
+  background: var(--lims-navy-900);
+  min-height: 54px;
+}
+
+.lims-logo-invert {
+  filter: brightness(0) invert(1);
+}
+
+.lims-chip-brand {
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: rgba(66, 184, 131, 0.18);
+  color: var(--bs-success);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.lims-nav-link {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.62) !important;
+  padding: 0.35rem 0;
+  border-bottom: 2px solid transparent;
+}
+
+.lims-nav-link:hover,
+.lims-nav-link:focus-visible {
+  color: #ffffff !important;
+}
+
+.lims-nav-link.active {
+  color: #ffffff !important;
+  font-weight: 600;
+  border-bottom-color: var(--bs-success);
+}
+
+@media (min-width: 992px) {
+  .lims-nav-divider {
+    border-left: 1px solid rgba(255, 255, 255, 0.18);
+  }
+}
+
+.lims-navbar :focus-visible {
+  outline: 2px solid var(--bs-success);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.btn-sm.lims-btn-accent {
+  padding: 7px 13px;
+  font-size: 11.5px;
+}
+
+.btn-sm.lims-btn-ghost {
+  padding: 7px 12px;
+  font-size: 11.5px;
+}
+
+@media (min-width: 768px) {
+  .lims-nav-link {
+    font-size: 14.5px;
+  }
+}
