@@ -1,0 +1,40 @@
+.lims-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  gap: 1px;
+}
+
+@media (min-width: 768px) {
+  .lims-stats {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.lims-stats > .col {
+  width: 100%;
+}
+
+.lims-stat {
+  background: var(--lims-navy-800);
+  padding: 13px 14px;
+  height: 100%;
+}
+
+.lims-stat-value {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1;
+  color: #ffffff;
+  margin-bottom: 5px;
+}
+
+.lims-stat-label {
+  font-family: var(--lims-font-mono);
+  font-size: 11px;
+  line-height: 1.35;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.62);
+}

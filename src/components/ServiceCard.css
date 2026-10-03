@@ -1,0 +1,54 @@
+.lims-service-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 0.75rem;
+  border: 1px solid var(--lims-border);
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(15, 32, 67, 0.06);
+}
+
+.lims-service-img {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+}
+
+.lims-service-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 1.25rem 1.5rem 1.5rem;
+}
+
+.lims-service-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 0.6rem;
+  font-size: 1.1rem;
+}
+
+.lims-service-card--azul .lims-service-icon {
+  background: rgba(28, 78, 128, 0.1);
+  color: var(--bs-primary);
+}
+
+.lims-service-card--verde .lims-service-icon {
+  background: rgba(66, 184, 131, 0.12);
+  color: var(--bs-success);
+}
+
+.lims-service-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--lims-ink);
+  margin: 0;
+}
+
+.lims-service-text {
+  font-size: 0.9rem;
+  color: var(--lims-muted);
+}
