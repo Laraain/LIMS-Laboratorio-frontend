@@ -1,3 +1,109 @@
 .lims-hero {
   background: var(--lims-navy-800);
+  color: #ffffff;
+}
+
+.lims-hero-copy {
+  padding: 44px 30px 40px 24px;
+}
+
+.lims-eyebrow {
+  font-family: var(--lims-font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.lims-chip-accent {
+  padding: 4px 10px;
+  border-radius: 4px;
+  background: rgba(66, 184, 131, 0.16);
+  border: 1px solid rgba(66, 184, 131, 0.42);
+  color: #8fe0bb;
+}
+
+.lims-hero-title {
+  font-size: clamp(1.6rem, 3.2vw, 34px);
+  font-weight: 700;
+  line-height: 1.18;
+  letter-spacing: -0.5px;
+  color: #ffffff;
+}
+
+.lims-hero-lead {
+  max-width: 480px;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.lims-hero-media {
+  background-image: linear-gradient(rgba(15, 32, 67, 0.34), rgba(15, 32, 67, 0.34)), url('../assets/hero.jpeg');
+  background-size: cover;
+  background-position: center;
+  min-height: 340px;
+}
+
+.lims-h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--lims-ink);
+}
+
+.lims-link-more {
+  color: var(--bs-primary);
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.lims-link-more:hover,
+.lims-link-more:focus-visible {
+  text-decoration: underline;
+}
+
+.lims-access {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--lims-border);
+  text-decoration: none;
+  color: var(--lims-ink);
+  background: #ffffff;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.lims-access:hover,
+.lims-access:focus-visible {
+  border-color: var(--bs-primary);
+  box-shadow: 0 2px 10px rgba(15, 32, 67, 0.08);
+  color: var(--lims-ink);
+}
+
+.lims-access-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--lims-surface);
+  color: var(--bs-primary);
+  font-size: 1.1rem;
+}
+
+.lims-access--staff .lims-access-icon {
+  color: var(--bs-success);
+}
+
+.lims-access-title {
+  font-weight: 600;
+}
+
+.lims-access-sub {
+  font-size: 0.85rem;
+  color: var(--lims-muted);
 }
