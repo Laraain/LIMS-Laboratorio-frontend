@@ -20,6 +20,26 @@
   max-width: 14ch;
 }
 
+/* Entrada del título palabra por palabra (el retraso de cada una se define en Home.jsx) */
+.lims-hero-palabra {
+  display: inline-block;
+  animation: limsPalabra 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+@keyframes limsPalabra {
+  from {
+    opacity: 0;
+    transform: translateY(0.35em);
+    filter: blur(6px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lims-hero-palabra {
+    animation: none;
+  }
+}
+
 .lims-hero-lead {
   max-width: 34rem;
   font-size: 1.125rem;

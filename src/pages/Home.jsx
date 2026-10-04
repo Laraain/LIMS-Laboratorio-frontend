@@ -22,6 +22,9 @@ import './Home.css';
 
 const numero = (i) => String(i + 1).padStart(2, '0');
 
+// Cada palabra del título entra con un pequeño retraso respecto de la anterior
+const palabrasTitulo = 'Sus análisis clínicos, con resultados en línea.'.split(' ');
+
 function Home() {
   useMetadatos({
     titulo: 'LIMS Laboratorio Bioquímico — Análisis clínicos en Tucumán',
@@ -37,7 +40,15 @@ function Home() {
           <div className="row align-items-center g-4 g-lg-5">
             <div className="col-lg-6">
               <p className="lims-kicker mb-3">Análisis clínicos · San Miguel de Tucumán</p>
-              <h1 className="lims-hero-title mb-3">Sus análisis clínicos, con resultados en línea.</h1>
+              <h1 className="lims-hero-title mb-3">
+                {palabrasTitulo.map((palabra, i) => (
+                  <span key={i}>
+                    <span className="lims-hero-palabra" style={{ animationDelay: `${120 + i * 90}ms` }}>
+                      {palabra}
+                    </span>{' '}
+                  </span>
+                ))}
+              </h1>
               <p className="lims-hero-lead mb-4">
                 Realice sus estudios en el laboratorio y consulte el informe validado por un
                 bioquímico matriculado desde el celular, ingresando con su DNI.
