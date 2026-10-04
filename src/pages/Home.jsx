@@ -4,6 +4,8 @@ import { Link } from 'react-router-dom';
 import Accordion from 'react-bootstrap/Accordion';
 import Carrusel from '../components/Carrusel.jsx';
 import EstadoAhora from '../components/EstadoAhora.jsx';
+import ServiceCard from '../components/ServiceCard.jsx';
+import servicios from '../data/servicios.js';
 import {
   contacto,
   horarios,
@@ -114,7 +116,7 @@ function Home() {
         <div className="container px-3 px-lg-4">
           <div className="lims-encabezado-seccion">
             <h2 id="titulo-estudios" className="lims-h2 mb-0">Estudios por área</h2>
-            <Link to="/servicios" className="lims-link-flecha">
+            <Link to="/#servicios" className="lims-link-flecha">
               Ver servicios <ArrowRight className="lims-icono ms-1" aria-hidden="true" />
             </Link>
           </div>
@@ -175,7 +177,31 @@ function Home() {
         </div>
       </section>
 
-      <section className="lims-seccion lims-seccion--gris" aria-labelledby="titulo-preguntas">
+      <section id="servicios" className="lims-seccion lims-seccion--gris" aria-labelledby="titulo-servicios">
+        <div className="container px-3 px-lg-4">
+          <h2 id="titulo-servicios" className="lims-h2 mb-2">Nuestros servicios</h2>
+          <p className="lims-seccion-bajada">
+            Tres áreas conectadas en un solo sistema: extracción, análisis y entrega de
+            resultados, con trazabilidad digital en cada etapa.
+          </p>
+          <div className="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-3">
+            {servicios.map((servicio) => (
+              <div className="col" key={servicio.id}>
+                <ServiceCard
+                  foto={servicio.foto}
+                  altFoto={servicio.altFoto}
+                  icono={servicio.icono}
+                  variante={servicio.variante}
+                  titulo={servicio.titulo}
+                  descripcion={servicio.descripcion}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="lims-seccion" aria-labelledby="titulo-preguntas">
         <div className="container px-3 px-lg-4">
           <div className="row g-4">
             <div className="col-lg-4">

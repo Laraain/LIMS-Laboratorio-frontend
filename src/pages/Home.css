@@ -187,6 +187,11 @@
   color: var(--lims-ink);
 }
 
+.lims-seccion-bajada {
+  max-width: 60ch;
+  margin-bottom: 32px;
+}
+
 .lims-encabezado-seccion {
   display: flex;
   flex-wrap: wrap;

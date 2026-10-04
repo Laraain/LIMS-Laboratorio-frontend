@@ -25,7 +25,7 @@ function Navbar() {
             <Nav.Link as={NavLink} to="/" end className="lims-nav-link">
               Inicio
             </Nav.Link>
-            <Nav.Link as={NavLink} to="/servicios" className="lims-nav-link">
+            <Nav.Link as={Link} to="/#servicios" className="lims-nav-link">
               Servicios
             </Nav.Link>
             <Nav.Link as={Link} to="/#preparacion" className="lims-nav-link">
