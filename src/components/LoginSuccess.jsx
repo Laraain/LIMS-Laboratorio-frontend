@@ -11,7 +11,7 @@ function LoginSuccess({ heading, fecha, onLogout, logoutLabel, variant }) {
       <p className="text-muted small mb-4">Sesión iniciada el {fecha}</p>
       <button
         type="button"
-        className={`btn btn-outline-${variant} w-100 py-2 fw-semibold`}
+        className={`btn btn-outline-${variant} rounded-pill w-100 py-2 fw-semibold`}
         onClick={onLogout}
       >
         <SignOut className="lims-icono me-2" aria-hidden="true" />

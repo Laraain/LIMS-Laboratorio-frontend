@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { LockSimple, ShieldCheck, SignIn, User, UserGear } from '@phosphor-icons/react';
+import { Link } from 'react-router-dom';
+import LoginLayout from '../components/LoginLayout.jsx';
 import LoginSuccess from '../components/LoginSuccess.jsx';
-import './LoginPersonal.css';
+import fotoMuestras from '../assets/home/carrusel-muestras.webp';
  
 const CREDENCIALES = { usuario: 'bioq_perez', password: 'Lab2026!' };
 const SESSION_KEY = 'lims_personal_activo';
@@ -75,115 +76,97 @@ function LoginPersonal() {
   }
  
   return (
-    <main id="contenido" className="d-flex justify-content-center align-items-center py-5 lims-login-personal-main">
-      <div className="w-100 mx-3 lims-login-personal-card">
-        <div className="text-center mb-4">
-          <span className="lims-login-icon mb-3">
-            <UserGear aria-hidden="true" />
-          </span>
-          <h1 className="h4 text-primary fw-bold">Acceso Personal Interno</h1>
-          <p className="text-muted small mb-0">Ingrese sus credenciales de sistema para continuar</p>
+    <LoginLayout
+      etiqueta="Acceso del personal"
+      titulo="Ingreso al sistema"
+      descripcion="Use su usuario o matrícula y su contraseña para gestionar muestras y validar resultados."
+      foto={fotoMuestras}
+      altFoto="Tubos de muestras de sangre en el laboratorio"
+      leyenda="Todos los accesos y las validaciones de resultados quedan registrados con usuario, fecha y hora."
+      pie={
+        <>
+          ¿Es paciente? <Link to="/login-paciente">Ver mis resultados</Link>
+        </>
+      }
+    >
+      {error && (
+        <div className="alert alert-danger" role="alert">
+          {error}
         </div>
- 
-        <div className="card shadow-lg border-0">
-          <div className="card-body p-4 p-md-5">
-            {error && (
-              <div className="alert alert-danger" role="alert">
-                {error}
+      )}
+
+      {sesion ? (
+        <LoginSuccess
+          heading={`Bienvenido/a, ${sesion.usuario}`}
+          fecha={sesion.fecha}
+          onLogout={handleLogout}
+          logoutLabel="Cerrar sesión"
+          variant="primary"
+        />
+      ) : (
+        <form onSubmit={handleSubmit} noValidate className="lims-login-form">
+          <div>
+            <label htmlFor="usuario" className="lims-login-label">
+              Usuario o matrícula
+            </label>
+            <div className={`lims-campo${usuarioInvalido ? ' is-invalid' : ''}`}>
+              <input
+                type="text"
+                id="usuario"
+                placeholder="Ej: bioq_perez"
+                required
+                maxLength={64}
+                autoComplete="username"
+                aria-describedby="usuarioError"
+                aria-invalid={usuarioInvalido}
+                value={usuario}
+                onChange={(evento) => {
+                  setUsuario(evento.target.value);
+                  setUsuarioInvalido(false);
+                }}
+              />
+            </div>
+            {usuarioInvalido && (
+              <div className="invalid-feedback d-block" id="usuarioError">
+                Ingrese su usuario o matrícula.
               </div>
             )}
- 
-            {sesion ? (
-              <LoginSuccess
-                heading={`Bienvenido/a, ${sesion.usuario}`}
-                fecha={sesion.fecha}
-                onLogout={handleLogout}
-                logoutLabel="Cerrar sesión"
-                variant="dark"
+          </div>
+
+          <div>
+            <label htmlFor="password" className="lims-login-label">
+              Contraseña
+            </label>
+            <div className={`lims-campo${passwordInvalido ? ' is-invalid' : ''}`}>
+              <input
+                type="password"
+                id="password"
+                placeholder="Su contraseña"
+                required
+                maxLength={128}
+                autoComplete="current-password"
+                aria-describedby="passwordError"
+                aria-invalid={passwordInvalido}
+                value={password}
+                onChange={(evento) => {
+                  setPassword(evento.target.value);
+                  setPasswordInvalido(false);
+                }}
               />
-            ) : (
-              <form onSubmit={handleSubmit} noValidate>
-                <div className="mb-3">
-                  <label htmlFor="usuario" className="form-label fw-semibold small">
-                    Usuario / Matrícula
-                  </label>
-                  <div className="input-group">
-                    <span className="input-group-text bg-white">
-                      <User className="lims-icono text-muted" aria-hidden="true" />
-                    </span>
-                    <input
-                      type="text"
-                      className={`form-control ${usuarioInvalido ? 'is-invalid' : ''}`}
-                      id="usuario"
-                      placeholder="Ej: bioq_perez"
-                      required
-                      maxLength={64}
-                      autoComplete="username"
-                      aria-describedby="usuarioError"
-                      aria-invalid={usuarioInvalido}
-                      value={usuario}
-                      onChange={(evento) => {
-                        setUsuario(evento.target.value);
-                        setUsuarioInvalido(false);
-                      }}
-                    />
-                  </div>
-                  {usuarioInvalido && (
-                    <div className="invalid-feedback d-block" id="usuarioError">
-                      Ingrese su usuario o matrícula.
-                    </div>
-                  )}
-                </div>
- 
-                <div className="mb-4">
-                  <label htmlFor="password" className="form-label fw-semibold small">
-                    Contraseña
-                  </label>
-                  <div className="input-group">
-                    <span className="input-group-text bg-white">
-                      <LockSimple className="lims-icono text-muted" aria-hidden="true" />
-                    </span>
-                    <input
-                      type="password"
-                      className={`form-control ${passwordInvalido ? 'is-invalid' : ''}`}
-                      id="password"
-                      placeholder="••••••••"
-                      required
-                      maxLength={128}
-                      autoComplete="current-password"
-                      aria-describedby="passwordError"
-                      aria-invalid={passwordInvalido}
-                      value={password}
-                      onChange={(evento) => {
-                        setPassword(evento.target.value);
-                        setPasswordInvalido(false);
-                      }}
-                    />
-                  </div>
-                  {passwordInvalido && (
-                    <div className="invalid-feedback d-block" id="passwordError">
-                      Ingrese su contraseña.
-                    </div>
-                  )}
-                </div>
- 
-                <button type="submit" className="btn btn-dark w-100 py-2 fw-semibold">
-                  <SignIn className="lims-icono me-2" aria-hidden="true" />
-                  Ingresar al Sistema
-                </button>
-              </form>
+            </div>
+            {passwordInvalido && (
+              <div className="invalid-feedback d-block" id="passwordError">
+                Ingrese su contraseña.
+              </div>
             )}
           </div>
-        </div>
- 
-        <div className="d-flex gap-2 mt-3 p-3 rounded-3 lims-login-note">
-          <ShieldCheck className="lims-icono text-primary mt-1" aria-hidden="true" />
-          <p className="mb-0 small text-muted">
-            Todos los accesos y las validaciones de resultados quedan registrados con usuario, fecha y hora.
-          </p>
-        </div>
-      </div>
-    </main>
+
+          <button type="submit" className="btn lims-btn-pill lims-btn-primario lims-btn-grande w-100">
+            Ingresar al sistema
+          </button>
+        </form>
+      )}
+    </LoginLayout>
   );
 }
  

@@ -1,0 +1,227 @@
+.lims-login {
+  display: grid;
+  gap: 16px;
+  width: 100%;
+  max-width: 1280px;
+  min-height: calc(100svh - 68px);
+  margin-inline: auto;
+  padding: 16px;
+}
+
+@media (min-width: 992px) {
+  .lims-login {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Columna del formulario */
+.lims-login-columna {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 8px;
+}
+
+.lims-login-contenido {
+  width: 100%;
+  max-width: 420px;
+}
+
+.lims-login-etiqueta {
+  margin-bottom: 12px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--lims-brand-soft);
+}
+
+.lims-login-titulo {
+  margin-bottom: 12px;
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: var(--bs-primary);
+}
+
+.lims-login-descripcion {
+  margin-bottom: 32px;
+  font-size: 1.0625rem;
+}
+
+.lims-login-form {
+  display: grid;
+  gap: 20px;
+}
+
+.lims-login-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: var(--lims-ink);
+}
+
+.lims-login-fila-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.lims-login-link {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--bs-primary);
+}
+
+/* Campo redondeado: el borde y el fondo cambian al hacer foco */
+.lims-campo {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--lims-border);
+  border-radius: 16px;
+  background: var(--lims-surface-2);
+  transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.lims-campo:focus-within {
+  border-color: var(--bs-primary);
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(28, 78, 128, 0.15);
+}
+
+.lims-campo.is-invalid {
+  border-color: var(--bs-danger);
+}
+
+.lims-campo input {
+  flex: 1;
+  min-width: 0;
+  padding: 15px 16px;
+  border: 0;
+  border-radius: 16px;
+  background: transparent;
+  color: var(--lims-ink);
+  font-size: 1rem;
+  outline: none;
+}
+
+.lims-campo-boton {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 0 16px 16px 0;
+  background: transparent;
+  color: var(--lims-muted);
+  font-size: 1.125rem;
+}
+
+.lims-campo-boton:hover {
+  color: var(--bs-primary);
+}
+
+.lims-campo-boton:focus-visible {
+  outline: 3px solid var(--bs-primary);
+  outline-offset: -3px;
+}
+
+.lims-login .alert {
+  border-radius: 16px;
+}
+
+.lims-login-pie {
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--lims-border-soft);
+  font-size: 0.9375rem;
+  color: var(--lims-muted);
+}
+
+.lims-login-pie a {
+  color: var(--bs-primary);
+  font-weight: 500;
+}
+
+.lims-login :focus-visible {
+  outline: 3px solid var(--bs-primary);
+  outline-offset: 2px;
+}
+
+/* Columna de la foto: solo en escritorio */
+.lims-login-foto {
+  position: relative;
+  display: none;
+  margin: 0;
+  overflow: hidden;
+  border-radius: 28px;
+  background: var(--lims-band);
+  animation: limsDesliza 0.7s ease 0.2s both;
+}
+
+.lims-login-foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.lims-login-foto figcaption {
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  bottom: 24px;
+  max-width: 28rem;
+  padding: 16px 20px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--lims-ink);
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+@media (min-width: 992px) {
+  .lims-login-foto {
+    display: block;
+  }
+}
+
+/* Entrada escalonada del formulario */
+.lims-aparece {
+  animation: limsAparece 0.5s ease both;
+}
+
+.lims-aparece--2 { animation-delay: 0.06s; }
+.lims-aparece--3 { animation-delay: 0.12s; }
+.lims-aparece--4 { animation-delay: 0.18s; }
+.lims-aparece--5 { animation-delay: 0.24s; }
+
+@keyframes limsAparece {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes limsDesliza {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lims-aparece,
+  .lims-login-foto {
+    animation: none;
+  }
+}
+
+/* Celular: ningún texto por debajo de 16px */
+@media (max-width: 575.98px) {
+  .lims-login-etiqueta,
+  .lims-login-link,
+  .lims-login-pie {
+    font-size: 1rem;
+  }
+}

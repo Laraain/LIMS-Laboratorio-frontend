@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
-import { CheckCircle, Eye, EyeSlash, IdentificationCard, LockSimple, SignIn, User } from '@phosphor-icons/react';
+import { Link } from 'react-router-dom';
+import { Eye, EyeSlash } from '@phosphor-icons/react';
+import LoginLayout from '../components/LoginLayout.jsx';
 import LoginSuccess from '../components/LoginSuccess.jsx';
-import './LoginPaciente.css';
+import fotoAtencion from '../assets/home/carrusel-atencion.webp';
  
 const CREDENCIALES = { dni: '30123456', password: 'Paciente2026' };
 const SESSION_KEY = 'lims_paciente_activo';
@@ -85,138 +87,112 @@ function LoginPaciente() {
   }
  
   return (
-    <main id="contenido" className="py-5 d-flex justify-content-center px-3">
-      <div className="row g-0 shadow-lg rounded-4 overflow-hidden w-100 lims-login-card">
-        <div className="col-md-5 lims-login-aside text-white p-4 p-md-5 d-flex flex-column">
-          <p className="h2 fw-bold mt-4 mb-3 text-white">Sus resultados, cuando los necesite</p>
-          <p className="mb-4 lims-login-aside-text">
-            Consulte informes validados, el estado de sus muestras y sus turnos desde un solo lugar.
-          </p>
-          <ul className="list-unstyled d-flex flex-column gap-2 mb-0">
-            <li className="d-flex align-items-center gap-2">
-              <CheckCircle className="lims-icono text-success" aria-hidden="true" />
-              <span className="small">Informes con firma electrónica</span>
-            </li>
-            <li className="d-flex align-items-center gap-2">
-              <CheckCircle className="lims-icono text-success" aria-hidden="true" />
-              <span className="small">Estado de la muestra en tiempo real</span>
-            </li>
-            <li className="d-flex align-items-center gap-2">
-              <CheckCircle className="lims-icono text-success" aria-hidden="true" />
-              <span className="small">Historial completo descargable</span>
-            </li>
-          </ul>
+    <LoginLayout
+      etiqueta="Portal del paciente"
+      titulo="Ingrese a su cuenta"
+      descripcion="Use su DNI y su contraseña. Si es su primer ingreso, use la contraseña provisoria que le entregamos en recepción."
+      foto={fotoAtencion}
+      altFoto="Recepcionista atendiendo a un paciente en el mostrador"
+      posicionFoto="30% center"
+      leyenda="Sus resultados, validados por un bioquímico matriculado, disponibles desde el celular."
+      pie={
+        <>
+          ¿Es parte del personal? <Link to="/login-personal">Acceso personal</Link>
+        </>
+      }
+    >
+      {error && (
+        <div className="alert alert-danger" role="alert">
+          {error}
         </div>
- 
-        <div className="col-md-7 bg-white p-4 p-md-5 d-flex flex-column justify-content-center">
-          <span className="lims-login-badge mb-3">
-            <User aria-hidden="true" />Portal del paciente
-          </span>
-          <h1 className="h3 fw-bold text-dark mb-2">Ingrese a su cuenta</h1>
-          <p className="text-muted mb-4">Use su DNI y la contraseña que definió al registrarse.</p>
- 
-          {error && (
-            <div className="alert alert-danger" role="alert">
-              {error}
+      )}
+
+      {sesion ? (
+        <LoginSuccess
+          heading={`Bienvenido/a, DNI ${sesion.dni}`}
+          fecha={sesion.fecha}
+          onLogout={handleLogout}
+          logoutLabel="Cerrar sesión"
+          variant="primary"
+        />
+      ) : (
+        <form onSubmit={handleSubmit} noValidate className="lims-login-form">
+          <div>
+            <label htmlFor="dni" className="lims-login-label">
+              DNI
+            </label>
+            <div className={`lims-campo${dniInvalido ? ' is-invalid' : ''}`}>
+              <input
+                type="text"
+                id="dni"
+                placeholder="Ej: 30123456"
+                required
+                inputMode="numeric"
+                maxLength={14}
+                autoComplete="username"
+                aria-describedby="dniError"
+                aria-invalid={dniInvalido}
+                value={dni}
+                onChange={(evento) => {
+                  setDni(evento.target.value);
+                  setDniInvalido(false);
+                }}
+              />
             </div>
-          )}
- 
-          {sesion ? (
-            <LoginSuccess
-              heading={`Bienvenido/a, DNI ${sesion.dni}`}
-              fecha={sesion.fecha}
-              onLogout={handleLogout}
-              logoutLabel="Cerrar sesión"
-              variant="primary"
-            />
-          ) : (
-            <form onSubmit={handleSubmit} noValidate>
-              <div className="mb-3">
-                <label htmlFor="dni" className="form-label fw-semibold small">
-                  DNI
-                </label>
-                <div className="input-group">
-                  <span className="input-group-text bg-white">
-                    <IdentificationCard className="lims-icono text-muted" aria-hidden="true" />
-                  </span>
-                  <input
-                    type="text"
-                    className={`form-control ${dniInvalido ? 'is-invalid' : ''}`}
-                    id="dni"
-                    placeholder="Ej: 30123456"
-                    required
-                    inputMode="numeric"
-                    maxLength={14}
-                    autoComplete="username"
-                    aria-describedby="dniError"
-                    aria-invalid={dniInvalido}
-                    value={dni}
-                    onChange={(evento) => {
-                      setDni(evento.target.value);
-                      setDniInvalido(false);
-                    }}
-                  />
-                </div>
-                {dniInvalido && (
-                  <div className="invalid-feedback d-block" id="dniError">
-                    Ingrese su DNI: solo números, 7 u 8 dígitos.
-                  </div>
-                )}
+            {dniInvalido && (
+              <div className="invalid-feedback d-block" id="dniError">
+                Ingrese su DNI: solo números, 7 u 8 dígitos.
               </div>
- 
-              <div className="mb-4">
-                <label htmlFor="password" className="form-label fw-semibold small">
-                  Contraseña
-                </label>
-                <div className="input-group">
-                  <span className="input-group-text bg-white">
-                    <LockSimple className="lims-icono text-muted" aria-hidden="true" />
-                  </span>
-                  <input
-                    type={mostrarPassword ? 'text' : 'password'}
-                    className={`form-control ${passwordInvalido ? 'is-invalid' : ''}`}
-                    id="password"
-                    placeholder="••••••••"
-                    required
-                    maxLength={128}
-                    autoComplete="current-password"
-                    aria-describedby="passwordError"
-                    aria-invalid={passwordInvalido}
-                    value={password}
-                    onChange={(evento) => {
-                      setPassword(evento.target.value);
-                      setPasswordInvalido(false);
-                    }}
-                  />
-                  <button
-                    type="button"
-                    className="input-group-text bg-white"
-                    aria-label={mostrarPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                    onClick={() => setMostrarPassword((valor) => !valor)}
-                  >
-                    {mostrarPassword ? (
-                      <EyeSlash className="lims-icono text-muted" aria-hidden="true" />
-                    ) : (
-                      <Eye className="lims-icono text-muted" aria-hidden="true" />
-                    )}
-                  </button>
-                </div>
-                {passwordInvalido && (
-                  <div className="invalid-feedback d-block" id="passwordError">
-                    Ingrese su contraseña.
-                  </div>
-                )}
-              </div>
- 
-              <button type="submit" className="btn btn-primary w-100 py-2 fw-semibold">
-                <SignIn className="lims-icono me-2" aria-hidden="true" />
-                Ingresar
+            )}
+          </div>
+
+          <div>
+            <div className="lims-login-fila-label">
+              <label htmlFor="password" className="lims-login-label">
+                Contraseña
+              </label>
+              <Link to="/#contacto" className="lims-login-link">
+                ¿Olvidó su contraseña?
+              </Link>
+            </div>
+            <div className={`lims-campo${passwordInvalido ? ' is-invalid' : ''}`}>
+              <input
+                type={mostrarPassword ? 'text' : 'password'}
+                id="password"
+                placeholder="Su contraseña"
+                required
+                maxLength={128}
+                autoComplete="current-password"
+                aria-describedby="passwordError"
+                aria-invalid={passwordInvalido}
+                value={password}
+                onChange={(evento) => {
+                  setPassword(evento.target.value);
+                  setPasswordInvalido(false);
+                }}
+              />
+              <button
+                type="button"
+                className="lims-campo-boton"
+                aria-label={mostrarPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                onClick={() => setMostrarPassword((valor) => !valor)}
+              >
+                {mostrarPassword ? <EyeSlash aria-hidden="true" /> : <Eye aria-hidden="true" />}
               </button>
-            </form>
-          )}
-        </div>
-      </div>
-    </main>
+            </div>
+            {passwordInvalido && (
+              <div className="invalid-feedback d-block" id="passwordError">
+                Ingrese su contraseña.
+              </div>
+            )}
+          </div>
+
+          <button type="submit" className="btn lims-btn-pill lims-btn-primario lims-btn-grande w-100">
+            Ingresar
+          </button>
+        </form>
+      )}
+    </LoginLayout>
   );
 }
  
