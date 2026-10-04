@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import { Eye, EyeSlash } from '@phosphor-icons/react';
 import LoginLayout from '../components/LoginLayout.jsx';
 import LoginSuccess from '../components/LoginSuccess.jsx';
-import fotoAtencion from '../assets/home/carrusel-atencion.webp';
+// Foto de Gabrielle Henderson en Unsplash (licencia libre)
+import fotoPaciente from '../assets/login/login-paciente.webp';
  
 const CREDENCIALES = { dni: '30123456', password: 'Paciente2026' };
 const SESSION_KEY = 'lims_paciente_activo';
@@ -91,9 +92,8 @@ function LoginPaciente() {
       etiqueta="Portal del paciente"
       titulo="Ingrese a su cuenta"
       descripcion="Use su DNI y su contraseña. Si es su primer ingreso, use la contraseña provisoria que le entregamos en recepción."
-      foto={fotoAtencion}
-      altFoto="Recepcionista atendiendo a un paciente en el mostrador"
-      posicionFoto="30% center"
+      foto={fotoPaciente}
+      altFoto="Mujer en un sillón de su casa mirando el celular"
       leyenda="Sus resultados, validados por un bioquímico matriculado, disponibles desde el celular."
       pie={
         <>

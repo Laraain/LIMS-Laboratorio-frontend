@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import LoginLayout from '../components/LoginLayout.jsx';
 import LoginSuccess from '../components/LoginSuccess.jsx';
-import fotoMuestras from '../assets/home/carrusel-muestras.webp';
+// Foto de National Cancer Institute en Unsplash (licencia libre)
+import fotoPersonal from '../assets/login/login-personal.webp';
  
 const CREDENCIALES = { usuario: 'bioq_perez', password: 'Lab2026!' };
 const SESSION_KEY = 'lims_personal_activo';
@@ -80,8 +81,8 @@ function LoginPersonal() {
       etiqueta="Acceso del personal"
       titulo="Ingreso al sistema"
       descripcion="Use su usuario o matrícula y su contraseña para gestionar muestras y validar resultados."
-      foto={fotoMuestras}
-      altFoto="Tubos de muestras de sangre en el laboratorio"
+      foto={fotoPersonal}
+      altFoto="Bioquímica trabajando con el microscopio en el laboratorio"
       leyenda="Todos los accesos y las validaciones de resultados quedan registrados con usuario, fecha y hora."
       pie={
         <>
