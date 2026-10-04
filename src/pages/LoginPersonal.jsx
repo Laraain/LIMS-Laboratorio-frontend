@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { LockSimple, ShieldCheck, SignIn, User, UserGear } from '@phosphor-icons/react';
 import LoginSuccess from '../components/LoginSuccess.jsx';
 import './LoginPersonal.css';
  
@@ -78,7 +79,7 @@ function LoginPersonal() {
       <div className="w-100 mx-3 lims-login-personal-card">
         <div className="text-center mb-4">
           <span className="lims-login-icon mb-3">
-            <i className="fa-solid fa-user-shield" aria-hidden="true"></i>
+            <UserGear aria-hidden="true" />
           </span>
           <h1 className="h4 text-primary fw-bold">Acceso Personal Interno</h1>
           <p className="text-muted small mb-0">Ingrese sus credenciales de sistema para continuar</p>
@@ -108,7 +109,7 @@ function LoginPersonal() {
                   </label>
                   <div className="input-group">
                     <span className="input-group-text bg-white">
-                      <i className="fa-solid fa-user text-muted" aria-hidden="true"></i>
+                      <User className="lims-icono text-muted" aria-hidden="true" />
                     </span>
                     <input
                       type="text"
@@ -140,7 +141,7 @@ function LoginPersonal() {
                   </label>
                   <div className="input-group">
                     <span className="input-group-text bg-white">
-                      <i className="fa-solid fa-lock text-muted" aria-hidden="true"></i>
+                      <LockSimple className="lims-icono text-muted" aria-hidden="true" />
                     </span>
                     <input
                       type="password"
@@ -167,7 +168,7 @@ function LoginPersonal() {
                 </div>
  
                 <button type="submit" className="btn btn-dark w-100 py-2 fw-semibold">
-                  <i className="fa-solid fa-right-to-bracket me-2" aria-hidden="true"></i>
+                  <SignIn className="lims-icono me-2" aria-hidden="true" />
                   Ingresar al Sistema
                 </button>
               </form>
@@ -176,7 +177,7 @@ function LoginPersonal() {
         </div>
  
         <div className="d-flex gap-2 mt-3 p-3 rounded-3 lims-login-note">
-          <i className="fa-solid fa-shield-halved text-primary mt-1" aria-hidden="true"></i>
+          <ShieldCheck className="lims-icono text-primary mt-1" aria-hidden="true" />
           <p className="mb-0 small text-muted">
             Todos los accesos y las validaciones de resultados quedan registrados con usuario, fecha y hora.
           </p>

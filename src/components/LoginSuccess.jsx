@@ -1,10 +1,11 @@
+import { CheckCircle, SignOut } from '@phosphor-icons/react';
 import './LoginSuccess.css';
  
 function LoginSuccess({ heading, fecha, onLogout, logoutLabel, variant }) {
   return (
     <div className="text-center py-3">
       <span className="lims-success-icon mb-3">
-        <i className="fa-solid fa-circle-check" aria-hidden="true"></i>
+        <CheckCircle aria-hidden="true" />
       </span>
       <h2 className="h5 fw-bold mb-1 text-break">{heading}</h2>
       <p className="text-muted small mb-4">Sesión iniciada el {fecha}</p>
@@ -13,7 +14,7 @@ function LoginSuccess({ heading, fecha, onLogout, logoutLabel, variant }) {
         className={`btn btn-outline-${variant} w-100 py-2 fw-semibold`}
         onClick={onLogout}
       >
-        <i className="fa-solid fa-right-from-bracket me-2" aria-hidden="true"></i>
+        <SignOut className="lims-icono me-2" aria-hidden="true" />
         {logoutLabel}
       </button>
     </div>

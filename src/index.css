@@ -54,6 +54,11 @@ body {
   flex: 1;
 }
 
+.lims-icono {
+  flex-shrink: 0;
+  vertical-align: -0.2em;
+}
+
 .lims-btn-accent {
   background: var(--bs-success);
   color: var(--lims-navy-900);

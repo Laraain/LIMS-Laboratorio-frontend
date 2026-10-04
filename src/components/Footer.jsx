@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { MapPin, Phone, EnvelopeSimple } from '@phosphor-icons/react';
 import { contacto, horarios } from '../data/laboratorio.js';
 import './Footer.css';
 
@@ -18,17 +19,17 @@ function Footer() {
             <h2 className="lims-footer-title">Contacto</h2>
             <ul className="lims-footer-lista">
               <li>
-                <i className="fa-solid fa-location-dot me-2" aria-hidden="true"></i>
+                <MapPin className="lims-icono me-2" aria-hidden="true" />
                 <a href={contacto.mapa} target="_blank" rel="noopener">
                   {contacto.direccion}
                 </a>
               </li>
               <li>
-                <i className="fa-solid fa-phone me-2" aria-hidden="true"></i>
+                <Phone className="lims-icono me-2" aria-hidden="true" />
                 {contacto.telefono}
               </li>
               <li>
-                <i className="fa-solid fa-envelope me-2" aria-hidden="true"></i>
+                <EnvelopeSimple className="lims-icono me-2" aria-hidden="true" />
                 <a href={`mailto:${contacto.email}`}>{contacto.email}</a>
               </li>
             </ul>

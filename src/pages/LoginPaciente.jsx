@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { CheckCircle, Eye, EyeSlash, IdentificationCard, LockSimple, SignIn, User } from '@phosphor-icons/react';
 import LoginSuccess from '../components/LoginSuccess.jsx';
 import './LoginPaciente.css';
  
@@ -93,15 +94,15 @@ function LoginPaciente() {
           </p>
           <ul className="list-unstyled d-flex flex-column gap-2 mb-0">
             <li className="d-flex align-items-center gap-2">
-              <i className="fa-solid fa-circle-check text-success" aria-hidden="true"></i>
+              <CheckCircle className="lims-icono text-success" aria-hidden="true" />
               <span className="small">Informes con firma electrónica</span>
             </li>
             <li className="d-flex align-items-center gap-2">
-              <i className="fa-solid fa-circle-check text-success" aria-hidden="true"></i>
+              <CheckCircle className="lims-icono text-success" aria-hidden="true" />
               <span className="small">Estado de la muestra en tiempo real</span>
             </li>
             <li className="d-flex align-items-center gap-2">
-              <i className="fa-solid fa-circle-check text-success" aria-hidden="true"></i>
+              <CheckCircle className="lims-icono text-success" aria-hidden="true" />
               <span className="small">Historial completo descargable</span>
             </li>
           </ul>
@@ -109,7 +110,7 @@ function LoginPaciente() {
  
         <div className="col-md-7 bg-white p-4 p-md-5 d-flex flex-column justify-content-center">
           <span className="lims-login-badge mb-3">
-            <i className="fa-solid fa-user" aria-hidden="true"></i>Portal del paciente
+            <User aria-hidden="true" />Portal del paciente
           </span>
           <h1 className="h3 fw-bold text-dark mb-2">Ingrese a su cuenta</h1>
           <p className="text-muted mb-4">Use su DNI y la contraseña que definió al registrarse.</p>
@@ -136,7 +137,7 @@ function LoginPaciente() {
                 </label>
                 <div className="input-group">
                   <span className="input-group-text bg-white">
-                    <i className="fa-solid fa-id-card text-muted" aria-hidden="true"></i>
+                    <IdentificationCard className="lims-icono text-muted" aria-hidden="true" />
                   </span>
                   <input
                     type="text"
@@ -169,7 +170,7 @@ function LoginPaciente() {
                 </label>
                 <div className="input-group">
                   <span className="input-group-text bg-white">
-                    <i className="fa-solid fa-lock text-muted" aria-hidden="true"></i>
+                    <LockSimple className="lims-icono text-muted" aria-hidden="true" />
                   </span>
                   <input
                     type={mostrarPassword ? 'text' : 'password'}
@@ -193,10 +194,11 @@ function LoginPaciente() {
                     aria-label={mostrarPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                     onClick={() => setMostrarPassword((valor) => !valor)}
                   >
-                    <i
-                      className={`fa-regular ${mostrarPassword ? 'fa-eye-slash' : 'fa-eye'} text-muted`}
-                      aria-hidden="true"
-                    ></i>
+                    {mostrarPassword ? (
+                      <EyeSlash className="lims-icono text-muted" aria-hidden="true" />
+                    ) : (
+                      <Eye className="lims-icono text-muted" aria-hidden="true" />
+                    )}
                   </button>
                 </div>
                 {passwordInvalido && (
@@ -207,7 +209,7 @@ function LoginPaciente() {
               </div>
  
               <button type="submit" className="btn btn-primary w-100 py-2 fw-semibold">
-                <i className="fa-solid fa-right-to-bracket me-2" aria-hidden="true"></i>
+                <SignIn className="lims-icono me-2" aria-hidden="true" />
                 Ingresar
               </button>
             </form>

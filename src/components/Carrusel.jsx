@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Pause, Play } from '@phosphor-icons/react';
 import './Carrusel.css';
 
 const INTERVALO = 6500;
@@ -87,7 +88,7 @@ function Carrusel({ imagenes }) {
             onClick={() => setPausadoPorUsuario((p) => !p)}
             aria-label={pausadoPorUsuario ? 'Reanudar el pase de fotos' : 'Pausar el pase de fotos'}
           >
-            <i className={`fa-solid ${pausadoPorUsuario ? 'fa-play' : 'fa-pause'}`} aria-hidden="true"></i>
+            {pausadoPorUsuario ? <Play aria-hidden="true" /> : <Pause aria-hidden="true" />}
           </button>
         )}
       </div>

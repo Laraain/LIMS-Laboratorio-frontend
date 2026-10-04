@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { ArrowRight, ArrowUpRight, WhatsappLogo } from '@phosphor-icons/react';
 import { Link } from 'react-router-dom';
 import Accordion from 'react-bootstrap/Accordion';
 import Carrusel from '../components/Carrusel.jsx';
@@ -41,7 +42,7 @@ function Home() {
                   Ver mis resultados
                 </Link>
                 <a href={contacto.mapa} target="_blank" rel="noopener" className="lims-link-flecha">
-                  Cómo llegar <i className="fa-solid fa-arrow-right ms-1" aria-hidden="true"></i>
+                  Cómo llegar <ArrowUpRight className="lims-icono ms-1" aria-hidden="true" />
                 </a>
               </div>
             </div>
@@ -60,7 +61,7 @@ function Home() {
                 <Link to={acceso.to} className="lims-acceso">
                   <span>{acceso.texto}</span>
                   <span className="lims-acceso-flecha" aria-hidden="true">
-                    <i className="fa-solid fa-arrow-right"></i>
+                    <ArrowUpRight />
                   </span>
                 </Link>
               </li>
@@ -114,7 +115,7 @@ function Home() {
           <div className="lims-encabezado-seccion">
             <h2 id="titulo-estudios" className="lims-h2 mb-0">Estudios por área</h2>
             <Link to="/servicios" className="lims-link-flecha">
-              Ver servicios <i className="fa-solid fa-arrow-right ms-1" aria-hidden="true"></i>
+              Ver servicios <ArrowRight className="lims-icono ms-1" aria-hidden="true" />
             </Link>
           </div>
           <ul className="lims-areas">
@@ -200,7 +201,7 @@ function Home() {
           className="lims-whatsapp"
           aria-label="Escribirnos por WhatsApp"
         >
-          <i className="fa-brands fa-whatsapp" aria-hidden="true"></i>
+          <WhatsappLogo aria-hidden="true" />
         </a>
       )}
     </main>

@@ -2,13 +2,14 @@ import fotoExtraccion from '../assets/servicios/extraccion.jpg';
 import fotoCalidad from '../assets/servicios/calidad.jpg';
 import fotoResultados from '../assets/servicios/resultados.jpg';
 import fotoTrazabilidad from '../assets/servicios/trazabilidad.jpg';
+import { Syringe, Flask, Microscope, Path } from '@phosphor-icons/react';
 
 const servicios = [
   {
     id: 'extraccion',
     foto: fotoExtraccion,
     altFoto: 'Área de extracción y toma de muestras',
-    icono: 'fa-solid fa-vial',
+    icono: Syringe,
     variante: 'azul',
     titulo: 'Área de extracción',
     descripcion:
@@ -18,7 +19,7 @@ const servicios = [
     id: 'calidad',
     foto: fotoCalidad,
     altFoto: 'Control de calidad en análisis clínicos',
-    icono: 'fa-solid fa-flask',
+    icono: Flask,
     variante: 'verde',
     titulo: 'Control de calidad',
     descripcion:
@@ -28,7 +29,7 @@ const servicios = [
     id: 'resultados',
     foto: fotoResultados,
     altFoto: 'Portal de resultados digitales de laboratorio',
-    icono: 'fa-solid fa-microscope',
+    icono: Microscope,
     variante: 'azul',
     titulo: 'Portal de resultados',
     descripcion:
@@ -38,7 +39,7 @@ const servicios = [
     id: 'trazabilidad',
     foto: fotoTrazabilidad,
     altFoto: 'Trazabilidad digital de muestras en el laboratorio',
-    icono: 'fa-solid fa-route',
+    icono: Path,
     variante: 'verde',
     titulo: 'Trazabilidad de muestras',
     descripcion:
