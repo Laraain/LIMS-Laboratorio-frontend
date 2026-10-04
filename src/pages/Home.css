@@ -1,109 +1,370 @@
+/* Hero */
 .lims-hero {
-  background: var(--lims-navy-800);
-  color: #ffffff;
+  padding: 56px 0 48px;
 }
 
-.lims-hero-copy {
-  padding: 44px 30px 40px 24px;
-}
-
-.lims-eyebrow {
-  font-family: var(--lims-font-mono);
-  font-size: 11px;
+.lims-kicker {
+  font-size: 0.875rem;
   font-weight: 600;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-}
-
-.lims-chip-accent {
-  padding: 4px 10px;
-  border-radius: 4px;
-  background: rgba(66, 184, 131, 0.16);
-  border: 1px solid rgba(66, 184, 131, 0.42);
-  color: #8fe0bb;
+  color: var(--lims-brand-soft);
 }
 
 .lims-hero-title {
-  font-size: clamp(1.6rem, 3.2vw, 34px);
+  font-size: clamp(2rem, 4.2vw, 3.25rem);
   font-weight: 700;
-  line-height: 1.18;
-  letter-spacing: -0.5px;
-  color: #ffffff;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: var(--bs-primary);
+  max-width: 14ch;
 }
 
 .lims-hero-lead {
-  max-width: 480px;
-  font-size: 14.5px;
+  max-width: 34rem;
+  font-size: 1.125rem;
   line-height: 1.6;
-  color: rgba(255, 255, 255, 0.72);
 }
 
-.lims-hero-media {
-  background-image: linear-gradient(rgba(15, 32, 67, 0.34), rgba(15, 32, 67, 0.34)), url('../assets/hero.jpeg');
-  background-size: cover;
-  background-position: center;
-  min-height: 340px;
-}
-
-.lims-h2 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--lims-ink);
-}
-
-.lims-link-more {
+.lims-link-flecha {
   color: var(--bs-primary);
   font-weight: 600;
   text-decoration: none;
   white-space: nowrap;
 }
 
-.lims-link-more:hover,
-.lims-link-more:focus-visible {
+.lims-link-flecha:hover,
+.lims-link-flecha:focus-visible {
   text-decoration: underline;
 }
 
-.lims-access {
+/* Accesos rápidos */
+.lims-accesos {
+  background: var(--lims-band);
+  padding: 20px 0;
+}
+
+.lims-accesos-lista {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lims-acceso {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 1.25rem 1.5rem;
-  border-radius: 0.75rem;
-  border: 1px solid var(--lims-border);
-  text-decoration: none;
-  color: var(--lims-ink);
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 56px;
+  padding: 8px 8px 8px 22px;
+  border-radius: 999px;
   background: #ffffff;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
-}
-
-.lims-access:hover,
-.lims-access:focus-visible {
-  border-color: var(--bs-primary);
-  box-shadow: 0 2px 10px rgba(15, 32, 67, 0.08);
   color: var(--lims-ink);
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.15s ease;
 }
 
-.lims-access-icon {
+.lims-acceso-flecha {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  background: var(--lims-surface);
+  background: var(--lims-band);
   color: var(--bs-primary);
-  font-size: 1.1rem;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
-.lims-access--staff .lims-access-icon {
-  color: var(--bs-success);
+.lims-acceso:hover,
+.lims-acceso:focus-visible {
+  color: var(--bs-primary);
 }
 
-.lims-access-title {
+.lims-acceso:hover .lims-acceso-flecha,
+.lims-acceso:focus-visible .lims-acceso-flecha {
+  background: var(--bs-primary);
+  color: #ffffff;
+}
+
+@media (min-width: 768px) {
+  .lims-accesos-lista {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Franja práctica */
+.lims-practica {
+  border-bottom: 1px solid var(--lims-border-soft);
+  padding: 24px 0;
+}
+
+.lims-practica-lista {
+  display: grid;
+  gap: 16px 32px;
+  margin: 0;
+}
+
+.lims-practica-lista dt {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--lims-muted);
+}
+
+.lims-practica-lista dd {
+  margin: 2px 0 0;
+  color: var(--lims-ink);
+}
+
+@media (min-width: 768px) {
+  .lims-practica-lista {
+    grid-template-columns: repeat(2, auto);
+  }
+}
+
+@media (min-width: 1200px) {
+  .lims-practica-lista {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+    align-items: center;
+  }
+}
+
+.lims-estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--lims-band);
+  color: var(--lims-ink);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.lims-estado.is-abierto {
+  background: var(--lims-accent);
+  color: var(--lims-accent-ink);
+}
+
+.lims-estado-punto {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--lims-muted);
+}
+
+.lims-estado.is-abierto .lims-estado-punto {
+  background: var(--lims-accent-ink);
+}
+
+/* Secciones */
+.lims-seccion {
+  padding: 64px 0;
+}
+
+.lims-seccion--gris {
+  background: var(--lims-surface-2);
+}
+
+.lims-h2 {
+  font-size: clamp(1.5rem, 2.6vw, 2rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--lims-ink);
+  margin-bottom: 32px;
+}
+
+.lims-h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--lims-ink);
+}
+
+.lims-encabezado-seccion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px 24px;
+  margin-bottom: 32px;
+}
+
+/* Pasos numerados */
+.lims-pasos {
+  display: grid;
+  gap: 32px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lims-paso {
+  border-top: 2px solid var(--bs-primary);
+  padding-top: 16px;
+}
+
+.lims-paso-numero {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--bs-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (min-width: 768px) {
+  .lims-pasos {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Estudios por área */
+.lims-areas {
+  display: grid;
+  gap: 0 32px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lims-area {
+  padding: 20px 0;
+  border-top: 1px solid var(--lims-border);
+}
+
+.lims-area .lims-h3 {
+  margin-bottom: 4px;
+}
+
+@media (min-width: 768px) {
+  .lims-areas {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 992px) {
+  .lims-areas {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Obras sociales */
+.lims-obras {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lims-obras li {
+  padding: 10px 20px;
+  border-radius: 999px;
+  border: 1px solid var(--lims-border);
+  background: #ffffff;
+  color: var(--lims-ink);
+  font-weight: 500;
+}
+
+/* Equipo */
+.lims-equipo {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 32px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lims-persona-foto {
+  border-radius: 20px;
+  overflow: hidden;
+  background: var(--lims-band);
+}
+
+/* Multiplica sobre el gris para que los fondos claros de los retratos queden parejos */
+.lims-persona img {
+  display: block;
+  mix-blend-mode: multiply;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 5 / 6;
+  object-fit: cover;
+  border-radius: 20px;
+  background: var(--lims-band);
+}
+
+.lims-matricula {
+  font-size: 0.9375rem;
+  color: var(--lims-muted);
+}
+
+/* Preguntas frecuentes */
+.lims-preguntas {
+  --bs-accordion-bg: #ffffff;
+  --bs-accordion-border-color: var(--lims-border);
+  --bs-accordion-border-radius: 16px;
+  --bs-accordion-inner-border-radius: 16px;
+  --bs-accordion-btn-color: var(--lims-ink);
+  --bs-accordion-active-color: var(--bs-primary);
+  --bs-accordion-active-bg: #ffffff;
+  --bs-accordion-btn-focus-box-shadow: 0 0 0 3px rgba(28, 78, 128, 0.35);
+  --bs-accordion-btn-padding-y: 1.125rem;
+}
+
+.lims-preguntas .accordion-header {
+  margin: 0;
+}
+
+.lims-preguntas .accordion-button {
+  font-size: 1rem;
   font-weight: 600;
 }
 
-.lims-access-sub {
-  font-size: 0.85rem;
-  color: var(--lims-muted);
+/* WhatsApp flotante */
+.lims-whatsapp {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 1030;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--lims-accent);
+  color: var(--lims-accent-ink);
+  font-size: 1.75rem;
+  text-decoration: none;
+  box-shadow: 0 6px 18px rgba(15, 32, 67, 0.18);
+}
+
+.lims-whatsapp:hover,
+.lims-whatsapp:focus-visible {
+  color: var(--lims-accent-ink);
+  filter: brightness(0.95);
+}
+
+#contenido :focus-visible {
+  outline: 3px solid var(--bs-primary);
+  outline-offset: 2px;
+}
+
+/* Celular: ningún texto por debajo de 16px */
+@media (max-width: 575.98px) {
+  .lims-kicker,
+  .lims-practica-lista dt,
+  .lims-matricula {
+    font-size: 1rem;
+    letter-spacing: 0.02em;
+  }
 }

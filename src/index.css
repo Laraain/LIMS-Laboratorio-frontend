@@ -22,6 +22,13 @@
 
   --lims-font-mono: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
 
+  /* Paleta de la home: azul de marca con la lógica de color de Laboratorio Flores */
+  --lims-brand-soft: #52708e;
+  --lims-accent: #2bb59a;
+  --lims-accent-ink: #1e293b;
+  --lims-band: #e9ecef;
+  --lims-text: #334155;
+
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -30,8 +37,10 @@
 
 body {
   margin: 0;
-  font-family: 'IBM Plex Sans', system-ui, 'Segoe UI', sans-serif;
-  color: var(--lims-ink);
+  font-family: 'Inter', system-ui, 'Segoe UI', sans-serif;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--lims-text);
   background-color: #ffffff;
 }
 
@@ -57,6 +66,31 @@ body {
 .lims-btn-accent:focus-visible {
   background: #37a473;
   color: var(--lims-navy-900);
+}
+
+.lims-btn-pill {
+  border-radius: 999px;
+  padding: 10px 20px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.lims-btn-primario {
+  background: var(--bs-primary);
+  color: #ffffff;
+  border: 1px solid var(--bs-primary);
+}
+
+.lims-btn-primario:hover,
+.lims-btn-primario:focus-visible {
+  background: var(--lims-primary-hover);
+  border-color: var(--lims-primary-hover);
+  color: #ffffff;
+}
+
+.lims-btn-grande {
+  padding: 14px 28px;
+  font-size: 1.0625rem;
 }
 
 .lims-btn-ghost {

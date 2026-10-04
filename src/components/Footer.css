@@ -1,41 +1,47 @@
 .lims-footer {
-  background: var(--lims-navy-900);
-  color: rgba(255, 255, 255, 0.75);
-  margin-top: 3rem;
+  background: var(--bs-primary);
+  color: rgba(255, 255, 255, 0.88);
+  padding: 48px 0 20px;
 }
 
 .lims-footer-title {
-  font-size: 1.05rem;
+  font-size: 1.0625rem;
   font-weight: 600;
-  color: var(--bs-success);
-}
-
-.lims-footer-text,
-.lims-footer-item {
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.75);
-}
-
-.lims-social {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
   color: #ffffff;
-  text-decoration: none;
+  margin-bottom: 12px;
 }
 
-.lims-social:hover,
-.lims-social:focus-visible {
-  background: var(--bs-success);
-  color: var(--lims-navy-900);
+.lims-footer-text {
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.lims-footer-lista {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lims-footer-lista li + li {
+  margin-top: 8px;
+}
+
+.lims-footer a {
+  color: #ffffff;
+  text-underline-offset: 3px;
+}
+
+.lims-footer-discreto {
+  font-size: 0.9375rem;
+}
+
+.lims-footer :focus-visible {
+  outline: 3px solid #ffffff;
+  outline-offset: 2px;
 }
 
 .lims-footer-bottom {
-  border-top: 1px solid rgba(255, 255, 255, 0.15);
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.6);
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  padding-top: 16px;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.8);
 }
