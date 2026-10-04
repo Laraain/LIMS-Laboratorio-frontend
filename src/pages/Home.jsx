@@ -149,7 +149,10 @@ function Home() {
           <h2 id="titulo-obras" className="lims-h2">Obras sociales con las que trabajamos</h2>
           <ul className="lims-obras">
             {obrasSociales.map((obra) => (
-              <li key={obra.id}>{obra.nombre}</li>
+              <li key={obra.id} className="lims-obra">
+                <img src={obra.logo} alt="" loading="lazy" />
+                <span>{obra.nombre}</span>
+              </li>
             ))}
           </ul>
         </div>
@@ -166,7 +169,6 @@ function Home() {
                 </div>
                 <h3 className="lims-h3 mt-3 mb-1">{persona.nombre}</h3>
                 <p className="mb-0">{persona.cargo}</p>
-                <p className="lims-matricula mb-0">{persona.matricula}</p>
               </li>
             ))}
           </ul>

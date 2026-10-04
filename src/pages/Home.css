@@ -257,21 +257,50 @@
 
 /* Obras sociales */
 .lims-obras {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.lims-obras li {
-  padding: 10px 20px;
-  border-radius: 999px;
+.lims-obra {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px 16px 16px;
+  border-radius: 16px;
   border: 1px solid var(--lims-border);
   background: #ffffff;
+  text-align: center;
+}
+
+.lims-obra img {
+  width: 100%;
+  max-width: 140px;
+  height: 56px;
+  object-fit: contain;
+}
+
+.lims-obra span {
   color: var(--lims-ink);
   font-weight: 500;
+  line-height: 1.3;
+}
+
+@media (min-width: 768px) {
+  .lims-obras {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 992px) {
+  .lims-obras {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
 }
 
 /* Equipo */
@@ -300,11 +329,6 @@
   object-fit: cover;
   border-radius: 20px;
   background: var(--lims-band);
-}
-
-.lims-matricula {
-  font-size: 0.9375rem;
-  color: var(--lims-muted);
 }
 
 /* Preguntas frecuentes */
@@ -362,8 +386,7 @@
 /* Celular: ningún texto por debajo de 16px */
 @media (max-width: 575.98px) {
   .lims-kicker,
-  .lims-practica-lista dt,
-  .lims-matricula {
+  .lims-practica-lista dt {
     font-size: 1rem;
     letter-spacing: 0.02em;
   }

@@ -5,6 +5,16 @@ import fotoAtencion from '../assets/home/carrusel-atencion.webp';
 import fotoEquipo1 from '../assets/home/equipo-1.webp';
 import fotoEquipo2 from '../assets/home/equipo-2.webp';
 import fotoEquipo3 from '../assets/home/equipo-3.webp';
+import logoPami from '../assets/obras-sociales/pami.svg';
+import logoSubsidioSalud from '../assets/obras-sociales/subsidio-salud.png';
+import logoOsde from '../assets/obras-sociales/osde.svg';
+import logoSwissMedical from '../assets/obras-sociales/swiss-medical.svg';
+import logoGaleno from '../assets/obras-sociales/galeno.png';
+import logoMedife from '../assets/obras-sociales/medife.svg';
+import logoSancorSalud from '../assets/obras-sociales/sancor-salud.svg';
+import logoOsecac from '../assets/obras-sociales/osecac.gif';
+import logoOsprera from '../assets/obras-sociales/osprera.png';
+import logoUnionPersonal from '../assets/obras-sociales/union-personal.png';
 
 // Los valores entre corchetes son marcadores: reemplazarlos por datos reales.
 export const contacto = {
@@ -79,12 +89,26 @@ export const preparacion = [
   },
 ];
 
-export const obrasSociales = Array.from({ length: 8 }, (_, i) => ({ id: i, nombre: '[OBRA SOCIAL]' }));
+// Listado de maqueta con obras sociales y prepagas habituales en Argentina: confirmar con qué convenios trabaja el laboratorio.
+// Logos tomados de los sitios oficiales; OSDE, OSPRERA y Unión Personal venían en blanco y se pasaron a gris oscuro.
+export const obrasSociales = [
+  { id: 'pami', nombre: 'PAMI', logo: logoPami },
+  { id: 'subsidio-salud', nombre: 'Subsidio de Salud', logo: logoSubsidioSalud },
+  { id: 'osde', nombre: 'OSDE', logo: logoOsde },
+  { id: 'swiss-medical', nombre: 'Swiss Medical', logo: logoSwissMedical },
+  { id: 'galeno', nombre: 'Galeno', logo: logoGaleno },
+  { id: 'medife', nombre: 'Medifé', logo: logoMedife },
+  { id: 'sancor-salud', nombre: 'SanCor Salud', logo: logoSancorSalud },
+  { id: 'osecac', nombre: 'OSECAC', logo: logoOsecac },
+  { id: 'osprera', nombre: 'OSPRERA', logo: logoOsprera },
+  { id: 'union-personal', nombre: 'Unión Personal', logo: logoUnionPersonal },
+];
 
+// Personas ficticias para la maqueta: reemplazar por el equipo real.
 export const equipo = [
-  { id: 1, foto: fotoEquipo1, nombre: '[NOMBRE]', cargo: '[CARGO]', matricula: 'MP [MATRÍCULA]' },
-  { id: 2, foto: fotoEquipo2, nombre: '[NOMBRE]', cargo: '[CARGO]', matricula: 'MP [MATRÍCULA]' },
-  { id: 3, foto: fotoEquipo3, nombre: '[NOMBRE]', cargo: '[CARGO]', matricula: 'MP [MATRÍCULA]' },
+  { id: 1, foto: fotoEquipo1, nombre: 'Bioq. Carolina Medina', cargo: 'Directora técnica' },
+  { id: 2, foto: fotoEquipo2, nombre: 'Bioq. Florencia Ríos', cargo: 'Hematología y química clínica' },
+  { id: 3, foto: fotoEquipo3, nombre: 'Bioq. Martín Ibáñez', cargo: 'Microbiología' },
 ];
 
 export const preguntas = [
