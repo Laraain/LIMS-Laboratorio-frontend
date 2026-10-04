@@ -34,7 +34,7 @@ export const contacto = {
   whatsapp: null,
 };
 
-// Horario de EJEMPLO: reemplazar por el real. Días: 0 = domingo ... 6 = sábado.
+// Horario de atención. Si cambia, actualizar también el JSON-LD de index.html. Días: 0 = domingo ... 6 = sábado.
 export const horarios = {
   atencion: [
     { dias: [1, 2, 3, 4, 5], desde: '07:00', hasta: '19:00' },
