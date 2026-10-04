@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import useMetadatos from '../hooks/useMetadatos.js';
 import { ArrowRight, ArrowUpRight, WhatsappLogo } from '@phosphor-icons/react';
 import { Link } from 'react-router-dom';
 import Accordion from 'react-bootstrap/Accordion';
@@ -23,9 +23,12 @@ import './Home.css';
 const numero = (i) => String(i + 1).padStart(2, '0');
 
 function Home() {
-  useEffect(() => {
-    document.title = 'LIMS Laboratorio Bioquímico — Análisis clínicos en Tucumán';
-  }, []);
+  useMetadatos({
+    titulo: 'LIMS Laboratorio Bioquímico — Análisis clínicos en Tucumán',
+    descripcion:
+      'Laboratorio de análisis clínicos en San Miguel de Tucumán. Consulte sus resultados en línea con su DNI, cómo prepararse para su estudio y las obras sociales con las que trabajamos.',
+    ruta: '/',
+  });
 
   return (
     <main id="contenido">

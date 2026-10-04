@@ -16,11 +16,19 @@ import logoOsecac from '../assets/obras-sociales/osecac.gif';
 import logoOsprera from '../assets/obras-sociales/osprera.png';
 import logoUnionPersonal from '../assets/obras-sociales/union-personal.png';
 
+// Dominio del sitio publicado. Si cambia, actualizarlo también en index.html, public/robots.txt y public/sitemap.xml.
+export const sitio = {
+  url: 'https://lims-laboratorio-frontend.vercel.app',
+  nombre: 'LIMS Laboratorio Bioquímico',
+};
+
 // Los valores entre corchetes son marcadores: reemplazarlos por datos reales.
+// Si cambian el teléfono, la dirección o el horario, actualizar también el JSON-LD de index.html.
 export const contacto = {
   direccion: 'Av. Belgrano y Cuyo, San Miguel de Tucumán',
   mapa: 'https://www.google.com/maps/search/?api=1&query=Av.+Belgrano+y+Cuyo,+San+Miguel+de+Tucum%C3%A1n',
-  telefono: '[TELÉFONO]',
+  telefono: '381 341-9913',
+  telefonoEnlace: 'tel:+543813419913',
   email: 'contacto@limslaboratorio.com.ar',
   // Número en formato internacional sin signos (ej. 5493810000000). Mientras sea null no se muestra el botón de WhatsApp.
   whatsapp: null,

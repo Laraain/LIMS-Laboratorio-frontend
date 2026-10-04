@@ -1,14 +1,87 @@
 <!doctype html>
-<html lang="es">
+<html lang="es-AR">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LIMS Laboratorio Bioquímico — Análisis clínicos en Tucumán</title>
     <meta
       name="description"
-      content="LIMS Laboratorio Bioquímico: análisis clínicos en San Miguel de Tucumán, con resultados validados disponibles en línea ingresando con su DNI."
+      content="Laboratorio de análisis clínicos en San Miguel de Tucumán. Consulte sus resultados en línea con su DNI, cómo prepararse para su estudio y las obras sociales con las que trabajamos."
     />
-    <title>LIMS Laboratorio — Sistema de gestión para laboratorio bioquímico</title>
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#1c4e80" />
+    <!-- Dominio del sitio: si cambia, actualizarlo aquí, en src/data/laboratorio.js, public/robots.txt y public/sitemap.xml -->
+    <link rel="canonical" href="https://lims-laboratorio-frontend.vercel.app/" />
+
+    <!-- Vista previa al compartir el enlace (WhatsApp, Facebook, LinkedIn, X) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="es_AR" />
+    <meta property="og:site_name" content="LIMS Laboratorio Bioquímico" />
+    <meta property="og:title" content="LIMS Laboratorio Bioquímico — Análisis clínicos en Tucumán" />
+    <meta
+      property="og:description"
+      content="Laboratorio de análisis clínicos en San Miguel de Tucumán. Consulte sus resultados en línea con su DNI, cómo prepararse para su estudio y las obras sociales con las que trabajamos."
+    />
+    <meta property="og:url" content="https://lims-laboratorio-frontend.vercel.app/" />
+    <meta property="og:image" content="https://lims-laboratorio-frontend.vercel.app/og-imagen.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="LIMS Laboratorio Bioquímico: análisis clínicos y resultados en línea con su DNI" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- Datos estructurados para Google (búsqueda local y Maps). Si cambian el teléfono, la dirección o el horario,
+         actualizarlos también en src/data/laboratorio.js. El horario todavía es de ejemplo. -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": ["MedicalBusiness", "DiagnosticLab"],
+        "@id": "https://lims-laboratorio-frontend.vercel.app/#laboratorio",
+        "name": "LIMS Laboratorio Bioquímico",
+        "description": "Laboratorio de análisis clínicos en San Miguel de Tucumán con resultados validados por bioquímicos matriculados y disponibles en línea.",
+        "url": "https://lims-laboratorio-frontend.vercel.app/",
+        "logo": "https://lims-laboratorio-frontend.vercel.app/logo.png",
+        "image": "https://lims-laboratorio-frontend.vercel.app/og-imagen.jpg",
+        "telephone": "+54 381 341-9913",
+        "email": "contacto@limslaboratorio.com.ar",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "Av. Belgrano y Cuyo",
+          "addressLocality": "San Miguel de Tucumán",
+          "addressRegion": "Tucumán",
+          "addressCountry": "AR"
+        },
+        "areaServed": {
+          "@type": "City",
+          "name": "San Miguel de Tucumán"
+        },
+        "openingHoursSpecification": [
+          {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+            "opens": "07:00",
+            "closes": "19:00"
+          },
+          {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": "Saturday",
+            "opens": "08:00",
+            "closes": "12:00"
+          }
+        ],
+        "availableTest": [
+          { "@type": "MedicalTest", "name": "Hemograma" },
+          { "@type": "MedicalTest", "name": "Coagulograma" },
+          { "@type": "MedicalTest", "name": "Glucemia" },
+          { "@type": "MedicalTest", "name": "Perfil lipídico" },
+          { "@type": "MedicalTest", "name": "Hepatograma" },
+          { "@type": "MedicalTest", "name": "TSH y T4 libre" },
+          { "@type": "MedicalTest", "name": "Orina completa" },
+          { "@type": "MedicalTest", "name": "Urocultivo" }
+        ]
+      }
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link

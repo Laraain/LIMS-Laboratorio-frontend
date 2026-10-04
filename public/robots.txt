@@ -1,0 +1,6 @@
+# Los logins no se bloquean acá: se excluyen con <meta name="robots" content="noindex">,
+# que los buscadores solo pueden leer si tienen permitido entrar a la página.
+User-agent: *
+Allow: /
+
+Sitemap: https://lims-laboratorio-frontend.vercel.app/sitemap.xml

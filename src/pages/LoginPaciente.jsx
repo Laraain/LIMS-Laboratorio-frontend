@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Eye, EyeSlash } from '@phosphor-icons/react';
 import LoginLayout from '../components/LoginLayout.jsx';
 import LoginSuccess from '../components/LoginSuccess.jsx';
+import useMetadatos from '../hooks/useMetadatos.js';
 // Foto de Gabrielle Henderson en Unsplash (licencia libre)
 import fotoPaciente from '../assets/login/login-paciente.webp';
  
@@ -53,9 +54,12 @@ function LoginPaciente() {
   const [passwordInvalido, setPasswordInvalido] = useState(false);
   const [sesion, setSesion] = useState(() => leerSesion());
  
-  useEffect(() => {
-    document.title = 'Portal del Paciente — LIMS Laboratorio';
-  }, []);
+  useMetadatos({
+    titulo: 'Portal del Paciente — LIMS Laboratorio',
+    descripcion: 'Ingrese con su DNI para consultar y descargar sus resultados de laboratorio.',
+    ruta: '/login-paciente',
+    indexar: false,
+  });
  
   function handleSubmit(evento) {
     evento.preventDefault();

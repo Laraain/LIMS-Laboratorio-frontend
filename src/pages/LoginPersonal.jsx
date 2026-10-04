@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import LoginLayout from '../components/LoginLayout.jsx';
 import LoginSuccess from '../components/LoginSuccess.jsx';
+import useMetadatos from '../hooks/useMetadatos.js';
 // Foto de National Cancer Institute en Unsplash (licencia libre)
 import fotoPersonal from '../assets/login/login-personal.webp';
  
@@ -42,9 +43,12 @@ function LoginPersonal() {
   const [passwordInvalido, setPasswordInvalido] = useState(false);
   const [sesion, setSesion] = useState(() => leerSesion());
  
-  useEffect(() => {
-    document.title = 'Login Personal Interno — LIMS Laboratorio';
-  }, []);
+  useMetadatos({
+    titulo: 'Acceso del personal — LIMS Laboratorio',
+    descripcion: 'Ingreso al sistema de gestión del laboratorio para el personal.',
+    ruta: '/login-personal',
+    indexar: false,
+  });
  
   function handleSubmit(evento) {
     evento.preventDefault();

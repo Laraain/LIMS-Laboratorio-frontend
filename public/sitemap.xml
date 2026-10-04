@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Solo la home: los logins tienen noindex y las secciones (#servicios, #preparacion...) son parte de la misma página -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://lims-laboratorio-frontend.vercel.app/</loc>
+    <lastmod>2026-10-04</lastmod>
+  </url>
+</urlset>

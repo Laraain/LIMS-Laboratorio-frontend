@@ -26,7 +26,7 @@ function Footer() {
               </li>
               <li>
                 <Phone className="lims-icono me-2" aria-hidden="true" />
-                {contacto.telefono}
+                <a href={contacto.telefonoEnlace}>{contacto.telefono}</a>
               </li>
               <li>
                 <EnvelopeSimple className="lims-icono me-2" aria-hidden="true" />
