@@ -29,6 +29,8 @@ export const sitio = {
 // Si cambian el teléfono, la dirección o el horario, actualizar también el JSON-LD de index.html.
 export const contacto = {
   direccion: 'Av. Belgrano y Cuyo, San Miguel de Tucumán',
+  calle: 'Av. Belgrano y Cuyo',
+  ciudad: 'San Miguel de Tucumán',
   mapa: 'https://www.google.com/maps/search/?api=1&query=Av.+Belgrano+y+Cuyo,+San+Miguel+de+Tucum%C3%A1n',
   telefono: '381 341-9913',
   telefonoEnlace: 'tel:+543813419913',
@@ -45,6 +47,12 @@ export const horarios = {
   ],
   textoAtencion: 'Lunes a viernes de 7:00 a 19:00 · Sábados de 8:00 a 12:00',
   textoExtracciones: 'Extracciones de lunes a sábados hasta las 10:00',
+  // Las mismas franjas separadas por línea, para la banda de datos del inicio
+  lineasAtencion: [
+    { dias: 'Lunes a viernes', horas: '7:00 a 19:00' },
+    { dias: 'Sábados', horas: '8:00 a 12:00' },
+  ],
+  lineasExtracciones: [{ dias: 'Lunes a sábados', horas: 'hasta las 10:00' }],
 };
 
 export const carrusel = [

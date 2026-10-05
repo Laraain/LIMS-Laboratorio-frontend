@@ -137,42 +137,119 @@
   }
 }
 
-/* Franja práctica */
+/* Banda de datos clave (dirección, horario, extracciones): azul de marca para que se vea de un vistazo */
 .lims-practica {
-  border-bottom: 1px solid var(--lims-border-soft);
-  padding: 24px 0;
+  background: var(--bs-primary);
+  color: #ffffff;
+  padding: 40px 0;
 }
 
 .lims-practica-lista {
   display: grid;
-  gap: 16px 32px;
+  gap: 28px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 992px) {
+  .lims-practica-lista {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0;
+  }
+
+  .lims-dato + .lims-dato {
+    border-left: 1px solid rgba(255, 255, 255, 0.2);
+    padding-left: 32px;
+  }
+
+  .lims-dato {
+    padding-right: 24px;
+  }
+}
+
+.lims-dato {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.lims-dato-icono {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  font-size: 1.625rem;
+}
+
+.lims-dato p {
   margin: 0;
 }
 
-.lims-practica-lista dt {
+.lims-dato-etiqueta {
+  margin-bottom: 6px !important;
   font-size: 0.8125rem;
   font-weight: 600;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--lims-muted);
+  color: rgba(255, 255, 255, 0.75);
 }
 
-.lims-practica-lista dd {
-  margin: 2px 0 0;
-  color: var(--lims-ink);
+.lims-dato-valor {
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.35;
+  color: #ffffff;
 }
 
-@media (min-width: 768px) {
-  .lims-practica-lista {
-    grid-template-columns: repeat(2, auto);
-  }
+/* Días en una línea chica y el horario debajo, grande y sin cortarse */
+.lims-dato-dias {
+  display: block;
+  font-size: 1rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.85);
 }
 
-@media (min-width: 1200px) {
-  .lims-practica-lista {
-    grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
-    align-items: center;
-  }
+.lims-dato-horas {
+  white-space: nowrap;
+}
+
+.lims-dato-dias + .lims-dato-horas {
+  display: block;
+}
+
+.lims-dato-valor + .lims-dato-valor {
+  margin-top: 8px !important;
+}
+
+.lims-dato-detalle {
+  margin-top: 2px !important;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.lims-dato-accion {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 12px;
+  color: #ffffff;
+  font-weight: 600;
+  text-underline-offset: 3px;
+}
+
+a.lims-dato-accion:hover,
+a.lims-dato-accion:focus-visible {
+  color: #ffffff;
+  text-decoration: underline;
+}
+
+.lims-practica :focus-visible {
+  outline: 3px solid #ffffff;
+  outline-offset: 3px;
 }
 
 .lims-estado {
@@ -567,7 +644,7 @@
 /* Celular: ningún texto por debajo de 16px */
 @media (max-width: 575.98px) {
   .lims-kicker,
-  .lims-practica-lista dt {
+  .lims-dato-etiqueta {
     font-size: 1rem;
     letter-spacing: 0.02em;
   }

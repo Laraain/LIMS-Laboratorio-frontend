@@ -1,6 +1,6 @@
 import useMetadatos from '../hooks/useMetadatos.js';
 import useAlAparecer from '../hooks/useAlAparecer.js';
-import { ArrowRight, ArrowUpRight, WhatsappLogo } from '@phosphor-icons/react';
+import { ArrowRight, ArrowUpRight, Clock, Drop, MapPin, WhatsappLogo } from '@phosphor-icons/react';
 import { Link } from 'react-router-dom';
 import Carrusel from '../components/Carrusel.jsx';
 import PreguntasFrecuentes from '../components/PreguntasFrecuentes.jsx';
@@ -89,28 +89,58 @@ function Home() {
         </div>
       </nav>
 
-      <section className="lims-practica" aria-label="Datos prácticos">
+      <section className="lims-practica" aria-label="Dirección y horarios">
         <div className="container px-3 px-lg-4">
-          <dl className="lims-practica-lista">
-            <div>
-              <dt>Dirección</dt>
-              <dd>{contacto.direccion}</dd>
-            </div>
-            <div>
-              <dt>Horario</dt>
-              <dd>{horarios.textoAtencion}</dd>
-            </div>
-            <div>
-              <dt>Extracciones</dt>
-              <dd>{horarios.textoExtracciones}</dd>
-            </div>
-            <div>
-              <dt className="visually-hidden">Estado</dt>
-              <dd>
-                <EstadoAhora franjas={horarios.atencion} />
-              </dd>
-            </div>
-          </dl>
+          <ul className="lims-practica-lista">
+            <li className="lims-dato">
+              <span className="lims-dato-icono" aria-hidden="true">
+                <MapPin />
+              </span>
+              <div>
+                <p className="lims-dato-etiqueta">Dirección</p>
+                <p className="lims-dato-valor">{contacto.calle}</p>
+                <p className="lims-dato-detalle">{contacto.ciudad}</p>
+                <a href={contacto.mapa} target="_blank" rel="noopener" className="lims-dato-accion">
+                  Cómo llegar <ArrowUpRight className="lims-icono ms-1" aria-hidden="true" />
+                </a>
+              </div>
+            </li>
+            <li className="lims-dato">
+              <span className="lims-dato-icono" aria-hidden="true">
+                <Clock />
+              </span>
+              <div>
+                <p className="lims-dato-etiqueta">Horario de atención</p>
+                {horarios.lineasAtencion.map((linea) => (
+                  <p key={linea.dias} className="lims-dato-valor">
+                    <span className="lims-dato-dias">{linea.dias}</span>
+                    <span className="lims-dato-horas">{linea.horas}</span>
+                  </p>
+                ))}
+                <div className="lims-dato-accion">
+                  <EstadoAhora franjas={horarios.atencion} />
+                </div>
+              </div>
+            </li>
+            <li className="lims-dato">
+              <span className="lims-dato-icono" aria-hidden="true">
+                <Drop />
+              </span>
+              <div>
+                <p className="lims-dato-etiqueta">Extracciones</p>
+                {horarios.lineasExtracciones.map((linea) => (
+                  <p key={linea.dias} className="lims-dato-valor">
+                    <span className="lims-dato-dias">{linea.dias}</span>
+                    <span className="lims-dato-horas">{linea.horas}</span>
+                  </p>
+                ))}
+                <p className="lims-dato-detalle">Consulte cómo prepararse antes de venir.</p>
+                <Link to="/#preparacion" className="lims-dato-accion">
+                  Ver preparación <ArrowRight className="lims-icono ms-1" aria-hidden="true" />
+                </Link>
+              </div>
+            </li>
+          </ul>
         </div>
       </section>
 
