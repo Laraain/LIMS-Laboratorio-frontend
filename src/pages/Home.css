@@ -517,26 +517,21 @@
   }
 }
 
-/* Preguntas frecuentes */
+/* Preguntas frecuentes: columna angosta y centrada, con el encabezado al medio */
 .lims-preguntas {
-  --bs-accordion-bg: #ffffff;
-  --bs-accordion-border-color: var(--lims-border);
-  --bs-accordion-border-radius: 16px;
-  --bs-accordion-inner-border-radius: 16px;
-  --bs-accordion-btn-color: var(--lims-ink);
-  --bs-accordion-active-color: var(--bs-primary);
-  --bs-accordion-active-bg: #ffffff;
-  --bs-accordion-btn-focus-box-shadow: 0 0 0 3px rgba(28, 78, 128, 0.35);
-  --bs-accordion-btn-padding-y: 1.125rem;
+  max-width: 720px;
+  margin-inline: auto;
 }
 
-.lims-preguntas .accordion-header {
-  margin: 0;
+.lims-preguntas-encabezado {
+  margin-bottom: 24px;
+  text-align: center;
+  text-wrap: balance;
 }
 
-.lims-preguntas .accordion-button {
-  font-size: 1rem;
-  font-weight: 600;
+.lims-preguntas-encabezado a {
+  color: var(--bs-primary);
+  font-weight: 500;
 }
 
 /* WhatsApp flotante */

@@ -28,7 +28,7 @@ El sitio informa a los pacientes cómo prepararse para sus estudios, los horario
 | [React 19](https://react.dev/) | Interfaz basada en componentes |
 | [Vite 8](https://vite.dev/) | Servidor de desarrollo y compilación |
 | [React Router 7](https://reactrouter.com/) | Navegación entre páginas (`react-router-dom`) |
-| [Bootstrap 5.3](https://getbootstrap.com/) y [React Bootstrap](https://react-bootstrap.github.io/) | Grilla, barra de navegación y acordeón |
+| [Bootstrap 5.3](https://getbootstrap.com/) y [React Bootstrap](https://react-bootstrap.github.io/) | Grilla y barra de navegación |
 | [Phosphor Icons](https://phosphoricons.com/) | Íconos (`@phosphor-icons/react`) |
 | CSS propio | Paleta, tipografía (Inter) y estilos de cada componente |
 | ESLint | Control de calidad del código |
@@ -89,7 +89,8 @@ El sitio queda disponible en http://localhost:5173.
 │   │   ├── EstadoAhora.jsx      Indicador "Abierto ahora / Cerrado"
 │   │   ├── ServiceCard.jsx      Tarjeta de servicio
 │   │   ├── LoginLayout.jsx      Pantalla dividida que comparten los dos logins
-│   │   └── LoginSuccess.jsx     Mensaje de sesión iniciada
+│   │   ├── LoginSuccess.jsx     Mensaje de sesión iniciada
+│   │   └── PreguntasFrecuentes.jsx  Preguntas que se despliegan con animación
 │   ├── data/                Contenido del sitio separado de los componentes
 │   │   ├── laboratorio.js       Contacto, horarios, estudios, obras sociales, equipo, preguntas
 │   │   └── servicios.js         Servicios del laboratorio
@@ -114,7 +115,7 @@ El contenido (textos, horarios, obras sociales, equipo) vive en `src/data/` y la
 - **Componentes y props:** por ejemplo, `ServiceCard` recibe foto, ícono, título y descripción, y `LoginLayout` recibe los textos, la foto y el formulario (`children`) de cada login.
 - **`map()`:** las listas del inicio (accesos, pasos, estudios, preparación, obras sociales, equipo, servicios, preguntas) y las fotos del carrusel se generan a partir de los arreglos de `src/data/`.
 - **React Router:** `Routes` y `Route` en `App.jsx`; `Link` y `NavLink` en el menú; `Navigate` para la redirección de `/servicios`; `useLocation` para bajar hasta una sección (`/#preparacion`).
-- **`useState`:** campos, errores y sesión de los logins; foto actual y pausa del carrusel; estado de apertura del laboratorio.
+- **`useState`:** campos, errores y sesión de los logins; foto actual y pausa del carrusel; estado de apertura del laboratorio; pregunta frecuente abierta.
 - **`useEffect`:** temporizador del carrusel, actualización cada minuto de "Abierto ahora", título y metadatos de cada página, desplazamiento hasta la sección indicada en la URL, y un `IntersectionObserver` (`useAlAparecer`) que hace entrar las tarjetas de servicios cuando la sección aparece en pantalla.
 
 ## SEO

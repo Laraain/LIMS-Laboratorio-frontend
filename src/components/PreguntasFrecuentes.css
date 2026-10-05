@@ -1,0 +1,95 @@
+.lims-faq {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lims-faq-item {
+  border-bottom: 1px solid var(--lims-border);
+}
+
+.lims-faq-pregunta {
+  margin: 0;
+}
+
+.lims-faq-pregunta button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  padding: 20px 0;
+  border: 0;
+  background: transparent;
+  color: var(--lims-ink);
+  font-size: 1.0625rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.lims-faq-pregunta button:hover,
+.lims-faq-item.is-abierta .lims-faq-pregunta button {
+  color: var(--bs-primary);
+}
+
+.lims-faq-pregunta button:focus-visible {
+  outline: 3px solid var(--bs-primary);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+.lims-faq-flecha {
+  flex-shrink: 0;
+  font-size: 1.25rem;
+  color: var(--lims-muted);
+  transition: transform 0.5s ease, color 0.2s ease;
+}
+
+.lims-faq-item.is-abierta .lims-faq-flecha {
+  transform: rotate(180deg);
+  color: var(--bs-primary);
+}
+
+/* La respuesta se despliega animando la fila de 0fr a 1fr: se adapta al largo del texto.
+   Cerrada queda con visibility hidden para que los lectores de pantalla no la lean. */
+.lims-faq-respuesta {
+  display: grid;
+  grid-template-rows: 0fr;
+  visibility: hidden;
+  transition: grid-template-rows 0.5s ease, visibility 0s linear 0.5s;
+}
+
+.lims-faq-item.is-abierta .lims-faq-respuesta {
+  grid-template-rows: 1fr;
+  visibility: visible;
+  transition: grid-template-rows 0.5s ease, visibility 0s;
+}
+
+.lims-faq-respuesta-interior {
+  overflow: hidden;
+}
+
+.lims-faq-respuesta p {
+  max-width: 36rem;
+  margin: 0;
+  padding-bottom: 20px;
+  color: var(--lims-muted);
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.lims-faq-item.is-abierta .lims-faq-respuesta p {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lims-faq-flecha,
+  .lims-faq-respuesta,
+  .lims-faq-respuesta p {
+    transition: none;
+  }
+}

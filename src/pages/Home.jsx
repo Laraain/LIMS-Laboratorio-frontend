@@ -2,8 +2,8 @@ import useMetadatos from '../hooks/useMetadatos.js';
 import useAlAparecer from '../hooks/useAlAparecer.js';
 import { ArrowRight, ArrowUpRight, WhatsappLogo } from '@phosphor-icons/react';
 import { Link } from 'react-router-dom';
-import Accordion from 'react-bootstrap/Accordion';
 import Carrusel from '../components/Carrusel.jsx';
+import PreguntasFrecuentes from '../components/PreguntasFrecuentes.jsx';
 import CintaLogos from '../components/CintaLogos.jsx';
 import EstadoAhora from '../components/EstadoAhora.jsx';
 import ServiceCard from '../components/ServiceCard.jsx';
@@ -222,20 +222,16 @@ function Home() {
 
       <section className="lims-seccion" aria-labelledby="titulo-preguntas">
         <div className="container px-3 px-lg-4">
-          <div className="row g-4">
-            <div className="col-lg-4">
-              <h2 id="titulo-preguntas" className="lims-h2">Preguntas frecuentes</h2>
-            </div>
-            <div className="col-lg-8">
-              <Accordion className="lims-preguntas">
-                {preguntas.map((item) => (
-                  <Accordion.Item eventKey={item.id} key={item.id}>
-                    <Accordion.Header as="h3">{item.pregunta}</Accordion.Header>
-                    <Accordion.Body>{item.respuesta}</Accordion.Body>
-                  </Accordion.Item>
-                ))}
-              </Accordion>
-            </div>
+          <div className="lims-preguntas">
+            <header className="lims-preguntas-encabezado">
+              <p className="lims-kicker mb-2">Preguntas frecuentes</p>
+              <h2 id="titulo-preguntas" className="lims-h2 mb-3">¿Tiene alguna duda?</h2>
+              <p className="mb-0">
+                Reunimos las consultas más comunes. Si no encuentra su respuesta,{' '}
+                <Link to="/#contacto">comuníquese con el laboratorio</Link>.
+              </p>
+            </header>
+            <PreguntasFrecuentes preguntas={preguntas} />
           </div>
         </div>
       </section>
