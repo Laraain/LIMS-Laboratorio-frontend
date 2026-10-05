@@ -25,14 +25,6 @@ export const sitio = {
   nombre: 'LIMS Laboratorio Bioquímico',
 };
 
-// Redes del pie. El laboratorio todavía no tiene cuentas: los enlaces llevan a la página principal de cada red.
-export const redes = [
-  { id: 'facebook', nombre: 'Facebook', url: 'https://www.facebook.com/' },
-  { id: 'instagram', nombre: 'Instagram', url: 'https://www.instagram.com/' },
-  { id: 'x', nombre: 'X', url: 'https://x.com/' },
-  { id: 'linkedin', nombre: 'LinkedIn', url: 'https://www.linkedin.com/' },
-];
-
 export const enlacesPie = [
   { texto: 'Inicio', to: '/' },
   { texto: 'Servicios', to: '/#servicios' },
@@ -56,6 +48,14 @@ export const contacto = {
   // Número en formato internacional sin signos (ej. 5493810000000). Mientras sea null no se muestra el botón de WhatsApp.
   whatsapp: null,
 };
+
+// Redes del pie. Facebook e Instagram llevan a la página principal de cada red hasta que el laboratorio tenga cuentas.
+export const redes = [
+  { id: 'facebook', nombre: 'Facebook', url: 'https://www.facebook.com/' },
+  { id: 'instagram', nombre: 'Instagram', url: 'https://www.instagram.com/' },
+  { id: 'whatsapp', nombre: 'WhatsApp', url: 'https://wa.me/5493813419913' },
+  { id: 'maps', nombre: 'Google Maps', url: contacto.mapa },
+];
 
 // Horario de atención. Si cambia, actualizar también el JSON-LD de index.html. Días: 0 = domingo ... 6 = sábado.
 export const horarios = {

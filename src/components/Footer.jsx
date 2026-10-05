@@ -4,16 +4,16 @@ import {
   EnvelopeSimple,
   FacebookLogo,
   InstagramLogo,
-  LinkedinLogo,
   MapPin,
+  MapTrifold,
   Phone,
-  XLogo,
+  WhatsappLogo,
 } from '@phosphor-icons/react';
 import logo from '../assets/logo1.png';
 import { contacto, horarios, redes, enlacesPie } from '../data/laboratorio.js';
 import './Footer.css';
 
-const iconosRedes = { facebook: FacebookLogo, instagram: InstagramLogo, x: XLogo, linkedin: LinkedinLogo };
+const iconosRedes = { facebook: FacebookLogo, instagram: InstagramLogo, whatsapp: WhatsappLogo, maps: MapTrifold };
 
 function Footer() {
   return (
