@@ -1,4 +1,5 @@
 import useMetadatos from '../hooks/useMetadatos.js';
+import useAlAparecer from '../hooks/useAlAparecer.js';
 import { ArrowRight, ArrowUpRight, WhatsappLogo } from '@phosphor-icons/react';
 import { Link } from 'react-router-dom';
 import Accordion from 'react-bootstrap/Accordion';
@@ -33,6 +34,9 @@ function Home() {
       'Laboratorio de análisis clínicos en San Miguel de Tucumán. Consulte sus resultados en línea con su DNI, cómo prepararse para su estudio y las obras sociales con las que trabajamos.',
     ruta: '/',
   });
+
+  // Las tarjetas de servicios entran una tras otra cuando la sección aparece en pantalla
+  const [refServicios, serviciosVisibles] = useAlAparecer();
 
   return (
     <main id="contenido">
@@ -196,9 +200,12 @@ function Home() {
             Tres áreas conectadas en un solo sistema: extracción, análisis y entrega de
             resultados, con trazabilidad digital en cada etapa.
           </p>
-          <div className="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-3">
-            {servicios.map((servicio) => (
-              <div className="col" key={servicio.id}>
+          <div
+            ref={refServicios}
+            className={`row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-3 lims-aparecen${serviciosVisibles ? ' is-visible' : ''}`}
+          >
+            {servicios.map((servicio, i) => (
+              <div className="col" key={servicio.id} style={{ '--orden': i }}>
                 <ServiceCard
                   foto={servicio.foto}
                   altFoto={servicio.altFoto}

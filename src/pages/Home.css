@@ -269,6 +269,28 @@
   }
 }
 
+/* Entrada escalonada: los hijos suben y se funden cuando el contenedor recibe is-visible (useAlAparecer).
+   El orden de cada hijo llega por la variable --orden. */
+.lims-aparecen > * {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+  transition-delay: calc(var(--orden, 0) * 100ms);
+}
+
+.lims-aparecen.is-visible > * {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lims-aparecen > * {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
 /* Al pasar el mouse, el elemento se aclara un poco (como hover:opacity-75 de Tailwind) */
 @media (hover: hover) {
   .lims-atenua-al-pasar {

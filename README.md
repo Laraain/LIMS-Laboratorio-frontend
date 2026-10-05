@@ -94,6 +94,7 @@ El sitio queda disponible en http://localhost:5173.
 │   │   ├── laboratorio.js       Contacto, horarios, estudios, obras sociales, equipo, preguntas
 │   │   └── servicios.js         Servicios del laboratorio
 │   ├── hooks/
+│   │   ├── useAlAparecer.js     Detecta cuándo un elemento entra en pantalla (animaciones al hacer scroll)
 │   │   └── useMetadatos.js      Título, descripción y metadatos SEO de cada página
 │   ├── pages/               Una vista por ruta
 │   │   ├── Home.jsx
@@ -114,7 +115,7 @@ El contenido (textos, horarios, obras sociales, equipo) vive en `src/data/` y la
 - **`map()`:** las listas del inicio (accesos, pasos, estudios, preparación, obras sociales, equipo, servicios, preguntas) y las fotos del carrusel se generan a partir de los arreglos de `src/data/`.
 - **React Router:** `Routes` y `Route` en `App.jsx`; `Link` y `NavLink` en el menú; `Navigate` para la redirección de `/servicios`; `useLocation` para bajar hasta una sección (`/#preparacion`).
 - **`useState`:** campos, errores y sesión de los logins; foto actual y pausa del carrusel; estado de apertura del laboratorio.
-- **`useEffect`:** temporizador del carrusel, actualización cada minuto de "Abierto ahora", título y metadatos de cada página, y desplazamiento hasta la sección indicada en la URL.
+- **`useEffect`:** temporizador del carrusel, actualización cada minuto de "Abierto ahora", título y metadatos de cada página, desplazamiento hasta la sección indicada en la URL, y un `IntersectionObserver` (`useAlAparecer`) que hace entrar las tarjetas de servicios cuando la sección aparece en pantalla.
 
 ## SEO
 

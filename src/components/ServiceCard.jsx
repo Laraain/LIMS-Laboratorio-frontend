@@ -3,7 +3,9 @@ import './ServiceCard.css';
 function ServiceCard({ foto, altFoto, icono: Icono, variante, titulo, descripcion }) {
   return (
     <article className={`lims-service-card lims-service-card--${variante} h-100`}>
-      <img src={foto} alt={altFoto} className="lims-service-img" />
+      <div className="lims-service-media">
+        <img src={foto} alt={altFoto} className="lims-service-img" />
+      </div>
       <div className="lims-service-body">
         <span className="lims-service-icon" aria-hidden="true">
           <Icono />
