@@ -1,6 +1,6 @@
 import useMetadatos from '../hooks/useMetadatos.js';
 import useAlAparecer from '../hooks/useAlAparecer.js';
-import { ArrowRight, ArrowUpRight, Clock, Drop, MapPin, WhatsappLogo } from '@phosphor-icons/react';
+import { ArrowRight, Clock, Drop, MapPin, MapTrifold, WhatsappLogo } from '@phosphor-icons/react';
 import { Link } from 'react-router-dom';
 import Carrusel from '../components/Carrusel.jsx';
 import PreguntasFrecuentes from '../components/PreguntasFrecuentes.jsx';
@@ -60,7 +60,8 @@ function Home() {
                   Ver mis resultados
                 </Link>
                 <a href={contacto.mapa} target="_blank" rel="noopener" className="lims-link-flecha">
-                  Cómo llegar <ArrowUpRight className="lims-icono ms-1" aria-hidden="true" />
+                  <MapTrifold className="lims-icono me-2" aria-hidden="true" />
+                  Cómo llegar
                 </a>
               </div>
             </div>
@@ -84,7 +85,8 @@ function Home() {
                 <p className="lims-dato-valor">{contacto.calle}</p>
                 <p className="lims-dato-detalle">{contacto.ciudad}</p>
                 <a href={contacto.mapa} target="_blank" rel="noopener" className="lims-dato-accion">
-                  Cómo llegar <ArrowUpRight className="lims-icono ms-1" aria-hidden="true" />
+                  <MapTrifold className="lims-icono me-2" aria-hidden="true" />
+                  Cómo llegar
                 </a>
               </div>
             </li>
