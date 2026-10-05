@@ -267,8 +267,24 @@ a.lims-dato-accion:focus-visible {
   margin-bottom: 32px;
 }
 
-/* Pasos numerados */
-.lims-pasos {
+/* Preparación y resultados: fondo celeste para que se distingan del resto */
+.lims-seccion--celeste {
+  background: #eef3f9;
+}
+
+/* Las dos secciones van seguidas: comparten el fondo y las separa una línea */
+.lims-seccion--celeste + .lims-seccion--celeste {
+  padding-top: 0;
+}
+
+.lims-seccion--celeste + .lims-seccion--celeste > .container {
+  border-top: 1px solid rgba(28, 78, 128, 0.15);
+  padding-top: 64px;
+}
+
+/* Recorrido: pasos con ícono en círculo, unidos por una línea */
+.lims-recorrido {
+  --tam-icono: 56px;
   display: grid;
   gap: 32px;
   margin: 0;
@@ -276,14 +292,43 @@ a.lims-dato-accion:focus-visible {
   list-style: none;
 }
 
-.lims-paso {
-  border-top: 2px solid var(--bs-primary);
-  padding-top: 16px;
+.lims-recorrido-paso {
+  position: relative;
+  padding-left: calc(var(--tam-icono) + 20px);
+}
+
+.lims-recorrido-icono {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--tam-icono);
+  height: var(--tam-icono);
+  border-radius: 50%;
+  border: 2px solid var(--bs-primary);
+  background: #ffffff;
+  color: var(--bs-primary);
+  font-size: 1.625rem;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* Celular: la línea baja desde cada círculo hasta el siguiente */
+.lims-recorrido-paso:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: var(--tam-icono);
+  bottom: -32px;
+  left: calc(var(--tam-icono) / 2 - 1px);
+  width: 2px;
+  background: rgba(28, 78, 128, 0.25);
 }
 
 .lims-paso-numero {
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
   font-size: 0.875rem;
   font-weight: 700;
   color: var(--bs-primary);
@@ -291,9 +336,41 @@ a.lims-dato-accion:focus-visible {
 }
 
 @media (min-width: 768px) {
-  .lims-pasos {
+  .lims-recorrido {
     grid-template-columns: repeat(3, 1fr);
   }
+
+  .lims-recorrido-paso {
+    padding-left: 0;
+  }
+
+  .lims-recorrido-icono {
+    position: relative;
+    margin-bottom: 16px;
+  }
+
+  /* Pantallas anchas: la línea va de un círculo al siguiente, a la altura de su centro */
+  .lims-recorrido-paso:not(:last-child)::after {
+    top: calc(var(--tam-icono) / 2 - 1px);
+    bottom: auto;
+    left: calc(var(--tam-icono) + 12px);
+    right: -20px;
+    width: auto;
+    height: 2px;
+  }
+}
+
+@media (hover: hover) {
+  .lims-recorrido-paso:hover .lims-recorrido-icono {
+    background: var(--bs-primary);
+    color: #ffffff;
+  }
+}
+
+.lims-recorrido-accion {
+  display: flex;
+  justify-content: center;
+  margin-top: 40px;
 }
 
 /* Entrada escalonada: los hijos suben y se funden cuando el contenedor recibe is-visible (useAlAparecer).
@@ -318,12 +395,8 @@ a.lims-dato-accion:focus-visible {
   }
 }
 
-/* Al pasar el mouse, la línea de arriba se pinta de azul de izquierda a derecha y el título toma el color de marca.
+/* Estudios por área: al pasar el mouse, la línea de arriba se pinta de azul de izquierda a derecha y el título toma el color de marca.
    La línea azul es un ::before que se estira sobre el borde gris; --grosor-borde es el ancho de ese borde. */
-.lims-paso.lims-linea-al-pasar {
-  --grosor-borde: 2px;
-}
-
 .lims-area.lims-linea-al-pasar {
   --grosor-borde: 1px;
 }
@@ -594,7 +667,8 @@ a.lims-dato-accion:focus-visible {
 /* Celular: ningún texto por debajo de 16px */
 @media (max-width: 575.98px) {
   .lims-kicker,
-  .lims-dato-etiqueta {
+  .lims-dato-etiqueta,
+  .lims-paso-numero {
     font-size: 1rem;
     letter-spacing: 0.02em;
   }

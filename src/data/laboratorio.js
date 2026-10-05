@@ -80,14 +80,17 @@ export const carrusel = [
 
 export const pasosResultados = [
   {
+    id: 'estudio',
     titulo: 'Se realiza el estudio',
     texto: 'En recepción le entregamos una contraseña provisoria para ingresar al portal.',
   },
   {
+    id: 'aviso',
     titulo: 'Le avisamos cuando está listo',
     texto: 'Cuando un bioquímico matriculado valida el informe, aparece en el portal y le enviamos un correo.',
   },
   {
+    id: 'ingreso',
     titulo: 'Ingresa con su DNI',
     texto: 'Consulte o descargue su informe desde el celular o la computadora, sin pasar por el laboratorio.',
   },
@@ -104,14 +107,17 @@ export const areas = [
 
 export const preparacion = [
   {
+    id: 'ayuno',
     titulo: 'Ayuno',
     texto: 'Para análisis de sangre de rutina, ayuno de 8 a 12 horas. Puede tomar agua. No suspenda su medicación sin consultar a su médico.',
   },
   {
+    id: 'orina',
     titulo: 'Muestra de orina',
     texto: 'Primera orina de la mañana, en frasco estéril. Higienícese antes y descarte el primer chorro.',
   },
   {
+    id: 'traer',
     titulo: 'Qué traer',
     texto: 'DNI, orden médica vigente y credencial de su obra social.',
   },

@@ -1,6 +1,20 @@
 import useMetadatos from '../hooks/useMetadatos.js';
 import useAlAparecer from '../hooks/useAlAparecer.js';
-import { ArrowRight, Clock, Drop, MapPin, MapTrifold, WhatsappLogo } from '@phosphor-icons/react';
+import {
+  ArrowRight,
+  BellRinging,
+  Clock,
+  DeviceMobile,
+  Drop,
+  ForkKnife,
+  IdentificationCard,
+  MapPin,
+  MapTrifold,
+  Phone,
+  Syringe,
+  TestTube,
+  WhatsappLogo,
+} from '@phosphor-icons/react';
 import { Link } from 'react-router-dom';
 import Carrusel from '../components/Carrusel.jsx';
 import PreguntasFrecuentes from '../components/PreguntasFrecuentes.jsx';
@@ -23,6 +37,38 @@ import {
 import './Home.css';
 
 const numero = (i) => String(i + 1).padStart(2, '0');
+
+// Ícono de cada paso de la preparación y de los resultados, según su id en laboratorio.js
+const iconosPasos = {
+  ayuno: ForkKnife,
+  orina: TestTube,
+  traer: IdentificationCard,
+  estudio: Syringe,
+  aviso: BellRinging,
+  ingreso: DeviceMobile,
+};
+
+// Pasos unidos por una línea, como un recorrido: horizontal en pantallas anchas y vertical en el celular
+function Recorrido({ pasos }) {
+  const [ref, visible] = useAlAparecer();
+  return (
+    <ol ref={ref} className={`lims-recorrido lims-aparecen${visible ? ' is-visible' : ''}`}>
+      {pasos.map((paso, i) => {
+        const Icono = iconosPasos[paso.id];
+        return (
+          <li key={paso.id} className="lims-recorrido-paso" style={{ '--orden': i }}>
+            <span className="lims-recorrido-icono" aria-hidden="true">
+              <Icono weight="regular" />
+            </span>
+            <span className="lims-paso-numero" aria-hidden="true">{numero(i)}</span>
+            <h3 className="lims-h3">{paso.titulo}</h3>
+            <p className="mb-0">{paso.texto}</p>
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
 
 // Cada palabra del título entra con un pequeño retraso respecto de la anterior
 const palabrasTitulo = 'Sus análisis clínicos, con resultados en línea.'.split(' ');
@@ -70,7 +116,7 @@ function Home() {
             </div>
           </div>
         </div>
-        <IndicadorScroll destino="/#como-ver-resultados" etiqueta="Bajar a cómo ver sus resultados" />
+        <IndicadorScroll destino="/#preparacion" etiqueta="Bajar a cómo prepararse para su estudio" />
       </section>
 
       <section className="lims-practica" aria-label="Dirección y horarios">
@@ -129,22 +175,34 @@ function Home() {
         </div>
       </section>
 
-      <section id="como-ver-resultados" className="lims-seccion" aria-labelledby="titulo-resultados">
+      <section id="preparacion" className="lims-seccion lims-seccion--celeste" aria-labelledby="titulo-preparacion">
         <div className="container px-3 px-lg-4">
-          <h2 id="titulo-resultados" className="lims-h2">Cómo ver sus resultados</h2>
-          <ol className="lims-pasos">
-            {pasosResultados.map((paso, i) => (
-              <li key={paso.titulo} className="lims-paso lims-linea-al-pasar">
-                <span className="lims-paso-numero" aria-hidden="true">{numero(i)}</span>
-                <h3 className="lims-h3">{paso.titulo}</h3>
-                <p className="mb-0">{paso.texto}</p>
-              </li>
-            ))}
-          </ol>
+          <h2 id="titulo-preparacion" className="lims-h2 mb-2">Cómo prepararse para su estudio</h2>
+          <p className="lims-seccion-bajada">Una buena preparación evita tener que repetir la extracción.</p>
+          <Recorrido pasos={preparacion} />
+          <div className="lims-recorrido-accion">
+            <a href={contacto.telefonoEnlace} className="lims-link-flecha">
+              <Phone className="lims-icono me-2" aria-hidden="true" />
+              ¿Dudas? Llámenos al {contacto.telefono}
+            </a>
+          </div>
         </div>
       </section>
 
-      <section className="lims-seccion lims-seccion--gris" aria-labelledby="titulo-estudios">
+      <section id="como-ver-resultados" className="lims-seccion lims-seccion--celeste" aria-labelledby="titulo-resultados">
+        <div className="container px-3 px-lg-4">
+          <h2 id="titulo-resultados" className="lims-h2 mb-2">Cómo ver sus resultados</h2>
+          <p className="lims-seccion-bajada">Sin pasar por el laboratorio: le avisamos cuando su informe está listo.</p>
+          <Recorrido pasos={pasosResultados} />
+          <div className="lims-recorrido-accion">
+            <Link to="/login-paciente" className="btn lims-btn-pill lims-btn-primario lims-btn-grande">
+              Ver mis resultados <ArrowRight className="lims-icono ms-1" aria-hidden="true" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <section className="lims-seccion" aria-labelledby="titulo-estudios">
         <div className="container px-3 px-lg-4">
           <div className="lims-encabezado-seccion">
             <h2 id="titulo-estudios" className="lims-h2 mb-0">Estudios por área</h2>
@@ -160,21 +218,6 @@ function Home() {
               </li>
             ))}
           </ul>
-        </div>
-      </section>
-
-      <section id="preparacion" className="lims-seccion" aria-labelledby="titulo-preparacion">
-        <div className="container px-3 px-lg-4">
-          <h2 id="titulo-preparacion" className="lims-h2">Cómo prepararse para su estudio</h2>
-          <ol className="lims-pasos">
-            {preparacion.map((paso, i) => (
-              <li key={paso.titulo} className="lims-paso">
-                <span className="lims-paso-numero" aria-hidden="true">{numero(i)}</span>
-                <h3 className="lims-h3">{paso.titulo}</h3>
-                <p className="mb-0">{paso.texto}</p>
-              </li>
-            ))}
-          </ol>
         </div>
       </section>
 
