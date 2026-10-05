@@ -40,10 +40,29 @@
   }
 }
 
-.lims-hero-lead {
+/* Lema del laboratorio: aparece cuando termina de entrar el título */
+.lims-hero-lema {
   max-width: 34rem;
-  font-size: 1.125rem;
-  line-height: 1.6;
+  font-size: clamp(1.25rem, 2vw, 1.5rem);
+  font-style: italic;
+  font-weight: 500;
+  line-height: 1.4;
+  text-wrap: balance;
+  color: var(--lims-brand-soft);
+  animation: limsLema 0.8s ease 0.95s both;
+}
+
+@keyframes limsLema {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lims-hero-lema {
+    animation: none;
+  }
 }
 
 .lims-link-flecha {

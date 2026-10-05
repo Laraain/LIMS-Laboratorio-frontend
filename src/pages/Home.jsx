@@ -49,10 +49,7 @@ function Home() {
                   </span>
                 ))}
               </h1>
-              <p className="lims-hero-lead mb-4">
-                Realice sus estudios en el laboratorio y consulte el informe validado por un
-                bioquímico matriculado desde el celular, ingresando con su DNI.
-              </p>
+              <p className="lims-hero-lema mb-4">Del laboratorio a sus manos, sin salir de casa.</p>
               <div className="d-flex flex-wrap align-items-center gap-3">
                 <Link to="/login-paciente" className="btn lims-btn-pill lims-btn-primario lims-btn-grande">
                   Ver mis resultados
