@@ -1,6 +1,16 @@
 /* Hero */
 .lims-hero {
+  position: relative;
   padding: 56px 0 48px;
+}
+
+/* En escritorio la flecha para bajar se apoya sobre el borde entre el hero y la banda azul:
+   siempre está a la vista y cae sobre el margen, sin tapar datos. En celular sigue fija abajo. */
+@media (min-width: 992px) {
+  .lims-hero .lims-indicador-scroll {
+    position: absolute;
+    bottom: -24px;
+  }
 }
 
 .lims-kicker {
@@ -75,66 +85,6 @@
 .lims-link-flecha:hover,
 .lims-link-flecha:focus-visible {
   text-decoration: underline;
-}
-
-/* Accesos rápidos */
-.lims-accesos {
-  background: var(--lims-band);
-  padding: 20px 0;
-}
-
-.lims-accesos-lista {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.lims-acceso {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  min-height: 56px;
-  padding: 8px 8px 8px 22px;
-  border-radius: 999px;
-  background: #ffffff;
-  color: var(--lims-ink);
-  font-weight: 600;
-  text-decoration: none;
-  transition: color 0.15s ease;
-}
-
-.lims-acceso-flecha {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: var(--lims-band);
-  color: var(--bs-primary);
-  transition: background-color 0.15s ease, color 0.15s ease;
-}
-
-.lims-acceso:hover,
-.lims-acceso:focus-visible {
-  color: var(--bs-primary);
-}
-
-.lims-acceso:hover .lims-acceso-flecha,
-.lims-acceso:focus-visible .lims-acceso-flecha {
-  background: var(--bs-primary);
-  color: #ffffff;
-}
-
-@media (min-width: 768px) {
-  .lims-accesos-lista {
-    grid-template-columns: repeat(4, 1fr);
-  }
 }
 
 /* Banda de datos clave (dirección, horario, extracciones): azul de marca para que se vea de un vistazo */

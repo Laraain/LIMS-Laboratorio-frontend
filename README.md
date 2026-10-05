@@ -83,7 +83,7 @@ El sitio queda disponible en http://localhost:5173.
 │   ├── assets/              Fotos, logos de obras sociales y logo del laboratorio
 │   ├── components/          Componentes reutilizables
 │   │   ├── Navbar.jsx           Barra de navegación
-│   │   ├── Footer.jsx           Pie con contacto y horarios
+│   │   ├── Footer.jsx           Pie con enlaces, contacto, horarios y redes
 │   │   ├── Carrusel.jsx         Carrusel de fotos del inicio
 │   │   ├── CintaLogos.jsx       Cinta que se desplaza sin fin (logos de obras sociales)
 │   │   ├── EstadoAhora.jsx      Indicador "Abierto ahora / Cerrado"
@@ -114,7 +114,7 @@ El contenido (textos, horarios, obras sociales, equipo) vive en `src/data/` y la
 ## Conceptos de React aplicados
 
 - **Componentes y props:** por ejemplo, `ServiceCard` recibe foto, ícono, título y descripción, y `LoginLayout` recibe los textos, la foto y el formulario (`children`) de cada login.
-- **`map()`:** las listas del inicio (accesos, pasos, estudios, preparación, obras sociales, equipo, servicios, preguntas) y las fotos del carrusel se generan a partir de los arreglos de `src/data/`.
+- **`map()`:** las listas del inicio (pasos, estudios, preparación, obras sociales, equipo, servicios, preguntas) y las fotos del carrusel se generan a partir de los arreglos de `src/data/`.
 - **React Router:** `Routes` y `Route` en `App.jsx`; `Link` y `NavLink` en el menú; `Navigate` para la redirección de `/servicios`; `useLocation` para bajar hasta una sección (`/#preparacion`).
 - **`useState`:** campos, errores y sesión de los logins; foto actual y pausa del carrusel; estado de apertura del laboratorio; pregunta frecuente abierta.
 - **`useEffect`:** temporizador del carrusel, actualización cada minuto de "Abierto ahora", título y metadatos de cada página, desplazamiento hasta la sección indicada en la URL, un `IntersectionObserver` (`useAlAparecer`) que hace entrar las tarjetas de servicios cuando la sección aparece en pantalla, y un detector de scroll que oculta la flecha del inicio.

@@ -25,6 +25,24 @@ export const sitio = {
   nombre: 'LIMS Laboratorio Bioquímico',
 };
 
+// Redes del pie. El laboratorio todavía no tiene cuentas: los enlaces llevan a la página principal de cada red.
+export const redes = [
+  { id: 'facebook', nombre: 'Facebook', url: 'https://www.facebook.com/' },
+  { id: 'instagram', nombre: 'Instagram', url: 'https://www.instagram.com/' },
+  { id: 'x', nombre: 'X', url: 'https://x.com/' },
+  { id: 'linkedin', nombre: 'LinkedIn', url: 'https://www.linkedin.com/' },
+];
+
+export const enlacesPie = [
+  { texto: 'Inicio', to: '/' },
+  { texto: 'Servicios', to: '/#servicios' },
+  { texto: 'Preparación', to: '/#preparacion' },
+  { texto: 'Obras sociales', to: '/#obras-sociales' },
+  { texto: 'Preguntas frecuentes', to: '/#preguntas-frecuentes' },
+  { texto: 'Ver mis resultados', to: '/login-paciente' },
+  { texto: 'Acceso personal', to: '/login-personal' },
+];
+
 // Los valores entre corchetes son marcadores: reemplazarlos por datos reales.
 // Si cambian el teléfono, la dirección o el horario, actualizar también el JSON-LD de index.html.
 export const contacto = {
@@ -60,13 +78,6 @@ export const carrusel = [
   { id: 'muestras', src: fotoMuestras, alt: 'Tubos de muestras de sangre en el laboratorio', leyenda: 'Procesamiento de muestras' },
   { id: 'equipamiento', src: fotoEquipamiento, alt: 'Centrífuga de laboratorio con muestras', leyenda: 'Equipamiento' },
   { id: 'atencion', src: fotoAtencion, alt: 'Recepcionista atendiendo a un paciente en el mostrador', leyenda: 'Atención' },
-];
-
-export const accesos = [
-  { id: 'resultados', texto: 'Resultados', to: '/login-paciente' },
-  { id: 'preparacion', texto: 'Preparación', to: '/#preparacion' },
-  { id: 'obras-sociales', texto: 'Obras sociales', to: '/#obras-sociales' },
-  { id: 'contacto', texto: 'Contacto', to: '/#contacto' },
 ];
 
 export const pasosResultados = [

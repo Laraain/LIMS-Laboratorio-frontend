@@ -13,7 +13,6 @@ import {
   contacto,
   horarios,
   carrusel,
-  accesos,
   pasosResultados,
   areas,
   preparacion,
@@ -70,24 +69,8 @@ function Home() {
             </div>
           </div>
         </div>
+        <IndicadorScroll destino="/#como-ver-resultados" etiqueta="Bajar a cómo ver sus resultados" />
       </section>
-
-      <nav className="lims-accesos" aria-label="Accesos rápidos">
-        <div className="container px-3 px-lg-4">
-          <ul className="lims-accesos-lista">
-            {accesos.map((acceso) => (
-              <li key={acceso.id}>
-                <Link to={acceso.to} className="lims-acceso">
-                  <span>{acceso.texto}</span>
-                  <span className="lims-acceso-flecha" aria-hidden="true">
-                    <ArrowUpRight />
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </nav>
 
       <section className="lims-practica" aria-label="Dirección y horarios">
         <div className="container px-3 px-lg-4">
@@ -251,7 +234,7 @@ function Home() {
         </div>
       </section>
 
-      <section className="lims-seccion" aria-labelledby="titulo-preguntas">
+      <section id="preguntas-frecuentes" className="lims-seccion" aria-labelledby="titulo-preguntas">
         <div className="container px-3 px-lg-4">
           <div className="lims-preguntas">
             <header className="lims-preguntas-encabezado">
@@ -266,8 +249,6 @@ function Home() {
           </div>
         </div>
       </section>
-
-      <IndicadorScroll destino="/#como-ver-resultados" etiqueta="Bajar a cómo ver sus resultados" />
 
       {contacto.whatsapp && (
         <a

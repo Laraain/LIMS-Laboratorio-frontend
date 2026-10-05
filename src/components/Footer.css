@@ -1,47 +1,151 @@
+/* Pie claro: contrasta con la banda azul de datos del inicio */
 .lims-footer {
-  background: var(--bs-primary);
-  color: rgba(255, 255, 255, 0.88);
-  padding: 48px 0 20px;
+  background: #ffffff;
+  border-top: 1px solid var(--lims-border);
+  color: var(--lims-text);
+  padding: 56px 0 24px;
 }
 
-.lims-footer-title {
+.lims-footer-columnas {
+  display: grid;
+  gap: 36px;
+  padding-bottom: 40px;
+}
+
+@media (min-width: 768px) {
+  .lims-footer-columnas {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 992px) {
+  .lims-footer-columnas {
+    /* La columna de redes toma el ancho justo de los íconos; el resto se reparte */
+    grid-template-columns: 1.2fr 0.9fr 1.4fr auto;
+    gap: 40px;
+  }
+}
+
+.lims-footer-lema {
+  margin-bottom: 8px;
+  font-size: 1.125rem;
+  font-style: italic;
+  font-weight: 500;
+  color: var(--lims-brand-soft);
+}
+
+.lims-footer-texto {
+  max-width: 22rem;
+  color: var(--lims-muted);
+}
+
+.lims-footer-titulo {
+  margin-bottom: 16px;
   font-size: 1.0625rem;
   font-weight: 600;
-  color: #ffffff;
-  margin-bottom: 12px;
-}
-
-.lims-footer-text {
-  color: rgba(255, 255, 255, 0.88);
+  color: var(--lims-ink);
 }
 
 .lims-footer-lista {
+  display: grid;
+  gap: 10px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.lims-footer-lista li + li {
-  margin-top: 8px;
+.lims-footer a {
+  color: var(--lims-text);
+  text-decoration: none;
+  transition: color 0.2s ease;
 }
 
-.lims-footer a {
-  color: #ffffff;
+.lims-footer a:hover,
+.lims-footer a:focus-visible {
+  color: var(--bs-primary);
+  text-decoration: underline;
   text-underline-offset: 3px;
 }
 
-.lims-footer-discreto {
-  font-size: 0.9375rem;
+.lims-footer-contacto li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.lims-footer-contacto svg {
+  flex-shrink: 0;
+  margin-top: 3px;
+  font-size: 1.125rem;
+  color: var(--bs-primary);
+}
+
+/* Solo corta el correo si de verdad no entra (pantallas muy angostas) */
+.lims-footer-contacto a {
+  overflow-wrap: break-word;
+  min-width: 0;
+}
+
+/* Íconos de redes en círculos, como en el diseño de referencia */
+.lims-footer-redes {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lims-footer-redes a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--lims-border);
+  color: var(--lims-ink);
+  font-size: 1.25rem;
+  transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+}
+
+.lims-footer-redes a:hover,
+.lims-footer-redes a:focus-visible {
+  border-color: var(--bs-primary);
+  background: var(--bs-primary);
+  color: #ffffff;
+  text-decoration: none;
 }
 
 .lims-footer :focus-visible {
-  outline: 3px solid #ffffff;
+  outline: 3px solid var(--bs-primary);
   outline-offset: 2px;
 }
 
-.lims-footer-bottom {
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
-  padding-top: 16px;
-  font-size: 0.875rem;
-  color: rgba(255, 255, 255, 0.8);
+.lims-footer-base {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--lims-border);
+  font-size: 0.9375rem;
+  color: var(--lims-muted);
+}
+
+.lims-footer-base-enlaces {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Celular: ningún texto por debajo de 16px */
+@media (max-width: 575.98px) {
+  .lims-footer-base {
+    font-size: 1rem;
+  }
 }
