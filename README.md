@@ -13,7 +13,7 @@ El sitio informa a los pacientes cómo prepararse para sus estudios, los horario
 - **Inicio** con un carrusel de fotos que avanza solo, se pausa al pasar el mouse o con el foco del teclado, tiene botón de pausa y respeta la preferencia "reducir movimiento" del sistema.
 - **Accesos rápidos** a resultados, preparación, obras sociales y contacto.
 - **Estado "Abierto ahora / Cerrado"** calculado en vivo según el horario de atención y la hora de Tucumán.
-- Secciones de **cómo ver los resultados**, **estudios por área**, **preparación para el estudio**, **obras sociales** (cinta de logos que se desplaza sola, con pausa), **equipo** (tarjetas que se destacan al pasar el mouse), **servicios** y **preguntas frecuentes**.
+- Secciones de **cómo ver los resultados**, **estudios por área**, **preparación para el estudio**, **obras sociales** (cinta de logos que se desplaza sola), **equipo** (tarjetas que se destacan al pasar el mouse), **servicios** y **preguntas frecuentes**.
 - **Login del paciente** con DNI (acepta el DNI con puntos) y contraseña, con validación de campos y opción para mostrar la contraseña.
 - **Login del personal** con usuario o matrícula y contraseña.
 - **Sesión simulada** guardada en `sessionStorage`: se mantiene al recargar la página y se puede cerrar.
