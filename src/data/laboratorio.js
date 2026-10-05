@@ -63,14 +63,12 @@ export const horarios = {
     { dias: [1, 2, 3, 4, 5], desde: '07:00', hasta: '19:00' },
     { dias: [6], desde: '08:00', hasta: '12:00' },
   ],
-  textoAtencion: 'Lunes a viernes de 7:00 a 19:00 · Sábados de 8:00 a 12:00',
-  textoExtracciones: 'Extracciones de lunes a sábados hasta las 10:00',
-  // Las mismas franjas separadas por línea, para la banda de datos del inicio
+  // Texto que se muestra en la banda de datos del inicio y en el pie
   lineasAtencion: [
     { dias: 'Lunes a viernes', horas: '7:00 a 19:00' },
     { dias: 'Sábados', horas: '8:00 a 12:00' },
   ],
-  lineasExtracciones: [{ dias: 'Lunes a sábados', horas: 'hasta las 10:00' }],
+  lineasExtracciones: [{ dias: 'Lunes a sábados', horas: '8:00 a 10:00' }],
 };
 
 export const carrusel = [
