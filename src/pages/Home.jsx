@@ -3,6 +3,7 @@ import { ArrowRight, ArrowUpRight, WhatsappLogo } from '@phosphor-icons/react';
 import { Link } from 'react-router-dom';
 import Accordion from 'react-bootstrap/Accordion';
 import Carrusel from '../components/Carrusel.jsx';
+import CintaLogos from '../components/CintaLogos.jsx';
 import EstadoAhora from '../components/EstadoAhora.jsx';
 import ServiceCard from '../components/ServiceCard.jsx';
 import servicios from '../data/servicios.js';
@@ -160,14 +161,14 @@ function Home() {
       <section id="obras-sociales" className="lims-seccion lims-seccion--gris" aria-labelledby="titulo-obras">
         <div className="container px-3 px-lg-4">
           <h2 id="titulo-obras" className="lims-h2">Obras sociales con las que trabajamos</h2>
-          <ul className="lims-obras">
+          <CintaLogos etiqueta="Obras sociales" duracion={45} separacion={16}>
             {obrasSociales.map((obra) => (
               <li key={obra.id} className="lims-obra">
-                <img src={obra.logo} alt="" loading="lazy" />
+                <img src={obra.logo} alt="" decoding="async" />
                 <span>{obra.nombre}</span>
               </li>
             ))}
-          </ul>
+          </CintaLogos>
         </div>
       </section>
 

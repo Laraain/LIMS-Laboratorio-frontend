@@ -299,17 +299,10 @@
   }
 }
 
-/* Obras sociales */
-.lims-obras {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
+/* Obras sociales: tarjetas de ancho fijo dentro de la cinta que se desplaza */
 .lims-obra {
+  flex: 0 0 auto;
+  width: 180px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -335,15 +328,9 @@
   line-height: 1.3;
 }
 
-@media (min-width: 768px) {
-  .lims-obras {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-@media (min-width: 992px) {
-  .lims-obras {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+@media (max-width: 575.98px) {
+  .lims-obra {
+    width: 150px;
   }
 }
 

@@ -1,0 +1,88 @@
+.lims-cinta {
+  display: grid;
+  gap: 14px;
+}
+
+/* Los bordes se desvanecen para que los elementos entren y salgan sin corte */
+.lims-cinta-ventana {
+  overflow: hidden;
+  padding-block: 6px;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
+  mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
+}
+
+.lims-cinta-pista {
+  display: flex;
+  width: max-content;
+  animation: limsCinta var(--cinta-duracion) linear infinite;
+}
+
+.lims-cinta.is-invertida .lims-cinta-pista {
+  animation-direction: reverse;
+}
+
+/* Cada copia lleva la separación también al final: así el -50% empalma sin salto */
+.lims-cinta-grupo {
+  display: flex;
+  gap: var(--cinta-separacion);
+  margin: 0;
+  padding: 0 var(--cinta-separacion) 0 0;
+  list-style: none;
+}
+
+.lims-cinta:hover .lims-cinta-pista,
+.lims-cinta:focus-within .lims-cinta-pista,
+.lims-cinta.is-pausada .lims-cinta-pista {
+  animation-play-state: paused;
+}
+
+@keyframes limsCinta {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.lims-cinta-pausa {
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--lims-border);
+  background: #ffffff;
+  color: var(--bs-primary);
+}
+
+.lims-cinta-pausa:hover {
+  border-color: var(--bs-primary);
+}
+
+.lims-cinta-pausa:focus-visible {
+  outline: 3px solid var(--bs-primary);
+  outline-offset: 2px;
+}
+
+/* Sin movimiento: se muestran todos los elementos quietos y se ocultan la copia y el botón */
+@media (prefers-reduced-motion: reduce) {
+  .lims-cinta-ventana {
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  .lims-cinta-pista {
+    width: auto;
+    animation: none;
+  }
+
+  .lims-cinta-grupo {
+    flex-wrap: wrap;
+    padding: 0;
+  }
+
+  .lims-cinta-copia,
+  .lims-cinta-pausa {
+    display: none;
+  }
+}
