@@ -348,13 +348,21 @@
 }
 
 /* Equipo */
+/* 2 columnas en celular y tablet, 3 en escritorio: con 6 personas quedan filas completas */
 .lims-equipo {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 32px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 32px 20px;
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+@media (min-width: 992px) {
+  .lims-equipo {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 40px 32px;
+  }
 }
 
 .lims-persona-foto {

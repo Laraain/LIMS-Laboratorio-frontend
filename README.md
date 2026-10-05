@@ -127,6 +127,7 @@ El contenido (textos, horarios, obras sociales, equipo) vive en `src/data/` y la
 ## Créditos de imágenes
 
 - Fotos de los logins: Gabrielle Henderson y National Cancer Institute en [Unsplash](https://unsplash.com/) (licencia de Unsplash).
+- Retratos del equipo (Salvatierra, Paz y Herrera): Roy K, vaibhav vivian y SoyBreno en [Unsplash](https://unsplash.com/) (licencia de Unsplash).
 - Íconos y favicon: [Phosphor Icons](https://phosphoricons.com/) (licencia MIT).
 - Logos de obras sociales: tomados de los sitios oficiales de cada entidad; son marcas de sus respectivos titulares.
 - Las personas del equipo y el listado de obras sociales son datos de maqueta para el trabajo práctico.

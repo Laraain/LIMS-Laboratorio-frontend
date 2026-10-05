@@ -5,6 +5,9 @@ import fotoAtencion from '../assets/home/carrusel-atencion.webp';
 import fotoEquipo1 from '../assets/home/equipo-1.webp';
 import fotoEquipo2 from '../assets/home/equipo-2.webp';
 import fotoEquipo3 from '../assets/home/equipo-3.webp';
+import fotoEquipo4 from '../assets/home/equipo-4.webp';
+import fotoEquipo5 from '../assets/home/equipo-5.webp';
+import fotoEquipo6 from '../assets/home/equipo-6.webp';
 import logoPami from '../assets/obras-sociales/pami.svg';
 import logoSubsidioSalud from '../assets/obras-sociales/subsidio-salud.png';
 import logoOsde from '../assets/obras-sociales/osde.svg';
@@ -113,8 +116,12 @@ export const obrasSociales = [
 ];
 
 // Personas ficticias para la maqueta: reemplazar por el equipo real.
+// Fotos 4 a 6 de Unsplash (licencia libre): SoyBreno, vaibhav vivian y Roy K.
 export const equipo = [
+  { id: 6, foto: fotoEquipo6, nombre: 'Bioq. Jorge Salvatierra', cargo: 'Jefe de laboratorio' },
   { id: 1, foto: fotoEquipo1, nombre: 'Bioq. Carolina Medina', cargo: 'Directora técnica' },
+  { id: 5, foto: fotoEquipo5, nombre: 'Bioq. Nicolás Paz', cargo: 'Endocrinología' },
+  { id: 4, foto: fotoEquipo4, nombre: 'Bioq. Tomás Herrera', cargo: 'Inmunología y serología' },
   { id: 2, foto: fotoEquipo2, nombre: 'Bioq. Florencia Ríos', cargo: 'Hematología y química clínica' },
   { id: 3, foto: fotoEquipo3, nombre: 'Bioq. Martín Ibáñez', cargo: 'Microbiología' },
 ];
