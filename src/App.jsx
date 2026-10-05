@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import Navbar from './components/Navbar.jsx';
 import Footer from './components/Footer.jsx';
 import Home from './pages/Home.jsx';
@@ -7,20 +7,30 @@ import LoginPaciente from './pages/LoginPaciente.jsx';
 import LoginPersonal from './pages/LoginPersonal.jsx';
 
 function App() {
-  const { pathname, hash } = useLocation();
+  const { pathname, search, hash } = useLocation();
+  const navigate = useNavigate();
+
+  // El scroll lo maneja la app: si el navegador también restaura la posición al recargar, los dos se pelean
+  useEffect(() => {
+    if ('scrollRestoration' in window.history) window.history.scrollRestoration = 'manual';
+  }, []);
 
   useEffect(() => {
     if (!hash) return undefined;
     // Se espera un cuadro para que la página nueva esté pintada; se descuenta el alto del encabezado fijo
     const id = requestAnimationFrame(() => {
       const elemento = document.getElementById(hash.slice(1));
-      if (!elemento) return;
-      const encabezado = document.querySelector('.lims-navbar')?.offsetHeight ?? 0;
-      const destino = elemento.getBoundingClientRect().top + window.scrollY - encabezado;
-      window.scrollTo({ top: destino, behavior: 'smooth' });
+      if (elemento) {
+        const encabezado = document.querySelector('.lims-navbar')?.offsetHeight ?? 0;
+        const destino = elemento.getBoundingClientRect().top + window.scrollY - encabezado;
+        window.scrollTo({ top: destino, behavior: 'smooth' });
+      }
+      // Se quita el #seccion de la URL: al recargar la página no vuelve a saltar a la sección,
+      // y tocar dos veces el mismo enlace del menú vuelve a desplazar
+      navigate({ pathname, search }, { replace: true });
     });
     return () => cancelAnimationFrame(id);
-  }, [pathname, hash]);
+  }, [pathname, search, hash, navigate]);
 
   return (
     <>
