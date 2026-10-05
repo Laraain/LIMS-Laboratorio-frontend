@@ -269,6 +269,17 @@
   }
 }
 
+/* Al pasar el mouse, el elemento se aclara un poco (como hover:opacity-75 de Tailwind) */
+@media (hover: hover) {
+  .lims-atenua-al-pasar {
+    transition: opacity 0.2s ease;
+  }
+
+  .lims-atenua-al-pasar:hover {
+    opacity: 0.75;
+  }
+}
+
 /* Estudios por área */
 .lims-areas {
   display: grid;
