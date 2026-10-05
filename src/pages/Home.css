@@ -352,7 +352,8 @@
 .lims-equipo {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 32px 20px;
+  gap: 16px;
+  max-width: 880px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -361,26 +362,92 @@
 @media (min-width: 992px) {
   .lims-equipo {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 40px 32px;
+    gap: 24px;
   }
 }
 
-.lims-persona-foto {
-  border-radius: 20px;
+/* Tarjeta con la foto de fondo y el nombre encima */
+.lims-persona {
+  position: relative;
   overflow: hidden;
+  aspect-ratio: 4 / 5;
+  border-radius: 20px;
   background: var(--lims-band);
+  box-shadow: 0 10px 24px rgba(15, 32, 67, 0.12);
+  transition: transform 0.5s ease, opacity 0.5s ease, filter 0.5s ease;
 }
 
-/* Multiplica sobre el gris para que los fondos claros de los retratos queden parejos */
 .lims-persona img {
   display: block;
-  mix-blend-mode: multiply;
   width: 100%;
-  height: auto;
-  aspect-ratio: 5 / 6;
+  height: 100%;
   object-fit: cover;
-  border-radius: 20px;
-  background: var(--lims-band);
+  object-position: top;
+}
+
+/* Degradé oscuro abajo para que el texto blanco se lea sobre cualquier foto */
+.lims-persona::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(10, 23, 48, 0.85), rgba(10, 23, 48, 0.35) 40%, transparent 65%);
+}
+
+/* El nombre va primero en el HTML (lectores de pantalla) pero se muestra debajo del cargo */
+.lims-persona-texto {
+  display: flex;
+  flex-direction: column-reverse;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  padding: 16px 18px;
+  color: #ffffff;
+}
+
+.lims-persona-cargo {
+  margin: 0 0 2px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  line-height: 1.3;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+.lims-persona-nombre {
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  line-height: 1.25;
+  color: #ffffff;
+}
+
+/* Al señalar una tarjeta, esa se agranda y las demás se atenúan y desenfocan */
+@media (hover: hover) {
+  .lims-equipo:has(.lims-persona:hover) .lims-persona:not(:hover) {
+    transform: scale(0.97);
+    opacity: 0.6;
+    filter: blur(2px);
+  }
+
+  .lims-persona:hover {
+    transform: scale(1.05);
+    z-index: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lims-persona {
+    transition: opacity 0.2s ease;
+  }
+
+  .lims-equipo:has(.lims-persona:hover) .lims-persona:not(:hover),
+  .lims-persona:hover {
+    transform: none;
+    filter: none;
+  }
 }
 
 /* Preguntas frecuentes */
@@ -441,5 +508,16 @@
   .lims-practica-lista dt {
     font-size: 1rem;
     letter-spacing: 0.02em;
+  }
+
+  .lims-persona-texto {
+    padding: 12px 14px;
+  }
+
+  .lims-persona-cargo,
+  .lims-persona-nombre {
+    font-size: 1rem;
+    letter-spacing: 0;
+    text-transform: none;
   }
 }

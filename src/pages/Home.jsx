@@ -177,11 +177,11 @@ function Home() {
           <ul className="lims-equipo">
             {equipo.map((persona) => (
               <li key={persona.id} className="lims-persona">
-                <div className="lims-persona-foto">
-                  <img src={persona.foto} alt="" loading="lazy" width="600" height="720" />
+                <img src={persona.foto} alt="" loading="lazy" width="600" height="720" />
+                <div className="lims-persona-texto">
+                  <h3 className="lims-persona-nombre">{persona.nombre}</h3>
+                  <p className="lims-persona-cargo">{persona.cargo}</p>
                 </div>
-                <h3 className="lims-h3 mt-3 mb-1">{persona.nombre}</h3>
-                <p className="mb-0">{persona.cargo}</p>
               </li>
             ))}
           </ul>
