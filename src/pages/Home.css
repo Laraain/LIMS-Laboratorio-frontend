@@ -291,14 +291,51 @@
   }
 }
 
-/* Al pasar el mouse, el elemento se aclara un poco (como hover:opacity-75 de Tailwind) */
+/* Al pasar el mouse, la línea de arriba se pinta de azul de izquierda a derecha y el título toma el color de marca.
+   La línea azul es un ::before que se estira sobre el borde gris; --grosor-borde es el ancho de ese borde. */
+.lims-paso.lims-linea-al-pasar {
+  --grosor-borde: 2px;
+}
+
+.lims-area.lims-linea-al-pasar {
+  --grosor-borde: 1px;
+}
+
 @media (hover: hover) {
-  .lims-atenua-al-pasar {
-    transition: opacity 0.2s ease;
+  .lims-linea-al-pasar {
+    position: relative;
+    border-top-color: var(--lims-border);
   }
 
-  .lims-atenua-al-pasar:hover {
-    opacity: 0.75;
+  .lims-linea-al-pasar::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(-1 * var(--grosor-borde));
+    height: 2px;
+    background: var(--bs-primary);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.45s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  .lims-linea-al-pasar:hover::before {
+    transform: scaleX(1);
+  }
+
+  .lims-linea-al-pasar .lims-h3 {
+    transition: color 0.25s ease;
+  }
+
+  .lims-linea-al-pasar:hover .lims-h3 {
+    color: var(--bs-primary);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lims-linea-al-pasar::before {
+    transition: none;
   }
 }
 

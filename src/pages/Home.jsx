@@ -118,7 +118,7 @@ function Home() {
           <h2 id="titulo-resultados" className="lims-h2">Cómo ver sus resultados</h2>
           <ol className="lims-pasos">
             {pasosResultados.map((paso, i) => (
-              <li key={paso.titulo} className="lims-paso lims-atenua-al-pasar">
+              <li key={paso.titulo} className="lims-paso lims-linea-al-pasar">
                 <span className="lims-paso-numero" aria-hidden="true">{numero(i)}</span>
                 <h3 className="lims-h3">{paso.titulo}</h3>
                 <p className="mb-0">{paso.texto}</p>
@@ -138,7 +138,7 @@ function Home() {
           </div>
           <ul className="lims-areas">
             {areas.map((area) => (
-              <li key={area.id} className="lims-area lims-atenua-al-pasar">
+              <li key={area.id} className="lims-area lims-linea-al-pasar">
                 <h3 className="lims-h3">{area.nombre}</h3>
                 <p className="mb-0">{area.estudios}</p>
               </li>
