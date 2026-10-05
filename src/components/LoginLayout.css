@@ -160,7 +160,11 @@
   animation: limsDesliza 0.7s ease 0.2s both;
 }
 
+/* La foto se posiciona por encima del flujo: así ocupa el alto que deja el formulario
+   y no estira la pantalla con su proporción vertical (antes obligaba a hacer scroll) */
 .lims-login-foto img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;

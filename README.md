@@ -87,6 +87,7 @@ El sitio queda disponible en http://localhost:5173.
 │   │   ├── Carrusel.jsx         Carrusel de fotos del inicio
 │   │   ├── CintaLogos.jsx       Cinta que se desplaza sin fin (logos de obras sociales)
 │   │   ├── EstadoAhora.jsx      Indicador "Abierto ahora / Cerrado"
+│   │   ├── IndicadorScroll.jsx  Flecha que avisa que se puede bajar (se oculta al desplazarse)
 │   │   ├── ServiceCard.jsx      Tarjeta de servicio
 │   │   ├── LoginLayout.jsx      Pantalla dividida que comparten los dos logins
 │   │   ├── LoginSuccess.jsx     Mensaje de sesión iniciada
@@ -116,7 +117,7 @@ El contenido (textos, horarios, obras sociales, equipo) vive en `src/data/` y la
 - **`map()`:** las listas del inicio (accesos, pasos, estudios, preparación, obras sociales, equipo, servicios, preguntas) y las fotos del carrusel se generan a partir de los arreglos de `src/data/`.
 - **React Router:** `Routes` y `Route` en `App.jsx`; `Link` y `NavLink` en el menú; `Navigate` para la redirección de `/servicios`; `useLocation` para bajar hasta una sección (`/#preparacion`).
 - **`useState`:** campos, errores y sesión de los logins; foto actual y pausa del carrusel; estado de apertura del laboratorio; pregunta frecuente abierta.
-- **`useEffect`:** temporizador del carrusel, actualización cada minuto de "Abierto ahora", título y metadatos de cada página, desplazamiento hasta la sección indicada en la URL, y un `IntersectionObserver` (`useAlAparecer`) que hace entrar las tarjetas de servicios cuando la sección aparece en pantalla.
+- **`useEffect`:** temporizador del carrusel, actualización cada minuto de "Abierto ahora", título y metadatos de cada página, desplazamiento hasta la sección indicada en la URL, un `IntersectionObserver` (`useAlAparecer`) que hace entrar las tarjetas de servicios cuando la sección aparece en pantalla, y un detector de scroll que oculta la flecha del inicio.
 
 ## SEO
 

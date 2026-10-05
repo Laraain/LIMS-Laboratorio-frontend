@@ -6,6 +6,7 @@ import Carrusel from '../components/Carrusel.jsx';
 import PreguntasFrecuentes from '../components/PreguntasFrecuentes.jsx';
 import CintaLogos from '../components/CintaLogos.jsx';
 import EstadoAhora from '../components/EstadoAhora.jsx';
+import IndicadorScroll from '../components/IndicadorScroll.jsx';
 import ServiceCard from '../components/ServiceCard.jsx';
 import servicios from '../data/servicios.js';
 import {
@@ -113,7 +114,7 @@ function Home() {
         </div>
       </section>
 
-      <section className="lims-seccion" aria-labelledby="titulo-resultados">
+      <section id="como-ver-resultados" className="lims-seccion" aria-labelledby="titulo-resultados">
         <div className="container px-3 px-lg-4">
           <h2 id="titulo-resultados" className="lims-h2">Cómo ver sus resultados</h2>
           <ol className="lims-pasos">
@@ -235,6 +236,8 @@ function Home() {
           </div>
         </div>
       </section>
+
+      <IndicadorScroll destino="/#como-ver-resultados" etiqueta="Bajar a cómo ver sus resultados" />
 
       {contacto.whatsapp && (
         <a
