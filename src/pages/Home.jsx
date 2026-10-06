@@ -1,15 +1,17 @@
-import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import servicios from '../data/servicios.js';
 import estadisticas from '../data/estadisticas.js';
 import ServiceCard from '../components/ServiceCard.jsx';
 import StatsCounter from '../components/StatsCounter.jsx';
+import useMetadatos from '../hooks/useMetadatos.js';
 import './Home.css';
 
 function Home() {
-  useEffect(() => {
-    document.title = 'LIMS Laboratorio — Sistema de gestión para laboratorio bioquímico';
-  }, []);
+  useMetadatos({
+    titulo: 'LIMS Laboratorio — Sistema de gestión para laboratorio bioquímico',
+    descripcion:
+      'Laboratorio de análisis clínicos con trazabilidad digital de muestras y portal de resultados online para pacientes.',
+  });
 
   const destacados = servicios.slice(0, 2);
 

@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import LoginSuccess from '../components/LoginSuccess.jsx';
+import useMetadatos from '../hooks/useMetadatos.js';
 import './LoginPersonal.css';
  
 const CREDENCIALES = { usuario: 'bioq_perez', password: 'Lab2026!' };
@@ -39,9 +40,11 @@ function LoginPersonal() {
   const [passwordInvalido, setPasswordInvalido] = useState(false);
   const [sesion, setSesion] = useState(() => leerSesion());
  
-  useEffect(() => {
-    document.title = 'Login Personal Interno — LIMS Laboratorio';
-  }, []);
+  useMetadatos({
+    titulo: 'Login Personal Interno — LIMS Laboratorio',
+    descripcion: 'Acceso al sistema interno del laboratorio para el personal autorizado.',
+    indexar: false,
+  });
  
   function handleSubmit(evento) {
     evento.preventDefault();

@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import LoginSuccess from '../components/LoginSuccess.jsx';
+import useMetadatos from '../hooks/useMetadatos.js';
 import './LoginPaciente.css';
  
 const CREDENCIALES = { dni: '30123456', password: 'Paciente2026' };
@@ -49,9 +50,11 @@ function LoginPaciente() {
   const [passwordInvalido, setPasswordInvalido] = useState(false);
   const [sesion, setSesion] = useState(() => leerSesion());
  
-  useEffect(() => {
-    document.title = 'Portal del Paciente — LIMS Laboratorio';
-  }, []);
+  useMetadatos({
+    titulo: 'Portal del Paciente — LIMS Laboratorio',
+    descripcion: 'Ingrese con su DNI y contraseña para consultar sus resultados de laboratorio.',
+    indexar: false,
+  });
  
   function handleSubmit(evento) {
     evento.preventDefault();
