@@ -20,25 +20,9 @@ function leerSesion() {
     const datos = JSON.parse(sessionStorage.getItem(SESSION_KEY));
     if (datos && typeof datos.dni === 'string' && typeof datos.fecha === 'string') return datos;
   } catch {
-    // sessionStorage puede estar bloqueado o con un valor corrupto: nunca debe romper la página
+    // Si lo guardado no es un JSON válido, JSON.parse lanza un error: se ignora y no hay sesión
   }
   return null;
-}
- 
-function guardarSesion(dni, fecha) {
-  try {
-    sessionStorage.setItem(SESSION_KEY, JSON.stringify({ dni, fecha }));
-  } catch {
-    // ver leerSesion()
-  }
-}
- 
-function borrarSesion() {
-  try {
-    sessionStorage.removeItem(SESSION_KEY);
-  } catch {
-    // ver leerSesion()
-  }
 }
  
 function LoginPaciente() {
@@ -70,7 +54,7 @@ function LoginPaciente() {
  
     if (dniNormalizado === CREDENCIALES.dni && password === CREDENCIALES.password) {
       const fecha = new Date().toLocaleString('es-AR');
-      guardarSesion(dniNormalizado, fecha);
+      sessionStorage.setItem(SESSION_KEY, JSON.stringify({ dni: dniNormalizado, fecha }));
       setSesion({ dni: dniNormalizado, fecha });
     } else {
       setError('DNI o contraseña incorrectos. Verifique sus datos e intente nuevamente.');
@@ -78,7 +62,7 @@ function LoginPaciente() {
   }
  
   function handleLogout() {
-    borrarSesion();
+    sessionStorage.removeItem(SESSION_KEY);
     setSesion(null);
     setDni('');
     setPassword('');

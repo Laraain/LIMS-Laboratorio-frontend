@@ -11,25 +11,9 @@ function leerSesion() {
     const datos = JSON.parse(sessionStorage.getItem(SESSION_KEY));
     if (datos && typeof datos.usuario === 'string' && typeof datos.fecha === 'string') return datos;
   } catch {
-    // sessionStorage puede estar bloqueado o con un valor corrupto: nunca debe romper la página
+    // Si lo guardado no es un JSON válido, JSON.parse lanza un error: se ignora y no hay sesión
   }
   return null;
-}
- 
-function guardarSesion(usuario, fecha) {
-  try {
-    sessionStorage.setItem(SESSION_KEY, JSON.stringify({ usuario, fecha }));
-  } catch {
-    // ver leerSesion()
-  }
-}
- 
-function borrarSesion() {
-  try {
-    sessionStorage.removeItem(SESSION_KEY);
-  } catch {
-    // ver leerSesion()
-  }
 }
  
 function LoginPersonal() {
@@ -60,7 +44,7 @@ function LoginPersonal() {
  
     if (usuarioLimpio === CREDENCIALES.usuario && password === CREDENCIALES.password) {
       const fecha = new Date().toLocaleString('es-AR');
-      guardarSesion(usuarioLimpio, fecha);
+      sessionStorage.setItem(SESSION_KEY, JSON.stringify({ usuario: usuarioLimpio, fecha }));
       setSesion({ usuario: usuarioLimpio, fecha });
     } else {
       setError('Usuario o contraseña incorrectos. Verifique sus credenciales e intente nuevamente.');
@@ -68,7 +52,7 @@ function LoginPersonal() {
   }
  
   function handleLogout() {
-    borrarSesion();
+    sessionStorage.removeItem(SESSION_KEY);
     setSesion(null);
     setUsuario('');
     setPassword('');
