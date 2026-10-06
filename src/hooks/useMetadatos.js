@@ -1,15 +1,27 @@
 import { useEffect } from 'react';
 
-// Título y descripción propios de cada página (SEO).
-// Como la app es una SPA, el index.html es uno solo: sin esto todas las páginas tendrían los mismos datos.
-// Las etiquetas <meta> ya existen en el index.html; acá solo se les cambia el contenido.
-// indexar = false le pide a los buscadores que no muestren la página (se usa en los logins).
+// Hook propio para el SEO: cambia el título de la pestaña y la descripción que muestra Google.
+//
+// ¿Por qué hace falta? En React hay un solo archivo HTML (index.html) para todo el sitio.
+// Al pasar de una página a otra no se carga un HTML nuevo: React solo cambia lo que se ve.
+// Entonces, si no hacemos nada, todas las páginas tendrían el mismo título y la misma descripción.
+//
+// Cómo se usa, al principio de cada página:
+//   useMetadatos({ titulo: 'Servicios — LIMS Laboratorio', descripcion: 'Texto que muestra Google' });
+//
+// indexar: si es false, le pide a Google que no muestre esa página en los resultados de búsqueda.
+// Se usa en los logins, porque no tiene sentido que alguien los encuentre buscando en Google.
 function useMetadatos({ titulo, descripcion, indexar = true }) {
   useEffect(() => {
+    // Texto de la pestaña del navegador
     document.title = titulo;
+
+    // Descripción que aparece debajo del título en los resultados de Google
     document.querySelector('meta[name="description"]').content = descripcion;
+
+    // Permiso para que Google muestre (index) o no (noindex) esta página
     document.querySelector('meta[name="robots"]').content = indexar ? 'index, follow' : 'noindex, nofollow';
-  }, [titulo, descripcion, indexar]); // se vuelve a ejecutar solo si cambia alguno de estos datos
+  }, [titulo, descripcion, indexar]); // Se ejecuta al abrir la página, y de nuevo solo si cambia alguno de estos datos
 }
 
 export default useMetadatos;
