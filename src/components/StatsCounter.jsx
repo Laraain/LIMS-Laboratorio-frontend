@@ -6,6 +6,7 @@ const ESPERA = 30; // milisegundos entre un salto y el siguiente (50 x 30 ms = 1
 
 // Un número que cuenta desde 0 hasta target
 function Estadistica({ target, suffix, label }) {
+  // valor: el número que se ve en pantalla. Empieza en 0 y el useEffect lo va subiendo
   const [valor, setValor] = useState(0);
 
   useEffect(() => {
@@ -27,6 +28,7 @@ function Estadistica({ target, suffix, label }) {
   );
 }
 
+// Recibe la lista de estadísticas por props y genera una Estadistica por cada una con map()
 function StatsCounter({ estadisticas }) {
   return (
     <div className="lims-stats row row-cols-2 row-cols-md-4 g-0">

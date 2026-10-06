@@ -3,9 +3,13 @@ import LoginSuccess from '../components/LoginSuccess.jsx';
 import useMetadatos from '../hooks/useMetadatos.js';
 import './LoginPersonal.css';
  
+// Credenciales fijas de prueba: el login es simulado, todavía no hay base de datos.
+// SESSION_KEY es el nombre con el que se guarda la sesión en sessionStorage.
 const CREDENCIALES = { usuario: 'bioq_perez', password: 'Lab2026!' };
 const SESSION_KEY = 'lims_personal_activo';
  
+// Lee la sesión guardada en sessionStorage, que dura mientras la pestaña esté abierta (aunque se recargue la página).
+// Devuelve los datos si son válidos, o null si no hay sesión.
 function leerSesion() {
   try {
     const datos = JSON.parse(sessionStorage.getItem(SESSION_KEY));
@@ -17,6 +21,11 @@ function leerSesion() {
 }
  
 function LoginPersonal() {
+  // Estados del formulario (useState): cada vez que uno cambia, React vuelve a dibujar la pantalla.
+  // usuario y password: lo que el usuario escribe en cada campo
+  // error: mensaje cuando los datos no coinciden con las credenciales
+  // usuarioInvalido / passwordInvalido: marcan en rojo el campo que quedó vacío o mal escrito
+  // sesion: datos de la sesión iniciada; se lee de sessionStorage una sola vez, al cargar la página
   const [usuario, setUsuario] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -24,13 +33,16 @@ function LoginPersonal() {
   const [passwordInvalido, setPasswordInvalido] = useState(false);
   const [sesion, setSesion] = useState(() => leerSesion());
  
+  // Título y descripción de la pestaña; noindex para que los buscadores no muestren el login
   useMetadatos({
     titulo: 'Login Personal Interno — LIMS Laboratorio',
     descripcion: 'Acceso al sistema interno del laboratorio para el personal autorizado.',
     indexar: false,
   });
  
+  // Se ejecuta al enviar el formulario: valida los campos y los compara con las credenciales
   function handleSubmit(evento) {
+    // Evita que el navegador recargue la página al enviar el formulario
     evento.preventDefault();
     setError('');
  
@@ -40,8 +52,10 @@ function LoginPersonal() {
  
     setUsuarioInvalido(!usuarioOk);
     setPasswordInvalido(!passwordOk);
+    // Si algún campo está mal se corta acá: los errores ya quedaron marcados con los set de arriba
     if (!usuarioOk || !passwordOk) return;
  
+    // Si coinciden con las credenciales se guarda la sesión y se muestra la bienvenida; si no, el mensaje de error
     if (usuarioLimpio === CREDENCIALES.usuario && password === CREDENCIALES.password) {
       const fecha = new Date().toLocaleString('es-AR');
       sessionStorage.setItem(SESSION_KEY, JSON.stringify({ usuario: usuarioLimpio, fecha }));
@@ -51,6 +65,7 @@ function LoginPersonal() {
     }
   }
  
+  // Cierra la sesión: la borra de sessionStorage y deja el formulario vacío
   function handleLogout() {
     sessionStorage.removeItem(SESSION_KEY);
     setSesion(null);
@@ -73,12 +88,16 @@ function LoginPersonal() {
  
         <div className="card shadow-lg border-0">
           <div className="card-body p-4 p-md-5">
+            {/* && : el cartel de error solo se muestra si error tiene texto */}
             {error && (
               <div className="alert alert-danger" role="alert">
                 {error}
               </div>
             )}
  
+            {/* Renderizado condicional: si hay sesión se muestra la bienvenida; si no, el formulario.
+               El formulario es controlado: cada input muestra el valor de su estado (value) y lo actualiza al escribir (onChange).
+               noValidate desactiva los mensajes del navegador para usar los propios. */}
             {sesion ? (
               <LoginSuccess
                 heading={`Bienvenido/a, ${sesion.usuario}`}
