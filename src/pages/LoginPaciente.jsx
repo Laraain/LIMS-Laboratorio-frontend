@@ -1,7 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import LoginSuccess from '../components/LoginSuccess.jsx';
+import useMetadatos from '../hooks/useMetadatos.js';
 import './LoginPaciente.css';
  
+// Credenciales fijas de prueba: el login es simulado, todavía no hay base de datos.
+// SESSION_KEY es el nombre con el que se guarda la sesión en sessionStorage.
 const CREDENCIALES = { dni: '30123456', password: 'Paciente2026' };
 const SESSION_KEY = 'lims_paciente_activo';
  
@@ -10,37 +13,30 @@ function normalizarDni(valor) {
   return valor.replace(/[.\s]/g, '');
 }
  
+// Valida que tenga solo números y entre 7 y 8 dígitos (expresión regular)
 function esDniValido(valor) {
   return /^\d{7,8}$/.test(valor);
 }
  
+// Lee la sesión guardada en sessionStorage, que dura mientras la pestaña esté abierta (aunque se recargue la página).
+// Devuelve los datos si son válidos, o null si no hay sesión.
 function leerSesion() {
   try {
     const datos = JSON.parse(sessionStorage.getItem(SESSION_KEY));
     if (datos && typeof datos.dni === 'string' && typeof datos.fecha === 'string') return datos;
   } catch {
-    // sessionStorage puede estar bloqueado o con un valor corrupto: nunca debe romper la página
+    // Si lo guardado no es un JSON válido, JSON.parse lanza un error: se ignora y no hay sesión
   }
   return null;
 }
  
-function guardarSesion(dni, fecha) {
-  try {
-    sessionStorage.setItem(SESSION_KEY, JSON.stringify({ dni, fecha }));
-  } catch {
-    // ver leerSesion()
-  }
-}
- 
-function borrarSesion() {
-  try {
-    sessionStorage.removeItem(SESSION_KEY);
-  } catch {
-    // ver leerSesion()
-  }
-}
- 
 function LoginPaciente() {
+  // Estados del formulario (useState): cada vez que uno cambia, React vuelve a dibujar la pantalla.
+  // dni y password: lo que el usuario escribe en cada campo
+  // mostrarPassword: si la contraseña se ve o queda oculta con puntos
+  // error: mensaje cuando los datos no coinciden con las credenciales
+  // dniInvalido / passwordInvalido: marcan en rojo el campo que quedó vacío o mal escrito
+  // sesion: datos de la sesión iniciada; se lee de sessionStorage una sola vez, al cargar la página
   const [dni, setDni] = useState('');
   const [password, setPassword] = useState('');
   const [mostrarPassword, setMostrarPassword] = useState(false);
@@ -49,11 +45,16 @@ function LoginPaciente() {
   const [passwordInvalido, setPasswordInvalido] = useState(false);
   const [sesion, setSesion] = useState(() => leerSesion());
  
-  useEffect(() => {
-    document.title = 'Portal del Paciente — LIMS Laboratorio';
-  }, []);
+  // Título y descripción de la pestaña; noindex para que los buscadores no muestren el login
+  useMetadatos({
+    titulo: 'Portal del Paciente — LIMS Laboratorio',
+    descripcion: 'Ingrese con su DNI y contraseña para consultar sus resultados de laboratorio.',
+    indexar: false,
+  });
  
+  // Se ejecuta al enviar el formulario: valida los campos y los compara con las credenciales
   function handleSubmit(evento) {
+    // Evita que el navegador recargue la página al enviar el formulario
     evento.preventDefault();
     setError('');
  
@@ -63,19 +64,22 @@ function LoginPaciente() {
  
     setDniInvalido(!dniOk);
     setPasswordInvalido(!passwordOk);
+    // Si algún campo está mal se corta acá: los errores ya quedaron marcados con los set de arriba
     if (!dniOk || !passwordOk) return;
  
+    // Si coinciden con las credenciales se guarda la sesión y se muestra la bienvenida; si no, el mensaje de error
     if (dniNormalizado === CREDENCIALES.dni && password === CREDENCIALES.password) {
       const fecha = new Date().toLocaleString('es-AR');
-      guardarSesion(dniNormalizado, fecha);
+      sessionStorage.setItem(SESSION_KEY, JSON.stringify({ dni: dniNormalizado, fecha }));
       setSesion({ dni: dniNormalizado, fecha });
     } else {
       setError('DNI o contraseña incorrectos. Verifique sus datos e intente nuevamente.');
     }
   }
  
+  // Cierra la sesión: la borra de sessionStorage y deja el formulario vacío
   function handleLogout() {
-    borrarSesion();
+    sessionStorage.removeItem(SESSION_KEY);
     setSesion(null);
     setDni('');
     setPassword('');
@@ -114,12 +118,16 @@ function LoginPaciente() {
           <h1 className="h3 fw-bold text-dark mb-2">Ingrese a su cuenta</h1>
           <p className="text-muted mb-4">Use su DNI y la contraseña que definió al registrarse.</p>
  
+          {/* && : el cartel de error solo se muestra si error tiene texto */}
           {error && (
             <div className="alert alert-danger" role="alert">
               {error}
             </div>
           )}
  
+          {/* Renderizado condicional: si hay sesión se muestra la bienvenida; si no, el formulario.
+             El formulario es controlado: cada input muestra el valor de su estado (value) y lo actualiza al escribir (onChange).
+             noValidate desactiva los mensajes del navegador para usar los propios. */}
           {sesion ? (
             <LoginSuccess
               heading={`Bienvenido/a, DNI ${sesion.dni}`}

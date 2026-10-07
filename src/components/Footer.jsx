@@ -1,5 +1,6 @@
 import './Footer.css';
 
+// Pie de página con la información del laboratorio, el contacto y las redes sociales
 function Footer() {
   return (
     <footer className="lims-footer pt-4 pb-3">
@@ -32,6 +33,7 @@ function Footer() {
             <p className="lims-footer-text mb-3">
               Novedades y asesoramiento en nuestras redes oficiales.
             </p>
+            {/* target="_blank" abre cada red social en otra pestaña */}
             <div className="d-flex gap-2">
               <a
                 href="https://whatsapp.com"

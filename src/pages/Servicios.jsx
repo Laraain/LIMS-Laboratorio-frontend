@@ -1,12 +1,15 @@
-import { useEffect } from 'react';
 import servicios from '../data/servicios.js';
 import ServiceCard from '../components/ServiceCard.jsx';
+import useMetadatos from '../hooks/useMetadatos.js';
 import './Servicios.css';
 
+// Página con el listado completo de servicios
 function Servicios() {
-  useEffect(() => {
-    document.title = 'Servicios — LIMS Laboratorio';
-  }, []);
+  useMetadatos({
+    titulo: 'Servicios — LIMS Laboratorio',
+    descripcion:
+      'Servicios del laboratorio: área de extracción, control de calidad, resultados online y trazabilidad de muestras.',
+  });
 
   return (
     <main id="contenido" className="py-5">
@@ -21,6 +24,7 @@ function Servicios() {
         </header>
 
         <div className="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-3">
+          {/* Igual que en el inicio, pero recorre todos los servicios del arreglo */}
           {servicios.map((servicio) => (
             <div className="col" key={servicio.id}>
               <ServiceCard
