@@ -3,6 +3,9 @@ import fotoCalidad from '../assets/servicios/calidad.jpg';
 import fotoResultados from '../assets/servicios/resultados.jpg';
 import fotoTrazabilidad from '../assets/servicios/trazabilidad.jpg';
 
+// Datos de los servicios. Las páginas recorren este arreglo con map() y generan una ServiceCard por cada uno:
+// para agregar un servicio alcanza con sumar un objeto acá, sin tocar los componentes.
+// id: identificador único (React lo usa como key) · icono: clase de Font Awesome · variante: color (azul o verde)
 const servicios = [
   {
     id: 'extraccion',

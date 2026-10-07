@@ -1,16 +1,20 @@
-import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import servicios from '../data/servicios.js';
 import estadisticas from '../data/estadisticas.js';
 import ServiceCard from '../components/ServiceCard.jsx';
 import StatsCounter from '../components/StatsCounter.jsx';
+import useMetadatos from '../hooks/useMetadatos.js';
 import './Home.css';
 
+// Página de inicio: presentación, estadísticas, servicios destacados y accesos a los dos portales
 function Home() {
-  useEffect(() => {
-    document.title = 'LIMS Laboratorio — Sistema de gestión para laboratorio bioquímico';
-  }, []);
+  useMetadatos({
+    titulo: 'LIMS Laboratorio — Sistema de gestión para laboratorio bioquímico',
+    descripcion:
+      'Laboratorio de análisis clínicos con trazabilidad digital de muestras y portal de resultados online para pacientes.',
+  });
 
+  // slice(0, 2) toma solo los dos primeros servicios para mostrarlos como destacados
   const destacados = servicios.slice(0, 2);
 
   return (
@@ -41,6 +45,7 @@ function Home() {
               </Link>
             </div>
 
+            {/* Se le pasa el arreglo de estadísticas por props */}
             <StatsCounter estadisticas={estadisticas} />
           </div>
           <div className="col-lg-5 lims-hero-media d-none d-lg-block"></div>
@@ -56,6 +61,8 @@ function Home() {
             </Link>
           </div>
           <div className="row row-cols-1 row-cols-sm-2 g-3">
+            {/* map() recorre los servicios destacados y devuelve una tarjeta por cada uno.
+               key: identificador único que React necesita en cada elemento de una lista. */}
             {destacados.map((servicio) => (
               <div className="col" key={servicio.id}>
                 <ServiceCard
@@ -74,6 +81,7 @@ function Home() {
 
       <section className="pb-5">
         <div className="container px-3 px-lg-4">
+          {/* Link navega a otra ruta sin recargar la página, a diferencia de un <a href> */}
           <div className="row row-cols-1 row-cols-md-2 g-3">
             <div className="col">
               <Link to="/login-paciente" className="lims-access lims-access--patient h-100">
