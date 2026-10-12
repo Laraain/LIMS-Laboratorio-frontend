@@ -1,3 +1,5 @@
+// Números del contador del inicio.
+// target: valor final al que llega la animación · suffix: lo que se muestra después del número (+ o %)
 const estadisticas = [
   { id: 'experiencia', target: 20, suffix: '+', label: 'Años de experiencia' },
   { id: 'satisfaccion', target: 95, suffix: '%', label: 'Satisfacción de pacientes' },

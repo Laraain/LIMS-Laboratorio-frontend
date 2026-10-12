@@ -1,69 +1,40 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import './StatsCounter.css';
 
-const DURATION = 1500;
+const PASOS = 50; // en cuántos saltos llega cada número a su valor final
+const ESPERA = 30; // milisegundos entre un salto y el siguiente (50 x 30 ms = 1,5 segundos)
 
-function animarContador(elemento) {
-  const target = parseInt(elemento.dataset.target, 10);
-  const suffix = elemento.dataset.suffix || '';
-  let inicio = null;
-
-  function paso(timestamp) {
-    if (inicio === null) inicio = timestamp;
-    const progreso = Math.min((timestamp - inicio) / DURATION, 1);
-    elemento.textContent = Math.floor(progreso * target) + suffix;
-    if (progreso < 1) {
-      requestAnimationFrame(paso);
-    } else {
-      elemento.textContent = target + suffix;
-    }
-  }
-
-  requestAnimationFrame(paso);
-}
-
-function StatsCounter({ estadisticas }) {
-  const contenedorRef = useRef(null);
+// Un número que cuenta desde 0 hasta target
+function Estadistica({ target, suffix, label }) {
+  // valor: el número que se ve en pantalla. Empieza en 0 y el useEffect lo va subiendo
+  const [valor, setValor] = useState(0);
 
   useEffect(() => {
-    const contenedor = contenedorRef.current;
-    if (!contenedor) return;
+    if (valor === target) return; // ya llegó: no se programa otro salto
 
-    const sinMovimiento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (sinMovimiento || !('IntersectionObserver' in window)) return;
-
-    const valores = contenedor.querySelectorAll('.lims-stat-value');
-    valores.forEach((elemento) => {
-      elemento.textContent = '0' + (elemento.dataset.suffix || '');
-    });
-
-    const observer = new IntersectionObserver(
-      (entries, obs) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            valores.forEach(animarContador);
-            obs.disconnect();
-          }
-        });
-      },
-      { threshold: 0.4 },
-    );
-
-    observer.observe(contenedor);
-    return () => observer.disconnect();
-  }, []);
+    const salto = Math.ceil(target / PASOS);
+    const id = setTimeout(() => setValor(Math.min(valor + salto, target)), ESPERA);
+    return () => clearTimeout(id); // si el componente se desmonta, se cancela el salto pendiente
+  }, [valor, target]); // se vuelve a ejecutar cada vez que cambia el valor: así avanza el conteo
 
   return (
-    <div className="lims-stats row row-cols-2 row-cols-md-4 g-0" ref={contenedorRef}>
+    <div className="lims-stat">
+      <div className="lims-stat-value">
+        {valor}
+        {suffix}
+      </div>
+      <div className="lims-stat-label">{label}</div>
+    </div>
+  );
+}
+
+// Recibe la lista de estadísticas por props y genera una Estadistica por cada una con map()
+function StatsCounter({ estadisticas }) {
+  return (
+    <div className="lims-stats row row-cols-2 row-cols-md-4 g-0">
       {estadisticas.map((stat) => (
         <div className="col" key={stat.id}>
-          <div className="lims-stat">
-            <div className="lims-stat-value" data-target={stat.target} data-suffix={stat.suffix}>
-              {stat.target}
-              {stat.suffix}
-            </div>
-            <div className="lims-stat-label">{stat.label}</div>
-          </div>
+          <Estadistica target={stat.target} suffix={stat.suffix} label={stat.label} />
         </div>
       ))}
     </div>

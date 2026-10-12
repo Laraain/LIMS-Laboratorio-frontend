@@ -1,6 +1,9 @@
 import './ServiceCard.css';
 
+// Tarjeta reutilizable de un servicio. Recibe todos sus datos por props (desestructuradas entre llaves),
+// así el mismo componente sirve para cualquier servicio.
 function ServiceCard({ foto, altFoto, icono, variante, titulo, descripcion }) {
+  // variante (azul o verde) cambia el color de la tarjeta agregando una clase CSS
   return (
     <article className={`lims-service-card lims-service-card--${variante} h-100`}>
       <img src={foto} alt={altFoto} className="lims-service-img" />

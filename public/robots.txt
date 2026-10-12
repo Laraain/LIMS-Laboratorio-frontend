@@ -1,0 +1,6 @@
+# Se permite recorrer todo el sitio. Los logins no se bloquean acá:
+# llevan <meta name="robots" content="noindex">, que el buscador solo lee si puede entrar a la página.
+User-agent: *
+Allow: /
+
+Sitemap: https://lims-laboratorio-frontend.vercel.app/sitemap.xml

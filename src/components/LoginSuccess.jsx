@@ -1,5 +1,8 @@
 import './LoginSuccess.css';
  
+// Mensaje de sesión iniciada que comparten los dos logins. Props:
+// heading: texto de bienvenida · fecha: cuándo ingresó · onLogout: función que cierra la sesión
+// logoutLabel: texto del botón · variant: color del botón (Bootstrap)
 function LoginSuccess({ heading, fecha, onLogout, logoutLabel, variant }) {
   return (
     <div className="text-center py-3">

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Páginas que queremos que aparezcan en los buscadores. Los logins quedan afuera porque tienen noindex. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://lims-laboratorio-frontend.vercel.app/</loc>
+  </url>
+  <url>
+    <loc>https://lims-laboratorio-frontend.vercel.app/servicios</loc>
+  </url>
+</urlset>

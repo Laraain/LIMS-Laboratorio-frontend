@@ -7,9 +7,13 @@ import Servicios from './pages/Servicios.jsx';
 import LoginPaciente from './pages/LoginPaciente.jsx';
 import LoginPersonal from './pages/LoginPersonal.jsx';
 
+// Componente principal: arma la estructura común (menú, página actual y pie) y define las rutas
 function App() {
+  // useLocation devuelve la URL actual: pathname es la ruta (/servicios) y hash el ancla (#contacto)
   const { pathname, hash } = useLocation();
 
+  // Si la URL trae un ancla (por ejemplo /#contacto), baja con scroll suave hasta esa sección.
+  // Se ejecuta cada vez que cambia la ruta o el ancla, que son sus dependencias.
   useEffect(() => {
     if (!hash) return;
     const elemento = document.getElementById(hash.slice(1));
@@ -18,7 +22,9 @@ function App() {
 
   return (
     <>
+      {/* Navbar y Footer quedan fuera de <Routes>: se muestran en todas las páginas */}
       <Navbar />
+      {/* Cada Route asocia una dirección (path) con la página que se muestra */}
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/servicios" element={<Servicios />} />
