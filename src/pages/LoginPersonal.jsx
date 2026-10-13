@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import LoginSuccess from '../components/LoginSuccess.jsx';
+import PerfilUsuario from '../components/PerfilUsuario.jsx';
 import useMetadatos from '../hooks/useMetadatos.js';
 import { ROLES_PERSONAL, cerrarSesion, emailDePersonal, iniciarSesion, useSesion } from '../lib/auth.js';
 import './LoginPersonal.css';
@@ -106,7 +107,10 @@ function LoginPersonal() {
                 onLogout={handleLogout}
                 logoutLabel="Cerrar sesión"
                 variant="dark"
-              />
+              >
+                {/* Perfil traído de la API con Axios (ver PerfilUsuario.jsx) */}
+                <PerfilUsuario userId={perfil.id} />
+              </LoginSuccess>
             ) : (
               <form onSubmit={handleSubmit} noValidate>
                 <div className="mb-3">

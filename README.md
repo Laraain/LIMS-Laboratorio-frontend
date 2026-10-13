@@ -13,6 +13,7 @@ El sitio presenta los servicios del laboratorio y da acceso a dos portales: el *
 - **Login del paciente** con DNI (acepta el DNI con puntos o espacios) y contraseña, validación de campos, mensajes de error y botón para mostrar u ocultar la contraseña. En el primer ingreso se le pide elegir una contraseña propia y cargar su email real.
 - **Login del personal** con usuario y contraseña, con la misma validación.
 - **Autenticación real con Supabase Auth**: la sesión se mantiene al recargar la página y se puede cerrar.
+- **Perfil del usuario**: al ingresar se muestran sus datos (nombre, rol, DNI o usuario, etc.), pedidos a la API de Supabase con Axios, con aviso de carga y manejo de errores.
 - **Navegación sin recargar la página** entre las distintas vistas, con barra de navegación y pie comunes a todo el sitio.
 - **Diseño adaptable** a celular, tablet y escritorio.
 
@@ -25,6 +26,8 @@ El sitio presenta los servicios del laboratorio y da acceso a dos portales: el *
 | [React Router 7](https://reactrouter.com/) | Navegación entre páginas (`react-router-dom`) |
 | [Bootstrap 5.3](https://getbootstrap.com/) y [React Bootstrap](https://react-bootstrap.github.io/) | Grilla, formularios y barra de navegación |
 | [Supabase](https://supabase.com/) | Base de datos PostgreSQL y autenticación (`@supabase/supabase-js`) |
+| [Axios](https://axios-http.com/) | Peticiones HTTP a la API de Supabase |
+| [SweetAlert2](https://sweetalert2.github.io/) | Ventanas de aviso al usuario cuando falla una petición |
 | [Font Awesome 6](https://fontawesome.com/) | Íconos |
 | CSS propio | Paleta de colores, tipografía (IBM Plex Sans) y estilos de cada componente |
 | ESLint | Control de calidad del código |
@@ -42,7 +45,7 @@ cd LIMS-Laboratorio-frontend
 npm install
 
 # 3. Configurar las variables de entorno (ver "Autenticación con Supabase")
-cp .env.example .env.local
+cp .env.example .env
 
 # 4. Levantar el servidor de desarrollo
 npm run dev
@@ -78,6 +81,7 @@ El sitio queda disponible en http://localhost:5173.
 │   │   ├── ServiceCard.jsx      Tarjeta de un servicio
 │   │   ├── StatsCounter.jsx     Contador animado de estadísticas
 │   │   ├── LoginSuccess.jsx     Mensaje de sesión iniciada (lo usan los dos logins)
+│   │   ├── PerfilUsuario.jsx    Perfil del usuario, pedido a la API con Axios
 │   │   └── PrimerIngreso.jsx    Primer ingreso del paciente: contraseña propia y email real
 │   ├── data/                Contenido separado de los componentes
 │   │   ├── servicios.js         Servicios del laboratorio
@@ -95,7 +99,7 @@ El sitio queda disponible en http://localhost:5173.
 │   ├── App.jsx              Definición de rutas
 │   ├── main.jsx             Punto de entrada (envuelve la app en BrowserRouter)
 │   └── index.css            Variables de color y estilos globales
-├── .env.example             Variables de entorno necesarias (se copia como .env.local)
+├── .env.example             Variables de entorno necesarias (se copia como .env, que no se sube a git)
 └── index.html               Metadatos SEO y Open Graph
 ```
 
@@ -110,6 +114,7 @@ El sitio queda disponible en http://localhost:5173.
 - **`useEffect`:**
   - `useMetadatos` actualiza el título y la descripción de la página; sus dependencias (`titulo`, `descripcion`, `indexar`) hacen que solo se vuelva a ejecutar si esos datos cambian.
   - `App.jsx` baja hasta la sección indicada cada vez que cambia la ruta o el ancla (dependencias `[pathname, hash]`).
+  - `PerfilUsuario` hace la petición a la API al aparecer en pantalla; sus dependencias (`userId`, `intento`) hacen que se repita solo si cambia el usuario o se aprieta "Reintentar".
   - `useSesion` (`src/lib/auth.js`) se suscribe a los cambios de sesión de Supabase y se desuscribe al desmontar el componente.
   - `StatsCounter` arranca la animación cuando el contador entra en pantalla, con un `IntersectionObserver` que se desconecta al desmontar el componente.
 
@@ -123,6 +128,26 @@ El sitio queda disponible en http://localhost:5173.
 - `robots.txt` y `sitemap.xml` en `public/`.
 - Las páginas de login llevan `noindex`, para que los buscadores no las muestren en los resultados.
 
+## Consumo de la API (TP8)
+
+La API que se consume es la **API REST de Supabase**, que genera automáticamente
+una dirección para cada tabla de la base de datos del laboratorio. Se usa para
+mostrar el **perfil** de la persona que ingresó, en `src/components/PerfilUsuario.jsx`.
+
+- **URL en variable de entorno:** `const API_URL = import.meta.env.VITE_API_URL;`.
+  La dirección no está escrita en ningún componente; se define en el `.env`.
+- **Axios:** ``axios.get(`${API_URL}/perfiles`, { headers, params })``. `params`
+  indica qué columnas traer (`select`) y de quién (`id=eq.<id de la persona>`).
+- **`useState`:** guarda los datos recibidos (`perfil`), si está cargando
+  (`cargando`) y si falló (`error`).
+- **`useEffect`:** hace la petición cuando el componente aparece en pantalla.
+- **Estado de carga:** mientras la API no responde se muestra "Cargando su perfil…".
+- **Manejo de errores:** un `try/catch` captura el fallo, muestra un mensaje en
+  pantalla con el botón "Reintentar" y abre una ventana de **SweetAlert2**.
+- **Seguridad:** la petición lleva el token de la sesión (`Authorization: Bearer`),
+  así la base devuelve solo lo que esa persona puede ver (políticas RLS). Cada
+  paciente ve solo su perfil.
+
 ## Autenticación con Supabase
 
 El login usa [Supabase Auth](https://supabase.com/docs/guides/auth). La base de
@@ -131,13 +156,15 @@ datos, sus migraciones y las políticas de seguridad (RLS) viven en la carpeta
 
 ### Configuración
 
-1. Copiar `.env.example` como `.env.local`.
-2. Completar `VITE_SUPABASE_URL` y `VITE_SUPABASE_PUBLISHABLE_KEY` con los datos
-   del proyecto (Supabase → Project Settings → API Keys).
+1. Copiar `.env.example` como `.env`.
+2. Completar `VITE_API_URL`, `VITE_SUPABASE_URL` y `VITE_SUPABASE_PUBLISHABLE_KEY`
+   con los datos del proyecto (Supabase → Project Settings).
 3. Reiniciar `npm run dev` (Vite lee las variables solo al arrancar).
 
-`.env.local` no se sube a git. La clave *publishable* es pública por diseño: lo
-que protege los datos son las políticas RLS de la base.
+`.env` no se sube a git: está en el `.gitignore`. La clave *publishable* es
+pública por diseño: lo que protege los datos son las políticas RLS de la base.
+En el deploy (Vercel) las mismas tres variables se cargan en
+*Settings → Environment Variables*, porque el `.env` no viaja con el código.
 
 ### Cómo ingresa cada usuario
 
