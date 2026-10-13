@@ -13,6 +13,7 @@ El sitio presenta los servicios del laboratorio y da acceso a dos portales: el *
 - **Login del paciente** con DNI (acepta el DNI con puntos o espacios) y contraseña, validación de campos, mensajes de error y botón para mostrar u ocultar la contraseña. En el primer ingreso se le pide elegir una contraseña propia y cargar su email real.
 - **Login del personal** con usuario y contraseña, con la misma validación.
 - **Autenticación real con Supabase Auth**: la sesión se mantiene al recargar la página y se puede cerrar.
+- **Panel de administración** (`/usuarios`): al ingresar como administrador se muestran todos los perfiles creados, con sus datos y roles, y un filtro por rol. Los demás usuarios ven solo su propio perfil.
 - **Perfil del usuario**: al ingresar se muestran sus datos (nombre, rol, DNI o usuario, etc.), pedidos a la API de Supabase con Axios, con aviso de carga y manejo de errores.
 - **Navegación sin recargar la página** entre las distintas vistas, con barra de navegación y pie comunes a todo el sitio.
 - **Diseño adaptable** a celular, tablet y escritorio.
@@ -68,6 +69,7 @@ El sitio queda disponible en http://localhost:5173.
 | `/servicios` | Servicios del laboratorio |
 | `/login-paciente` | Ingreso del paciente |
 | `/login-personal` | Ingreso del personal interno |
+| `/usuarios` | Listado de todos los perfiles (solo administradores) |
 
 ## Estructura del proyecto
 
@@ -82,6 +84,7 @@ El sitio queda disponible en http://localhost:5173.
 │   │   ├── StatsCounter.jsx     Contador animado de estadísticas
 │   │   ├── LoginSuccess.jsx     Mensaje de sesión iniciada (lo usan los dos logins)
 │   │   ├── PerfilUsuario.jsx    Perfil del usuario, pedido a la API con Axios
+│   │   ├── ListaPerfiles.jsx    Tabla con todos los perfiles, pedida a la API con Axios
 │   │   └── PrimerIngreso.jsx    Primer ingreso del paciente: contraseña propia y email real
 │   ├── data/                Contenido separado de los componentes
 │   │   ├── servicios.js         Servicios del laboratorio
@@ -95,7 +98,8 @@ El sitio queda disponible en http://localhost:5173.
 │   │   ├── Home.jsx
 │   │   ├── Servicios.jsx
 │   │   ├── LoginPaciente.jsx
-│   │   └── LoginPersonal.jsx
+│   │   ├── LoginPersonal.jsx
+│   │   └── Usuarios.jsx         Panel del administrador (lista de perfiles)
 │   ├── App.jsx              Definición de rutas
 │   ├── main.jsx             Punto de entrada (envuelve la app en BrowserRouter)
 │   └── index.css            Variables de color y estilos globales
@@ -131,8 +135,12 @@ El sitio queda disponible en http://localhost:5173.
 ## Consumo de la API (TP8)
 
 La API que se consume es la **API REST de Supabase**, que genera automáticamente
-una dirección para cada tabla de la base de datos del laboratorio. Se usa para
-mostrar el **perfil** de la persona que ingresó, en `src/components/PerfilUsuario.jsx`.
+una dirección para cada tabla de la base de datos del laboratorio. Se usa en dos lugares:
+
+- `src/components/PerfilUsuario.jsx`: muestra el **perfil** de la persona que ingresó.
+- `src/components/ListaPerfiles.jsx`: muestra la **tabla con todos los perfiles**, en el panel del administrador (`/usuarios`). Es la misma petición, pero sin filtrar por persona.
+
+Las dos siguen el mismo patrón:
 
 - **URL en variable de entorno:** `const API_URL = import.meta.env.VITE_API_URL;`.
   La dirección no está escrita en ningún componente; se define en el `.env`.
@@ -145,8 +153,10 @@ mostrar el **perfil** de la persona que ingresó, en `src/components/PerfilUsuar
 - **Manejo de errores:** un `try/catch` captura el fallo, muestra un mensaje en
   pantalla con el botón "Reintentar" y abre una ventana de **SweetAlert2**.
 - **Seguridad:** la petición lleva el token de la sesión (`Authorization: Bearer`),
-  así la base devuelve solo lo que esa persona puede ver (políticas RLS). Cada
-  paciente ve solo su perfil.
+  así la base devuelve solo lo que esa persona puede ver (políticas RLS). Con la
+  misma petición, un paciente recibe solo su perfil y el personal recibe todos.
+- **Acceso al panel:** la página `/usuarios` verifica la sesión (`useSesion`) y, si no
+  es de un administrador, redirige al login con `<Navigate>`.
 
 ## Autenticación con Supabase
 

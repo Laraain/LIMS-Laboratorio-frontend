@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Navigate } from 'react-router-dom';
 import LoginSuccess from '../components/LoginSuccess.jsx';
 import PerfilUsuario from '../components/PerfilUsuario.jsx';
 import useMetadatos from '../hooks/useMetadatos.js';
@@ -72,6 +73,9 @@ function LoginPersonal() {
     setUsuarioInvalido(false);
     setPasswordInvalido(false);
   }
+
+  // El administrador no ve la bienvenida de este login: entra directo al listado de usuarios
+  if (perfil?.rol === 'admin') return <Navigate to="/usuarios" replace />;
 
   return (
     <main id="contenido" className="d-flex justify-content-center align-items-center py-5 lims-login-personal-main">
