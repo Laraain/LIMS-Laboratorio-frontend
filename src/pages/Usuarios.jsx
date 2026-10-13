@@ -34,8 +34,9 @@ function Usuarios() {
     );
   }
 
-  // Sin sesión de administrador se vuelve al login (Navigate redirige sin recargar la página)
-  if (!perfil) return <Navigate to="/login-personal" replace />;
+  // Sin sesión de administrador se vuelve al login (Navigate redirige sin recargar la página).
+  // Si todavía tiene la contraseña provisoria, el login le pide elegir una propia antes de entrar.
+  if (!perfil || perfil.debe_cambiar_password) return <Navigate to="/login-personal" replace />;
 
   return (
     <main id="contenido" className="py-5">
@@ -54,7 +55,7 @@ function Usuarios() {
           </button>
         </header>
 
-        <ListaPerfiles />
+        <ListaPerfiles idActual={perfil.id} />
       </div>
     </main>
   );
