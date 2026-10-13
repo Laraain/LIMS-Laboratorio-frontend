@@ -8,9 +8,10 @@ function esEmailValido(valor) {
   return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(valor);
 }
 
-// Primer ingreso del paciente: reemplaza la contraseña provisoria que le entregó
-// el laboratorio y carga el email donde va a recibir los avisos de sus resultados.
-function PrimerIngreso({ nombre, onCompletado, onCancelar }) {
+// Primer ingreso: reemplaza la contraseña provisoria que le entregó el laboratorio.
+// El paciente además carga el email donde va a recibir los avisos de sus resultados;
+// el personal no (pedirEmail={false}).
+function PrimerIngreso({ nombre, pedirEmail = true, onCompletado, onCancelar }) {
   const [password, setPassword] = useState('');
   const [confirmacion, setConfirmacion] = useState('');
   const [email, setEmail] = useState('');
@@ -27,7 +28,7 @@ function PrimerIngreso({ nombre, onCompletado, onCancelar }) {
     const nuevosErrores = {
       password: password.length < LARGO_MINIMO,
       confirmacion: confirmacion !== password,
-      email: !esEmailValido(emailLimpio),
+      email: pedirEmail && !esEmailValido(emailLimpio),
     };
     setErrores(nuevosErrores);
     if (Object.values(nuevosErrores).some(Boolean)) return;
@@ -40,10 +41,17 @@ function PrimerIngreso({ nombre, onCompletado, onCancelar }) {
       return;
     }
 
-    const { error: errorAlta } = await supabase.rpc('completar_primer_ingreso', { p_email: emailLimpio });
+    // Cada tipo de usuario tiene su función en la base: la del paciente guarda además su email
+    const { error: errorAlta } = pedirEmail
+      ? await supabase.rpc('completar_primer_ingreso', { p_email: emailLimpio })
+      : await supabase.rpc('completar_primer_ingreso_personal');
     setEnviando(false);
     if (errorAlta) {
-      setError('Su contraseña se cambió, pero no se pudo guardar el email. Intente nuevamente.');
+      setError(
+        pedirEmail
+          ? 'Su contraseña se cambió, pero no se pudo guardar el email. Intente nuevamente.'
+          : 'Su contraseña se cambió, pero no se pudo completar el primer ingreso. Intente nuevamente.',
+      );
       return;
     }
     onCompletado();
@@ -52,8 +60,10 @@ function PrimerIngreso({ nombre, onCompletado, onCancelar }) {
   return (
     <form onSubmit={handleSubmit} noValidate>
       <div className="alert alert-info small" role="status">
-        <strong>Hola, {nombre}.</strong> Es su primer ingreso: elija una contraseña propia y cargue el email
-        donde quiere recibir el aviso cuando sus resultados estén listos.
+        <strong>Hola, {nombre}.</strong>{' '}
+        {pedirEmail
+          ? 'Es su primer ingreso: elija una contraseña propia y cargue el email donde quiere recibir el aviso cuando sus resultados estén listos.'
+          : 'Es su primer ingreso: la contraseña que recibió es provisoria. Elija una contraseña propia para continuar.'}
       </div>
 
       {error && (
@@ -131,37 +141,39 @@ function PrimerIngreso({ nombre, onCompletado, onCancelar }) {
         )}
       </div>
 
-      <div className="mb-4">
-        <label htmlFor="emailPaciente" className="form-label fw-semibold small">
-          Email
-        </label>
-        <div className="input-group">
-          <span className="input-group-text bg-white">
-            <i className="fa-solid fa-envelope text-muted" aria-hidden="true"></i>
-          </span>
-          <input
-            type="email"
-            className={`form-control ${errores.email ? 'is-invalid' : ''}`}
-            id="emailPaciente"
-            placeholder="nombre@ejemplo.com"
-            required
-            maxLength={254}
-            autoComplete="email"
-            aria-describedby="emailError"
-            aria-invalid={Boolean(errores.email)}
-            value={email}
-            onChange={(evento) => {
-              setEmail(evento.target.value);
-              setErrores((previos) => ({ ...previos, email: false }));
-            }}
-          />
-        </div>
-        {errores.email && (
-          <div className="invalid-feedback d-block" id="emailError">
-            Ingrese un email válido, por ejemplo nombre@ejemplo.com.
+      {pedirEmail && (
+        <div className="mb-4">
+          <label htmlFor="emailPaciente" className="form-label fw-semibold small">
+            Email
+          </label>
+          <div className="input-group">
+            <span className="input-group-text bg-white">
+              <i className="fa-solid fa-envelope text-muted" aria-hidden="true"></i>
+            </span>
+            <input
+              type="email"
+              className={`form-control ${errores.email ? 'is-invalid' : ''}`}
+              id="emailPaciente"
+              placeholder="nombre@ejemplo.com"
+              required
+              maxLength={254}
+              autoComplete="email"
+              aria-describedby="emailError"
+              aria-invalid={Boolean(errores.email)}
+              value={email}
+              onChange={(evento) => {
+                setEmail(evento.target.value);
+                setErrores((previos) => ({ ...previos, email: false }));
+              }}
+            />
           </div>
-        )}
-      </div>
+          {errores.email && (
+            <div className="invalid-feedback d-block" id="emailError">
+              Ingrese un email válido, por ejemplo nombre@ejemplo.com.
+            </div>
+          )}
+        </div>
+      )}
 
       <button type="submit" className="btn btn-primary w-100 py-2 fw-semibold" disabled={enviando}>
         {enviando ? 'Guardando…' : 'Guardar y continuar'}
