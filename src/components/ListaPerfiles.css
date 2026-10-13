@@ -44,3 +44,81 @@
   flex-wrap: wrap;
   gap: 12px 20px;
 }
+
+/* Pantallas chicas: la tabla de 8 columnas obligaba a desplazarse y ocultaba el botón Editar.
+   Cada fila pasa a ser una tarjeta con un dato por renglón (el título del dato sale de data-label). */
+@media (max-width: 991.98px) {
+  .lims-tabla-perfiles thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .lims-tabla-perfiles,
+  .lims-tabla-perfiles tr {
+    display: block;
+  }
+
+  /* Tarjetas en columnas: una sola en celular y dos o más en tablet */
+  .lims-tabla-perfiles tbody {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+    gap: 12px;
+  }
+
+  .lims-tabla-perfiles tr {
+    padding: 12px 16px;
+    border: 1px solid var(--lims-border);
+    border-radius: 0.75rem;
+    background: var(--lims-surface-2);
+  }
+
+  .lims-tabla-perfiles.table > tbody > tr > td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 6px 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    text-align: right;
+    overflow-wrap: anywhere;
+  }
+
+  .lims-tabla-perfiles td[data-label]::before {
+    content: attr(data-label);
+    flex-shrink: 0;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--lims-muted);
+    text-align: left;
+  }
+
+  .lims-tabla-perfiles.table > tbody > tr > td.lims-celda-nombre {
+    justify-content: flex-start;
+    padding-bottom: 8px;
+    font-size: 1.05rem;
+    text-align: left;
+  }
+
+  .lims-tabla-perfiles.table > tbody > tr > td.lims-celda-acciones {
+    padding-top: 12px;
+  }
+
+  .lims-tabla-perfiles .lims-celda-acciones .btn {
+    width: 100%;
+  }
+
+  /* Los controles de arriba ocupan todo el ancho y no se cortan */
+  .lims-lista-acciones,
+  .lims-lista-acciones .lims-lista-filtro {
+    width: 100%;
+  }
+
+  .lims-lista-filtro .form-select {
+    flex: 1;
+  }
+}

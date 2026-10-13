@@ -148,7 +148,8 @@ function ListaPerfiles({ idActual }) {
       </p>
 
       <div className="table-responsive">
-        <table className="table align-middle">
+        {/* En pantallas chicas, cada fila se muestra como tarjeta (ver ListaPerfiles.css): data-label es el texto de cada dato */}
+        <table className="table align-middle lims-tabla-perfiles">
           <thead>
             <tr>
               <th scope="col">Nombre</th>
@@ -167,22 +168,25 @@ function ListaPerfiles({ idActual }) {
             {/* map(): por cada perfil arma una fila de la tabla, sin repetir código */}
             {visibles.map((perfil) => (
               <tr key={perfil.id}>
-                <td className="fw-semibold">
+                <td className="fw-semibold lims-celda-nombre">
                   {perfil.apellido}, {perfil.nombre}
                 </td>
-                <td>
+                <td data-label="Rol">
                   <span className={`badge text-bg-${ROLES[perfil.rol]?.color ?? 'secondary'}`}>
                     {ROLES[perfil.rol]?.nombre ?? perfil.rol}
                   </span>
                 </td>
-                <td>{perfil.pacientes?.dni ?? perfil.personal?.usuario ?? '—'}</td>
-                <td>{perfil.personal?.cargo ?? '—'}</td>
-                <td>{perfil.telefono ?? '—'}</td>
-                <td className={perfil.activo ? 'text-success fw-semibold' : 'text-danger fw-semibold'}>
+                <td data-label="DNI / Usuario">{perfil.pacientes?.dni ?? perfil.personal?.usuario ?? '—'}</td>
+                <td data-label="Cargo">{perfil.personal?.cargo ?? '—'}</td>
+                <td data-label="Teléfono">{perfil.telefono ?? '—'}</td>
+                <td
+                  data-label="Cuenta"
+                  className={perfil.activo ? 'text-success fw-semibold' : 'text-danger fw-semibold'}
+                >
                   {perfil.activo ? 'Activa' : 'Inactiva'}
                 </td>
-                <td>{new Date(perfil.created_at).toLocaleDateString('es-AR')}</td>
-                <td className="text-end">
+                <td data-label="Alta">{new Date(perfil.created_at).toLocaleDateString('es-AR')}</td>
+                <td className="text-end lims-celda-acciones">
                   <button
                     type="button"
                     className="btn btn-sm btn-outline-primary"

@@ -127,7 +127,7 @@ function ModalNuevoPerfil({ onCerrar, onCreado }) {
 
   return (
     // enforceFocus={false}: deja que la ventana de SweetAlert2 reciba el foco encima de este modal
-    <Modal show onHide={guardando ? undefined : onCerrar} backdrop="static" enforceFocus={false} centered>
+    <Modal show onHide={guardando ? undefined : onCerrar} backdrop="static" enforceFocus={false} centered scrollable>
       <Modal.Header closeButton={!guardando}>
         <Modal.Title as="h2" className="h5 fw-bold mb-0">
           Nuevo perfil

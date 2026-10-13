@@ -146,7 +146,8 @@ function ModalEditarPerfil({ perfil, idActual, onCerrar, onGuardado }) {
 
   return (
     // enforceFocus={false}: deja que la ventana de SweetAlert2 reciba el foco encima de este modal
-    <Modal show onHide={guardando ? undefined : onCerrar} backdrop="static" enforceFocus={false} centered>
+    // scrollable: en pantallas chicas solo se desplaza el formulario; el título y los botones quedan a la vista
+    <Modal show onHide={guardando ? undefined : onCerrar} backdrop="static" enforceFocus={false} centered scrollable>
       <Modal.Header closeButton={!guardando}>
         <Modal.Title as="h2" className="h5 fw-bold mb-0">
           Editar perfil
