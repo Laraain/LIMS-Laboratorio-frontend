@@ -218,14 +218,10 @@ frontend arma un email interno que nunca recibe correos.
   rol modifique perfiles. Las funciones y la migración del primer ingreso del personal
   están en `LIMS-Laboratorio-db` (`functions/crear-personal`, `migrations/20261013_01_*`).
 
-### Usuarios de prueba
+### Acceso al panel de administración
 
-Se crean ejecutando `seed_usuarios_prueba.sql` (en `LIMS-Laboratorio-db`) en el
-SQL Editor de Supabase.
-
-| Portal | Usuario | Contraseña | Rol |
-|---|---|---|---|
-| Paciente | DNI `30123456` | `Paciente2026` (provisoria) | paciente |
-| Personal interno | `bioq_perez` | `Lab2026!` | bioquimico |
-| Personal interno | `recepcion` | `Recep2026!` | recepcion |
-| Personal interno | `admin` | `Admin2026!` | admin |
+Las contraseñas no se publican en este repositorio. El primer administrador se crea
+directamente en Supabase y, desde `/usuarios`, ese administrador da de alta al resto del
+personal y a los pacientes: cada persona recibe una contraseña provisoria que debe
+cambiar en su primer ingreso. Quien necesite una cuenta de administrador debe pedírsela
+al equipo.
