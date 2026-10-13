@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import LoginSuccess from '../components/LoginSuccess.jsx';
 import PerfilUsuario from '../components/PerfilUsuario.jsx';
+import PrimerIngreso from '../components/PrimerIngreso.jsx';
 import useMetadatos from '../hooks/useMetadatos.js';
 import { ROLES_PERSONAL, cerrarSesion, emailDePersonal, iniciarSesion, useSesion } from '../lib/auth.js';
 import './LoginPersonal.css';
@@ -75,7 +76,8 @@ function LoginPersonal() {
   }
 
   // El administrador no ve la bienvenida de este login: entra directo al listado de usuarios
-  if (perfil?.rol === 'admin') return <Navigate to="/usuarios" replace />;
+  // (salvo que todavía tenga la contraseña provisoria: antes tiene que elegir una propia)
+  if (perfil?.rol === 'admin' && !perfil.debe_cambiar_password) return <Navigate to="/usuarios" replace />;
 
   return (
     <main id="contenido" className="d-flex justify-content-center align-items-center py-5 lims-login-personal-main">
@@ -97,13 +99,15 @@ function LoginPersonal() {
               </div>
             )}
 
-            {/* Renderizado condicional: mientras se verifica la sesión se avisa; si ya ingresó se muestra la bienvenida
-               con su perfil; si no, el formulario. El formulario es controlado: cada input muestra el valor de su estado
+            {/* Renderizado condicional: mientras se verifica la sesión se avisa; si todavía tiene la contraseña provisoria
+               se le pide elegir una propia; si ya ingresó se muestra la bienvenida con su perfil; si no, el formulario. El formulario es controlado: cada input muestra el valor de su estado
                (value) y lo actualiza al escribir (onChange). noValidate desactiva los mensajes del navegador para usar los propios. */}
             {cargando ? (
               <p className="text-muted text-center py-4" role="status">
                 Verificando sesión…
               </p>
+            ) : perfil?.debe_cambiar_password ? (
+              <PrimerIngreso nombre={perfil.nombre} pedirEmail={false} onCompletado={refrescar} onCancelar={handleLogout} />
             ) : perfil ? (
               <LoginSuccess
                 heading={`Bienvenido/a, ${perfil.nombre} ${perfil.apellido}`}

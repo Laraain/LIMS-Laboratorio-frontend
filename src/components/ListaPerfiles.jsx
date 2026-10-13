@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import ROLES from '../data/roles.js';
 import { supabase } from '../lib/supabase.js';
+import ModalEditarPerfil from './ModalEditarPerfil.jsx';
+import ModalNuevoPerfil from './ModalNuevoPerfil.jsx';
 import './ListaPerfiles.css';
 
 // La URL de la API NO se escribe en el código: viene del archivo .env (variable VITE_API_URL)
@@ -9,18 +12,11 @@ const API_URL = import.meta.env.VITE_API_URL;
 // Clave pública del proyecto (también viene del .env): Supabase la pide en cada petición
 const API_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
-// Nombre legible y color (clase de Bootstrap) de cada rol que guarda la base de datos
-const ROLES = {
-  admin: { nombre: 'Administrador', color: 'dark' },
-  bioquimico: { nombre: 'Bioquímico', color: 'primary' },
-  tecnico: { nombre: 'Técnico', color: 'info' },
-  recepcion: { nombre: 'Recepción', color: 'warning' },
-  paciente: { nombre: 'Paciente', color: 'success' },
-};
-
 // Tabla con todos los perfiles creados. Los pide a la API con Axios apenas aparece en pantalla.
 // La base de datos (políticas RLS) solo devuelve todos los perfiles si quien consulta es del personal.
-function ListaPerfiles() {
+// Desde acá el admin también crea perfiles nuevos y edita los existentes, en ventanas (modales).
+// Prop idActual: el id del admin logueado, para que no pueda desactivarse a sí mismo.
+function ListaPerfiles({ idActual }) {
   // Estados (useState): cada vez que uno cambia, React vuelve a dibujar el componente
   // perfiles: la lista que devolvió la API · cargando: true hasta que la API responde
   // error: true si la petición falló · intento: se suma 1 al apretar "Reintentar" para repetir la petición
@@ -30,6 +26,10 @@ function ListaPerfiles() {
   const [error, setError] = useState(false);
   const [intento, setIntento] = useState(0);
   const [filtroRol, setFiltroRol] = useState('todos');
+  // editando: el perfil que se está editando en la ventana (null si no hay ninguna abierta)
+  // creando: true mientras está abierta la ventana de perfil nuevo
+  const [editando, setEditando] = useState(null);
+  const [creando, setCreando] = useState(false);
 
   // useEffect: la petición se hace al aparecer el componente y de nuevo solo si cambia intento
   useEffect(() => {
@@ -50,7 +50,7 @@ function ListaPerfiles() {
         const response = await axios.get(`${API_URL}/perfiles`, {
           headers: { apikey: API_KEY, Authorization: `Bearer ${token}` },
           params: {
-            select: 'id,nombre,apellido,rol,telefono,activo,created_at,pacientes(dni),personal(usuario,cargo)',
+            select: 'id,nombre,apellido,rol,telefono,activo,created_at,pacientes(dni),personal(usuario,cargo,matricula)',
             order: 'apellido.asc,nombre.asc',
           },
         });
@@ -79,8 +79,9 @@ function ListaPerfiles() {
     };
   }, [intento]);
 
-  // Vuelve a pedir los datos: reinicia los estados y cambia intento para que se ejecute el useEffect
-  function handleReintentar() {
+  // Vuelve a pedir los datos: reinicia los estados y cambia intento para que se ejecute el useEffect.
+  // Se usa en "Reintentar" y también después de crear o editar un perfil, para mostrar lo que quedó en la base.
+  function recargar() {
     setCargando(true);
     setError(false);
     setIntento((valor) => valor + 1);
@@ -99,7 +100,7 @@ function ListaPerfiles() {
     return (
       <div className="lims-lista-aviso" role="alert">
         <span>No se pudo cargar la lista de usuarios.</span>
-        <button type="button" className="btn btn-sm btn-outline-secondary" onClick={handleReintentar}>
+        <button type="button" className="btn btn-sm btn-outline-secondary" onClick={recargar}>
           Reintentar
         </button>
       </div>
@@ -115,24 +116,30 @@ function ListaPerfiles() {
         <h2 id="usuarios-titulo" className="lims-lista-titulo">
           Perfiles creados
         </h2>
-        <div className="lims-lista-filtro">
-          <label htmlFor="filtro-rol" className="form-label small mb-0">
-            Rol
-          </label>
-          <select
-            id="filtro-rol"
-            className="form-select form-select-sm"
-            value={filtroRol}
-            onChange={(evento) => setFiltroRol(evento.target.value)}
-          >
-            <option value="todos">Todos</option>
-            {/* map(): una opción por cada rol de la lista ROLES */}
-            {Object.entries(ROLES).map(([clave, rol]) => (
-              <option key={clave} value={clave}>
-                {rol.nombre}
-              </option>
-            ))}
-          </select>
+        <div className="lims-lista-acciones">
+          <button type="button" className="btn btn-primary btn-sm" onClick={() => setCreando(true)}>
+            <i className="fa-solid fa-user-plus me-2" aria-hidden="true"></i>
+            Nuevo perfil
+          </button>
+          <div className="lims-lista-filtro">
+            <label htmlFor="filtro-rol" className="form-label small mb-0">
+              Rol
+            </label>
+            <select
+              id="filtro-rol"
+              className="form-select form-select-sm"
+              value={filtroRol}
+              onChange={(evento) => setFiltroRol(evento.target.value)}
+            >
+              <option value="todos">Todos</option>
+              {/* map(): una opción por cada rol de la lista ROLES */}
+              {Object.entries(ROLES).map(([clave, rol]) => (
+                <option key={clave} value={clave}>
+                  {rol.nombre}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 
@@ -151,6 +158,9 @@ function ListaPerfiles() {
               <th scope="col">Teléfono</th>
               <th scope="col">Cuenta</th>
               <th scope="col">Alta</th>
+              <th scope="col">
+                <span className="visually-hidden">Acciones</span>
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -172,11 +182,45 @@ function ListaPerfiles() {
                   {perfil.activo ? 'Activa' : 'Inactiva'}
                 </td>
                 <td>{new Date(perfil.created_at).toLocaleDateString('es-AR')}</td>
+                <td className="text-end">
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline-primary"
+                    aria-label={`Editar a ${perfil.apellido}, ${perfil.nombre}`}
+                    onClick={() => setEditando(perfil)}
+                  >
+                    <i className="fa-solid fa-pen me-1" aria-hidden="true"></i>
+                    Editar
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
+      {/* Las ventanas solo existen mientras están abiertas. key={editando.id}: cada perfil arma su propio formulario */}
+      {editando && (
+        <ModalEditarPerfil
+          key={editando.id}
+          perfil={editando}
+          idActual={idActual}
+          onCerrar={() => setEditando(null)}
+          onGuardado={() => {
+            setEditando(null);
+            recargar();
+          }}
+        />
+      )}
+      {creando && (
+        <ModalNuevoPerfil
+          onCerrar={() => setCreando(false)}
+          onCreado={() => {
+            setCreando(false);
+            recargar();
+          }}
+        />
+      )}
     </section>
   );
 }

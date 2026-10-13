@@ -13,7 +13,7 @@ El sitio presenta los servicios del laboratorio y da acceso a dos portales: el *
 - **Login del paciente** con DNI (acepta el DNI con puntos o espacios) y contraseña, validación de campos, mensajes de error y botón para mostrar u ocultar la contraseña. En el primer ingreso se le pide elegir una contraseña propia y cargar su email real.
 - **Login del personal** con usuario y contraseña, con la misma validación.
 - **Autenticación real con Supabase Auth**: la sesión se mantiene al recargar la página y se puede cerrar.
-- **Panel de administración** (`/usuarios`): al ingresar como administrador se muestran todos los perfiles creados, con sus datos y roles, y un filtro por rol. Los demás usuarios ven solo su propio perfil.
+- **Panel de administración** (`/usuarios`): al ingresar como administrador se muestran todos los perfiles creados, con sus datos y roles, y un filtro por rol. Desde ahí el administrador **crea perfiles nuevos** (pacientes y personal) y **edita los existentes**, en ventanas (modales). Los demás usuarios ven solo su propio perfil.
 - **Perfil del usuario**: al ingresar se muestran sus datos (nombre, rol, DNI o usuario, etc.), pedidos a la API de Supabase con Axios, con aviso de carga y manejo de errores.
 - **Navegación sin recargar la página** entre las distintas vistas, con barra de navegación y pie comunes a todo el sitio.
 - **Diseño adaptable** a celular, tablet y escritorio.
@@ -69,7 +69,7 @@ El sitio queda disponible en http://localhost:5173.
 | `/servicios` | Servicios del laboratorio |
 | `/login-paciente` | Ingreso del paciente |
 | `/login-personal` | Ingreso del personal interno |
-| `/usuarios` | Listado de todos los perfiles (solo administradores) |
+| `/usuarios` | Listado de perfiles, con alta y edición (solo administradores) |
 
 ## Estructura del proyecto
 
@@ -85,15 +85,19 @@ El sitio queda disponible en http://localhost:5173.
 │   │   ├── LoginSuccess.jsx     Mensaje de sesión iniciada (lo usan los dos logins)
 │   │   ├── PerfilUsuario.jsx    Perfil del usuario, pedido a la API con Axios
 │   │   ├── ListaPerfiles.jsx    Tabla con todos los perfiles, pedida a la API con Axios
+│   │   ├── ModalEditarPerfil.jsx    Ventana para ver y modificar un perfil (PATCH con Axios)
+│   │   ├── ModalNuevoPerfil.jsx     Ventana para crear un paciente o una persona del personal
 │   │   └── PrimerIngreso.jsx    Primer ingreso del paciente: contraseña propia y email real
 │   ├── data/                Contenido separado de los componentes
 │   │   ├── servicios.js         Servicios del laboratorio
-│   │   └── estadisticas.js      Números del contador
+│   │   ├── estadisticas.js      Números del contador
+│   │   └── roles.js             Nombre y color de cada rol
 │   ├── hooks/
 │   │   └── useMetadatos.js      Título y metadatos SEO de cada página
 │   ├── lib/                 Conexión con Supabase
 │   │   ├── supabase.js          Cliente de Supabase (lee las variables de .env.local)
-│   │   └── auth.js              Inicio y cierre de sesión, y el hook useSesion
+│   │   ├── auth.js              Inicio y cierre de sesión, y el hook useSesion
+│   │   └── api.js               Direcciones del .env, encabezados con el token y mensajes de error
 │   ├── pages/               Una vista por ruta
 │   │   ├── Home.jsx
 │   │   ├── Servicios.jsx
@@ -139,6 +143,7 @@ una dirección para cada tabla de la base de datos del laboratorio. Se usa en do
 
 - `src/components/PerfilUsuario.jsx`: muestra el **perfil** de la persona que ingresó.
 - `src/components/ListaPerfiles.jsx`: muestra la **tabla con todos los perfiles**, en el panel del administrador (`/usuarios`). Es la misma petición, pero sin filtrar por persona.
+- `src/components/ModalEditarPerfil.jsx` y `src/components/ModalNuevoPerfil.jsx`: **modifican y crean** perfiles. Es la misma idea pero con otros verbos HTTP, explicados en "Alta y edición de perfiles".
 
 Las dos siguen el mismo patrón:
 
@@ -191,7 +196,27 @@ frontend arma un email interno que nunca recibe correos.
   contraseña propia y cargar su email real, que se usa para avisarles cuando sus
   resultados están listos.
 - **Personal:** cada cuenta tiene un rol (`admin`, `bioquimico`, `tecnico`,
-  `recepcion`) que define qué puede ver y modificar.
+  `recepcion`) que define qué puede ver y modificar. Un administrador les crea la
+  cuenta con una contraseña provisoria (Edge Function `crear-personal`) y, en el
+  primer ingreso, el sistema les exige elegir una propia.
+
+### Alta y edición de perfiles (panel del administrador)
+
+- **Editar:** el botón "Editar" de cada fila abre una ventana con los datos del perfil.
+  Axios envía un `PATCH` a la tabla que corresponde (`perfiles`, `personal` o `pacientes`)
+  con **solo los campos que cambiaron**, después de pedir confirmación con SweetAlert2.
+  El DNI y el usuario no se pueden cambiar porque forman el email con el que la persona
+  inicia sesión. El administrador no puede desactivar su propia cuenta ni cambiarse el rol.
+- **Crear:** el botón "Nuevo perfil" abre una ventana con un formulario para paciente o
+  para personal. Axios envía un `POST` a una **función de servidor** de Supabase
+  (`crear-paciente` o `crear-personal`), porque crear una cuenta de acceso necesita la
+  clave secreta, que nunca puede estar en el navegador. La función crea la cuenta, el
+  perfil y los datos asociados, y devuelve una contraseña provisoria que se muestra
+  **una sola vez** para entregársela a la persona.
+- **Seguridad:** las dos funciones de servidor verifican la sesión (y que quien llama sea
+  administrador, en el caso del personal), y las políticas RLS de la base impiden que otro
+  rol modifique perfiles. Las funciones y la migración del primer ingreso del personal
+  están en `LIMS-Laboratorio-db` (`functions/crear-personal`, `migrations/20261013_01_*`).
 
 ### Usuarios de prueba
 

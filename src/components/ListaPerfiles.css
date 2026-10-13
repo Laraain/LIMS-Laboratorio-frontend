@@ -37,3 +37,10 @@
   width: auto;
   min-width: 10rem;
 }
+
+.lims-lista-acciones {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+}
