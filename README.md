@@ -45,8 +45,7 @@ cd LIMS-Laboratorio-frontend
 # 2. Instalar las dependencias
 npm install
 
-# 3. Configurar las variables de entorno (ver "Autenticación con Supabase")
-cp .env.example .env
+# 3. Crear el archivo .env con las variables de entorno (ver "Autenticación con Supabase")
 
 # 4. Levantar el servidor de desarrollo
 npm run dev
@@ -107,7 +106,6 @@ El sitio queda disponible en http://localhost:5173.
 │   ├── App.jsx              Definición de rutas
 │   ├── main.jsx             Punto de entrada (envuelve la app en BrowserRouter)
 │   └── index.css            Variables de color y estilos globales
-├── .env.example             Variables de entorno necesarias (se copia como .env, que no se sube a git)
 └── index.html               Metadatos SEO y Open Graph
 ```
 
@@ -171,10 +169,18 @@ datos, sus migraciones y las políticas de seguridad (RLS) viven en la carpeta
 
 ### Configuración
 
-1. Copiar `.env.example` como `.env`.
-2. Completar `VITE_API_URL`, `VITE_SUPABASE_URL` y `VITE_SUPABASE_PUBLISHABLE_KEY`
-   con los datos del proyecto (Supabase → Project Settings).
-3. Reiniciar `npm run dev` (Vite lee las variables solo al arrancar).
+1. Crear un archivo `.env` en la raíz del proyecto (junto a `package.json`) con estas tres
+   variables, completadas con los datos del proyecto (Supabase → Project Settings):
+
+   ```
+   VITE_API_URL=https://<id-del-proyecto>.supabase.co/rest/v1
+   VITE_SUPABASE_URL=https://<id-del-proyecto>.supabase.co
+   VITE_SUPABASE_PUBLISHABLE_KEY=<clave publishable del proyecto>
+   ```
+
+   `VITE_API_URL` es la que usa Axios para consultar las tablas; las otras dos, el cliente de
+   Supabase (login).
+2. Reiniciar `npm run dev` (Vite lee las variables solo al arrancar).
 
 `.env` no se sube a git: está en el `.gitignore`. La clave *publishable* es
 pública por diseño: lo que protege los datos son las políticas RLS de la base.
