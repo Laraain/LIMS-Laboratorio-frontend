@@ -6,6 +6,7 @@ import Home from './pages/Home.jsx';
 import Servicios from './pages/Servicios.jsx';
 import LoginPaciente from './pages/LoginPaciente.jsx';
 import LoginPersonal from './pages/LoginPersonal.jsx';
+import Usuarios from './pages/Usuarios.jsx';
 
 // Componente principal: arma la estructura común (menú, página actual y pie) y define las rutas
 function App() {
@@ -30,6 +31,8 @@ function App() {
         <Route path="/servicios" element={<Servicios />} />
         <Route path="/login-paciente" element={<LoginPaciente />} />
         <Route path="/login-personal" element={<LoginPersonal />} />
+        {/* Solo para administradores: la propia página redirige al login si no hay sesión de admin */}
+        <Route path="/usuarios" element={<Usuarios />} />
       </Routes>
       <Footer />
     </>
