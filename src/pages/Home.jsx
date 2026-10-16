@@ -1,70 +1,270 @@
-import { Link } from 'react-router-dom';
-import servicios from '../data/servicios.js';
-import estadisticas from '../data/estadisticas.js';
-import ServiceCard from '../components/ServiceCard.jsx';
-import StatsCounter from '../components/StatsCounter.jsx';
 import useMetadatos from '../hooks/useMetadatos.js';
+import useAlAparecer from '../hooks/useAlAparecer.js';
+import {
+  ArrowRight,
+  BellRinging,
+  Clock,
+  DeviceMobile,
+  Drop,
+  ForkKnife,
+  IdentificationCard,
+  MapPin,
+  MapTrifold,
+  Phone,
+  Syringe,
+  TestTube,
+  WhatsappLogo,
+} from '@phosphor-icons/react';
+import { Link } from 'react-router-dom';
+import Carrusel from '../components/Carrusel.jsx';
+import PreguntasFrecuentes from '../components/PreguntasFrecuentes.jsx';
+import CintaLogos from '../components/CintaLogos.jsx';
+import EstadoAhora from '../components/EstadoAhora.jsx';
+import IndicadorScroll from '../components/IndicadorScroll.jsx';
+import ServiceCard from '../components/ServiceCard.jsx';
+import servicios from '../data/servicios.js';
+import {
+  contacto,
+  horarios,
+  carrusel,
+  pasosResultados,
+  areas,
+  preparacion,
+  obrasSociales,
+  equipo,
+  preguntas,
+} from '../data/laboratorio.js';
 import './Home.css';
 
-// Página de inicio: presentación, estadísticas, servicios destacados y accesos a los dos portales
+const numero = (i) => String(i + 1).padStart(2, '0');
+
+// Ícono de cada paso de la preparación y de los resultados, según su id en laboratorio.js
+const iconosPasos = {
+  ayuno: ForkKnife,
+  orina: TestTube,
+  traer: IdentificationCard,
+  estudio: Syringe,
+  aviso: BellRinging,
+  ingreso: DeviceMobile,
+};
+
+// Pasos unidos por una línea, como un recorrido: horizontal en pantallas anchas y vertical en el celular
+function Recorrido({ pasos }) {
+  const [ref, visible] = useAlAparecer();
+  return (
+    <ol ref={ref} className={`lims-recorrido lims-aparecen${visible ? ' is-visible' : ''}`}>
+      {pasos.map((paso, i) => {
+        const Icono = iconosPasos[paso.id];
+        return (
+          <li key={paso.id} className="lims-recorrido-paso" style={{ '--orden': i }}>
+            <span className="lims-recorrido-icono" aria-hidden="true">
+              <Icono weight="regular" />
+            </span>
+            <span className="lims-paso-numero" aria-hidden="true">{numero(i)}</span>
+            <h3 className="lims-h3">{paso.titulo}</h3>
+            <p className="mb-0">{paso.texto}</p>
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
+// Cada palabra del título entra con un pequeño retraso respecto de la anterior
+const palabrasTitulo = 'Sus análisis clínicos, con resultados en línea.'.split(' ');
+
 function Home() {
   useMetadatos({
-    titulo: 'LIMS Laboratorio — Sistema de gestión para laboratorio bioquímico',
+    titulo: 'LIMS Laboratorio Bioquímico — Análisis clínicos en Tucumán',
     descripcion:
-      'Laboratorio de análisis clínicos con trazabilidad digital de muestras y portal de resultados online para pacientes.',
+      'Laboratorio de análisis clínicos en San Miguel de Tucumán. Consulte sus resultados en línea con su DNI, cómo prepararse para su estudio y las obras sociales con las que trabajamos.',
+    ruta: '/',
   });
 
-  // slice(0, 2) toma solo los dos primeros servicios para mostrarlos como destacados
-  const destacados = servicios.slice(0, 2);
+  // Las tarjetas de servicios entran una tras otra cuando la sección aparece en pantalla
+  const [refServicios, serviciosVisibles] = useAlAparecer();
 
   return (
     <main id="contenido">
       <section className="lims-hero">
-        <div className="row g-0">
-          <div className="col-lg-7 lims-hero-copy">
-            <span className="lims-eyebrow lims-chip-accent d-inline-flex align-items-center gap-2 mb-3">
-              <i className="fa-solid fa-flask-vial" aria-hidden="true"></i>
-              Trazabilidad digital de muestras
-            </span>
-            <h1 className="lims-hero-title mb-3">
-              Autogestión de análisis clínicos y resultados de laboratorio
-            </h1>
-            <p className="lims-hero-lead mb-4">
-              Soluciones integrales en analítica clínica para profesionales y pacientes. Cada
-              tubo identificado con código de barras y su estado visible de punta a punta.
-            </p>
-
-            <div className="d-flex flex-wrap gap-2 mb-4 pb-2">
-              <Link to="/login-paciente" className="btn lims-btn-accent">
-                <i className="fa-solid fa-file-waveform me-2" aria-hidden="true"></i>
-                Ver mis resultados
-              </Link>
-              <Link to="/#contacto" className="btn lims-btn-ghost">
-                <i className="fa-regular fa-calendar-plus me-2" aria-hidden="true"></i>
-                Pedir un turno
-              </Link>
+        <div className="container px-3 px-lg-4">
+          <div className="row align-items-center g-4 g-lg-5">
+            <div className="col-lg-6">
+              <p className="lims-kicker mb-3">Análisis clínicos · San Miguel de Tucumán</p>
+              <h1 className="lims-hero-title mb-3">
+                {palabrasTitulo.map((palabra, i) => (
+                  <span key={i}>
+                    <span className="lims-hero-palabra" style={{ animationDelay: `${120 + i * 90}ms` }}>
+                      {palabra}
+                    </span>{' '}
+                  </span>
+                ))}
+              </h1>
+              <p className="lims-hero-lema mb-4">Del laboratorio a sus manos, sin salir de casa.</p>
+              <div className="d-flex flex-wrap align-items-center gap-3">
+                <Link to="/login-paciente" className="btn lims-btn-pill lims-btn-primario lims-btn-grande">
+                  Ver mis resultados
+                </Link>
+                <a href={contacto.mapa} target="_blank" rel="noopener" className="lims-link-flecha">
+                  <MapTrifold className="lims-icono me-2" aria-hidden="true" />
+                  Cómo llegar
+                </a>
+              </div>
             </div>
-
-            {/* Se le pasa el arreglo de estadísticas por props */}
-            <StatsCounter estadisticas={estadisticas} />
+            <div className="col-lg-6">
+              <Carrusel imagenes={carrusel} />
+            </div>
           </div>
-          <div className="col-lg-5 lims-hero-media d-none d-lg-block"></div>
+        </div>
+        <IndicadorScroll destino="/#preparacion" etiqueta="Bajar a cómo prepararse para su estudio" />
+      </section>
+
+      <section className="lims-practica" aria-label="Dirección y horarios">
+        <div className="container px-3 px-lg-4">
+          <ul className="lims-practica-lista">
+            <li className="lims-dato">
+              <span className="lims-dato-icono" aria-hidden="true">
+                <MapPin />
+              </span>
+              <div>
+                <p className="lims-dato-etiqueta">Dirección</p>
+                <p className="lims-dato-valor">{contacto.calle}</p>
+                <p className="lims-dato-detalle">{contacto.ciudad}</p>
+                <a href={contacto.mapa} target="_blank" rel="noopener" className="lims-dato-accion">
+                  <MapTrifold className="lims-icono me-2" aria-hidden="true" />
+                  Cómo llegar
+                </a>
+              </div>
+            </li>
+            <li className="lims-dato">
+              <span className="lims-dato-icono" aria-hidden="true">
+                <Clock />
+              </span>
+              <div>
+                <p className="lims-dato-etiqueta">Horario de atención</p>
+                {horarios.lineasAtencion.map((linea) => (
+                  <p key={linea.dias} className="lims-dato-valor">
+                    <span className="lims-dato-dias">{linea.dias}</span>
+                    <span className="lims-dato-horas">{linea.horas}</span>
+                  </p>
+                ))}
+                <div className="lims-dato-accion">
+                  <EstadoAhora franjas={horarios.atencion} />
+                </div>
+              </div>
+            </li>
+            <li className="lims-dato">
+              <span className="lims-dato-icono" aria-hidden="true">
+                <Drop />
+              </span>
+              <div>
+                <p className="lims-dato-etiqueta">Extracciones</p>
+                {horarios.lineasExtracciones.map((linea) => (
+                  <p key={linea.dias} className="lims-dato-valor">
+                    <span className="lims-dato-dias">{linea.dias}</span>
+                    <span className="lims-dato-horas">{linea.horas}</span>
+                  </p>
+                ))}
+                <p className="lims-dato-detalle">Consulte cómo prepararse antes de venir.</p>
+                <Link to="/#preparacion" className="lims-dato-accion">
+                  Ver preparación <ArrowRight className="lims-icono ms-1" aria-hidden="true" />
+                </Link>
+              </div>
+            </li>
+          </ul>
         </div>
       </section>
 
-      <section className="py-5">
+      <section id="preparacion" className="lims-seccion lims-seccion--celeste" aria-labelledby="titulo-preparacion">
         <div className="container px-3 px-lg-4">
-          <div className="d-flex align-items-baseline justify-content-between gap-3 mb-4">
-            <h2 className="lims-h2 mb-0">Servicios destacados</h2>
-            <Link to="/servicios" className="lims-link-more">
-              Ver todos <i className="fa-solid fa-arrow-right ms-1" aria-hidden="true"></i>
+          <h2 id="titulo-preparacion" className="lims-h2 mb-2">Cómo prepararse para su estudio</h2>
+          <p className="lims-seccion-bajada">Una buena preparación evita tener que repetir la extracción.</p>
+          <Recorrido pasos={preparacion} />
+          <div className="lims-recorrido-accion">
+            <a href={contacto.telefonoEnlace} className="lims-link-flecha">
+              <Phone className="lims-icono me-2" aria-hidden="true" />
+              ¿Dudas? Llámenos al {contacto.telefono}
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <section id="como-ver-resultados" className="lims-seccion lims-seccion--celeste" aria-labelledby="titulo-resultados">
+        <div className="container px-3 px-lg-4">
+          <h2 id="titulo-resultados" className="lims-h2 mb-2">Cómo ver sus resultados</h2>
+          <p className="lims-seccion-bajada">Sin pasar por el laboratorio: le avisamos cuando su informe está listo.</p>
+          <Recorrido pasos={pasosResultados} />
+          <div className="lims-recorrido-accion">
+            <Link to="/login-paciente" className="btn lims-btn-pill lims-btn-primario lims-btn-grande">
+              Ver mis resultados <ArrowRight className="lims-icono ms-1" aria-hidden="true" />
             </Link>
           </div>
-          <div className="row row-cols-1 row-cols-sm-2 g-3">
-            {/* map() recorre los servicios destacados y devuelve una tarjeta por cada uno.
-               key: identificador único que React necesita en cada elemento de una lista. */}
-            {destacados.map((servicio) => (
-              <div className="col" key={servicio.id}>
+        </div>
+      </section>
+
+      <section className="lims-seccion" aria-labelledby="titulo-estudios">
+        <div className="container px-3 px-lg-4">
+          <div className="lims-encabezado-seccion">
+            <h2 id="titulo-estudios" className="lims-h2 mb-0">Estudios por área</h2>
+            <Link to="/#servicios" className="lims-link-flecha">
+              Ver servicios <ArrowRight className="lims-icono ms-1" aria-hidden="true" />
+            </Link>
+          </div>
+          <ul className="lims-areas">
+            {areas.map((area) => (
+              <li key={area.id} className="lims-area lims-linea-al-pasar">
+                <h3 className="lims-h3">{area.nombre}</h3>
+                <p className="mb-0">{area.estudios}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      <section id="obras-sociales" className="lims-seccion lims-seccion--gris" aria-labelledby="titulo-obras">
+        <div className="container px-3 px-lg-4">
+          <h2 id="titulo-obras" className="lims-h2">Obras sociales con las que trabajamos</h2>
+          <CintaLogos etiqueta="Obras sociales" duracion={45} separacion={16}>
+            {obrasSociales.map((obra) => (
+              <li key={obra.id} className="lims-obra">
+                <img src={obra.logo} alt="" decoding="async" />
+                <span>{obra.nombre}</span>
+              </li>
+            ))}
+          </CintaLogos>
+        </div>
+      </section>
+
+      <section className="lims-seccion" aria-labelledby="titulo-equipo">
+        <div className="container px-3 px-lg-4">
+          <h2 id="titulo-equipo" className="lims-h2">Nuestro equipo</h2>
+          <ul className="lims-equipo">
+            {equipo.map((persona) => (
+              <li key={persona.id} className="lims-persona">
+                <img src={persona.foto} alt="" loading="lazy" width="600" height="720" />
+                <div className="lims-persona-texto">
+                  <h3 className="lims-persona-nombre">{persona.nombre}</h3>
+                  <p className="lims-persona-cargo">{persona.cargo}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      <section id="servicios" className="lims-seccion lims-seccion--gris" aria-labelledby="titulo-servicios">
+        <div className="container px-3 px-lg-4">
+          <h2 id="titulo-servicios" className="lims-h2 mb-2">Nuestros servicios</h2>
+          <p className="lims-seccion-bajada">
+            Tres áreas conectadas en un solo sistema: extracción, análisis y entrega de
+            resultados, con trazabilidad digital en cada etapa.
+          </p>
+          <div
+            ref={refServicios}
+            className={`row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-3 lims-aparecen${serviciosVisibles ? ' is-visible' : ''}`}
+          >
+            {servicios.map((servicio, i) => (
+              <div className="col" key={servicio.id} style={{ '--orden': i }}>
                 <ServiceCard
                   foto={servicio.foto}
                   altFoto={servicio.altFoto}
@@ -79,37 +279,33 @@ function Home() {
         </div>
       </section>
 
-      <section className="pb-5">
+      <section id="preguntas-frecuentes" className="lims-seccion" aria-labelledby="titulo-preguntas">
         <div className="container px-3 px-lg-4">
-          {/* Link navega a otra ruta sin recargar la página, a diferencia de un <a href> */}
-          <div className="row row-cols-1 row-cols-md-2 g-3">
-            <div className="col">
-              <Link to="/login-paciente" className="lims-access lims-access--patient h-100">
-                <span className="lims-access-icon">
-                  <i className="fa-solid fa-user" aria-hidden="true"></i>
-                </span>
-                <span className="flex-grow-1">
-                  <span className="d-block lims-access-title">Soy paciente</span>
-                  <span className="d-block lims-access-sub">Ingrese con su DNI para ver resultados y turnos</span>
-                </span>
-                <i className="fa-solid fa-arrow-right" aria-hidden="true"></i>
-              </Link>
-            </div>
-            <div className="col">
-              <Link to="/login-personal" className="lims-access lims-access--staff h-100">
-                <span className="lims-access-icon">
-                  <i className="fa-solid fa-user-shield" aria-hidden="true"></i>
-                </span>
-                <span className="flex-grow-1">
-                  <span className="d-block lims-access-title">Soy del personal</span>
-                  <span className="d-block lims-access-sub">Acceso al sistema de gestión de muestras</span>
-                </span>
-                <i className="fa-solid fa-arrow-right" aria-hidden="true"></i>
-              </Link>
-            </div>
+          <div className="lims-preguntas">
+            <header className="lims-preguntas-encabezado">
+              <p className="lims-kicker mb-2">Preguntas frecuentes</p>
+              <h2 id="titulo-preguntas" className="lims-h2 mb-3">¿Tiene alguna duda?</h2>
+              <p className="mb-0">
+                Reunimos las consultas más comunes. Si no encuentra su respuesta,{' '}
+                <Link to="/#contacto">comuníquese con el laboratorio</Link>.
+              </p>
+            </header>
+            <PreguntasFrecuentes preguntas={preguntas} />
           </div>
         </div>
       </section>
+
+      {contacto.whatsapp && (
+        <a
+          href={`https://wa.me/${contacto.whatsapp}`}
+          target="_blank"
+          rel="noopener"
+          className="lims-whatsapp"
+          aria-label="Escribirnos por WhatsApp"
+        >
+          <WhatsappLogo aria-hidden="true" />
+        </a>
+      )}
     </main>
   );
 }
