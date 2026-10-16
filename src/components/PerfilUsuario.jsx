@@ -116,7 +116,7 @@ function PerfilUsuario({ userId }) {
   // Filas a mostrar. Las que no tienen valor (por ejemplo "DNI" en el personal) se descartan con filter
   const filas = [
     { etiqueta: 'Nombre', valor: `${perfil.nombre} ${perfil.apellido}` },
-    { etiqueta: 'Rol', valor: ROLES[perfil.rol] ?? perfil.rol },
+    { etiqueta: 'Rol', valor: ROLES[perfil.rol]?.nombre ?? perfil.rol },
     { etiqueta: 'DNI', valor: perfil.pacientes?.dni },
     { etiqueta: 'Usuario', valor: perfil.personal?.usuario },
     { etiqueta: 'Matrícula', valor: perfil.personal?.matricula },

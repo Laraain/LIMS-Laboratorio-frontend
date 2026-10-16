@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { EnvelopeSimple, Eye, EyeSlash, Lock } from '@phosphor-icons/react';
 import { supabase } from '../lib/supabase.js';
 import { mensajeDeError } from '../lib/auth.js';
 
@@ -78,7 +79,7 @@ function PrimerIngreso({ nombre, pedirEmail = true, onCompletado, onCancelar }) 
         </label>
         <div className="input-group">
           <span className="input-group-text bg-white">
-            <i className="fa-solid fa-lock text-muted" aria-hidden="true"></i>
+            <Lock className="lims-icono text-muted" aria-hidden="true" />
           </span>
           <input
             type={mostrarPassword ? 'text' : 'password'}
@@ -101,10 +102,11 @@ function PrimerIngreso({ nombre, pedirEmail = true, onCompletado, onCancelar }) 
             aria-label={mostrarPassword ? 'Ocultar contraseñas' : 'Mostrar contraseñas'}
             onClick={() => setMostrarPassword((valor) => !valor)}
           >
-            <i
-              className={`fa-regular ${mostrarPassword ? 'fa-eye-slash' : 'fa-eye'} text-muted`}
-              aria-hidden="true"
-            ></i>
+            {mostrarPassword ? (
+              <EyeSlash className="lims-icono text-muted" aria-hidden="true" />
+            ) : (
+              <Eye className="lims-icono text-muted" aria-hidden="true" />
+            )}
           </button>
         </div>
         <div
@@ -148,7 +150,7 @@ function PrimerIngreso({ nombre, pedirEmail = true, onCompletado, onCancelar }) 
           </label>
           <div className="input-group">
             <span className="input-group-text bg-white">
-              <i className="fa-solid fa-envelope text-muted" aria-hidden="true"></i>
+              <EnvelopeSimple className="lims-icono text-muted" aria-hidden="true" />
             </span>
             <input
               type="email"

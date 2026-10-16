@@ -2,21 +2,25 @@
 
 Sitio web de un laboratorio de análisis clínicos de San Miguel de Tucumán, desarrollado en React como parte del Trabajo Final Integrador de la Tecnicatura Universitaria en Programación (TUP).
 
-El sitio presenta los servicios del laboratorio y da acceso a dos portales: el **portal del paciente**, donde cada paciente ingresa con su DNI para consultar sus resultados, y el **acceso del personal interno** del laboratorio.
+El sitio informa a los pacientes cómo prepararse para sus estudios, los horarios y las obras sociales con las que trabaja el laboratorio, y da acceso a dos portales: el **portal del paciente**, donde cada paciente ingresa con su DNI para consultar sus resultados, y el **acceso del personal interno** del laboratorio.
+
+**Sitio publicado:** https://lims-laboratorio-frontend.vercel.app
 
 **Equipo:** Agustín Maidana Diaz · Axel Molina · Lara Ain Serrano
 
 ## Funcionalidades
 
-- **Inicio** con presentación del laboratorio, contador animado de estadísticas, servicios destacados y accesos directos a los dos portales.
-- **Servicios**: listado completo de los servicios del laboratorio, generado a partir de un arreglo de datos.
+- **Inicio** con un carrusel de fotos que avanza solo, se pausa al pasar el mouse o con el foco del teclado, tiene botón de pausa y respeta la preferencia "reducir movimiento" del sistema.
+- **Banda de datos clave** con dirección, horario de atención y horario de extracciones, y un indicador **"Abierto ahora / Cerrado"** calculado en vivo con la hora de Tucumán.
+- **Cómo prepararse** y **cómo ver los resultados**, presentados como una línea de tiempo con íconos.
+- Secciones de **estudios por área**, **obras sociales** (cinta de logos que se desplaza sola), **equipo** (tarjetas que se destacan al pasar el mouse), **servicios** (generados a partir de un arreglo de datos) y **preguntas frecuentes**.
 - **Login del paciente** con DNI (acepta el DNI con puntos o espacios) y contraseña, validación de campos, mensajes de error y botón para mostrar u ocultar la contraseña. En el primer ingreso se le pide elegir una contraseña propia y cargar su email real.
 - **Login del personal** con usuario y contraseña, con la misma validación.
 - **Autenticación real con Supabase Auth**: la sesión se mantiene al recargar la página y se puede cerrar.
 - **Panel de administración** (`/usuarios`): al ingresar como administrador se muestran todos los perfiles creados, con sus datos y roles, y un filtro por rol. Desde ahí el administrador **crea perfiles nuevos** (pacientes y personal) y **edita los existentes**, en ventanas (modales). Los demás usuarios ven solo su propio perfil.
 - **Perfil del usuario**: al ingresar se muestran sus datos (nombre, rol, DNI o usuario, etc.), pedidos a la API de Supabase con Axios, con aviso de carga y manejo de errores.
 - **Navegación sin recargar la página** entre las distintas vistas, con barra de navegación y pie comunes a todo el sitio.
-- **Diseño adaptable** a celular, tablet y escritorio.
+- **Diseño adaptable** a celular, tablet y escritorio, con textos de al menos 16 px en el celular.
 
 ## Tecnologías
 
@@ -29,9 +33,10 @@ El sitio presenta los servicios del laboratorio y da acceso a dos portales: el *
 | [Supabase](https://supabase.com/) | Base de datos PostgreSQL y autenticación (`@supabase/supabase-js`) |
 | [Axios](https://axios-http.com/) | Peticiones HTTP a la API de Supabase |
 | [SweetAlert2](https://sweetalert2.github.io/) | Ventanas de aviso al usuario cuando falla una petición |
-| [Font Awesome 6](https://fontawesome.com/) | Íconos |
-| CSS propio | Paleta de colores, tipografía (IBM Plex Sans) y estilos de cada componente |
+| [Phosphor Icons](https://phosphoricons.com/) | Íconos (`@phosphor-icons/react`) |
+| CSS propio | Paleta, tipografía (Inter) y estilos de cada componente |
 | ESLint | Control de calidad del código |
+| Vercel | Publicación del sitio |
 
 ## Instalación y ejecución
 
@@ -64,8 +69,8 @@ El sitio queda disponible en http://localhost:5173.
 
 | Ruta | Página |
 |---|---|
-| `/` | Inicio |
-| `/servicios` | Servicios del laboratorio |
+| `/` | Inicio (todas las secciones) |
+| `/servicios` | Redirige a la sección de servicios del inicio (`/#servicios`) |
 | `/login-paciente` | Ingreso del paciente |
 | `/login-personal` | Ingreso del personal interno |
 | `/usuarios` | Listado de perfiles, con alta y edición (solo administradores) |
@@ -73,66 +78,74 @@ El sitio queda disponible en http://localhost:5173.
 ## Estructura del proyecto
 
 ```
-├── public/                  Archivos servidos tal cual: favicon, robots.txt y sitemap.xml
+├── public/                  Archivos servidos tal cual: favicon, imagen para compartir, robots.txt, sitemap.xml
 ├── src/
-│   ├── assets/              Logo e imágenes
+│   ├── assets/              Fotos, logos de obras sociales y logo del laboratorio
 │   ├── components/          Componentes reutilizables
 │   │   ├── Navbar.jsx           Barra de navegación
-│   │   ├── Footer.jsx           Pie con contacto y redes
-│   │   ├── ServiceCard.jsx      Tarjeta de un servicio
-│   │   ├── StatsCounter.jsx     Contador animado de estadísticas
+│   │   ├── Footer.jsx           Pie con enlaces, contacto, horarios y redes
+│   │   ├── Carrusel.jsx         Carrusel de fotos del inicio
+│   │   ├── CintaLogos.jsx       Cinta que se desplaza sin fin (logos de obras sociales)
+│   │   ├── EstadoAhora.jsx      Indicador "Abierto ahora / Cerrado"
+│   │   ├── IndicadorScroll.jsx  Flecha que avisa que se puede bajar (se oculta al desplazarse)
+│   │   ├── ServiceCard.jsx      Tarjeta de servicio
+│   │   ├── PreguntasFrecuentes.jsx  Preguntas que se despliegan con animación
+│   │   ├── LoginLayout.jsx      Pantalla dividida que comparten los dos logins
 │   │   ├── LoginSuccess.jsx     Mensaje de sesión iniciada (lo usan los dos logins)
+│   │   ├── PrimerIngreso.jsx    Primer ingreso del paciente: contraseña propia y email real
 │   │   ├── PerfilUsuario.jsx    Perfil del usuario, pedido a la API con Axios
 │   │   ├── ListaPerfiles.jsx    Tabla con todos los perfiles, pedida a la API con Axios
 │   │   ├── ModalEditarPerfil.jsx    Ventana para ver y modificar un perfil (PATCH con Axios)
-│   │   ├── ModalNuevoPerfil.jsx     Ventana para crear un paciente o una persona del personal
-│   │   └── PrimerIngreso.jsx    Primer ingreso del paciente: contraseña propia y email real
-│   ├── data/                Contenido separado de los componentes
+│   │   └── ModalNuevoPerfil.jsx     Ventana para crear un paciente o una persona del personal
+│   ├── data/                Contenido del sitio separado de los componentes
+│   │   ├── laboratorio.js       Contacto, horarios, pasos, estudios, obras sociales, equipo, preguntas
 │   │   ├── servicios.js         Servicios del laboratorio
-│   │   ├── estadisticas.js      Números del contador
 │   │   └── roles.js             Nombre y color de cada rol
 │   ├── hooks/
-│   │   └── useMetadatos.js      Título y metadatos SEO de cada página
+│   │   ├── useAlAparecer.js     Detecta cuándo un elemento entra en pantalla (animaciones al hacer scroll)
+│   │   └── useMetadatos.js      Título, descripción y metadatos SEO de cada página
 │   ├── lib/                 Conexión con Supabase
-│   │   ├── supabase.js          Cliente de Supabase (lee las variables de .env.local)
+│   │   ├── supabase.js          Cliente de Supabase (lee las variables del .env)
 │   │   ├── auth.js              Inicio y cierre de sesión, y el hook useSesion
 │   │   └── api.js               Direcciones del .env, encabezados con el token y mensajes de error
 │   ├── pages/               Una vista por ruta
 │   │   ├── Home.jsx
-│   │   ├── Servicios.jsx
 │   │   ├── LoginPaciente.jsx
 │   │   ├── LoginPersonal.jsx
 │   │   └── Usuarios.jsx         Panel del administrador (lista de perfiles)
-│   ├── App.jsx              Definición de rutas
-│   ├── main.jsx             Punto de entrada (envuelve la app en BrowserRouter)
+│   ├── App.jsx              Definición de rutas y manejo del scroll
+│   ├── main.jsx             Punto de entrada (BrowserRouter y estilo de los íconos)
 │   └── index.css            Variables de color y estilos globales
-└── index.html               Metadatos SEO y Open Graph
+├── index.html               Metadatos SEO, Open Graph y datos estructurados
+└── vercel.json              Redirige todas las rutas a la app (necesario en una SPA)
 ```
+
+El contenido (textos, horarios, obras sociales, equipo) vive en `src/data/` y las páginas lo recorren con `map()`, así que se puede editar sin tocar los componentes.
 
 ## Conceptos de React aplicados
 
-- **Componentes:** la interfaz está dividida en piezas reutilizables (`Navbar`, `Footer`, `ServiceCard`, `StatsCounter`, `LoginSuccess`). `Navbar` y `Footer` se escriben una sola vez en `App.jsx` y aparecen en todas las páginas.
+- **Componentes:** la interfaz está dividida en piezas reutilizables. `Navbar` y `Footer` se escriben una sola vez en `App.jsx` y aparecen en todas las páginas.
 - **Pages:** cada ruta tiene su propia página en `src/pages/`.
-- **Props:** `ServiceCard` recibe foto, ícono, título y descripción; `StatsCounter` recibe la lista de estadísticas; `LoginSuccess` recibe el texto, la fecha y la función para cerrar sesión, así lo comparten los dos logins.
-- **`map()`:** las tarjetas de servicios (en Inicio y en Servicios) y las estadísticas se generan recorriendo los arreglos de `src/data/`, sin repetir código. Para sumar un servicio alcanza con agregarlo al arreglo.
-- **React Router:** `BrowserRouter` en `main.jsx`; `Routes` y `Route` en `App.jsx`; `NavLink` en el menú (marca la página actual) y `Link` en los botones; `useLocation` para bajar hasta una sección cuando la URL trae un ancla (`/#contacto`).
-- **`useState`:** en los logins guarda lo que escribe el usuario, los errores de validación, si se muestra la contraseña y si se está enviando el formulario. Cada cambio de estado vuelve a dibujar la pantalla.
+- **Props:** `ServiceCard` recibe foto, ícono, título y descripción; `LoginLayout` recibe los textos, la foto y el formulario (`children`) de cada login; `LoginSuccess` recibe el texto, la fecha y la función para cerrar sesión, así lo comparten los dos logins.
+- **`map()`:** las listas del inicio (pasos, estudios, preparación, obras sociales, equipo, servicios, preguntas) y las fotos del carrusel se generan a partir de los arreglos de `src/data/`. Para sumar un servicio alcanza con agregarlo al arreglo.
+- **React Router:** `BrowserRouter` en `main.jsx`; `Routes` y `Route` en `App.jsx`; `NavLink` en el menú (marca la página actual) y `Link` en los botones; `Navigate` para la redirección de `/servicios` y para llevar al administrador a `/usuarios`; `useLocation` para bajar hasta una sección (`/#preparacion`).
+- **`useState`:** en los logins guarda lo que escribe el usuario, los errores de validación, si se muestra la contraseña y si se está enviando el formulario; en el inicio, la foto actual y la pausa del carrusel, el estado de apertura del laboratorio y la pregunta frecuente abierta.
 - **`useEffect`:**
-  - `useMetadatos` actualiza el título y la descripción de la página; sus dependencias (`titulo`, `descripcion`, `indexar`) hacen que solo se vuelva a ejecutar si esos datos cambian.
-  - `App.jsx` baja hasta la sección indicada cada vez que cambia la ruta o el ancla (dependencias `[pathname, hash]`).
+  - `useMetadatos` actualiza el título, la descripción y la URL canónica; sus dependencias hacen que solo se vuelva a ejecutar si esos datos cambian.
+  - `App.jsx` baja hasta la sección indicada en la URL, o vuelve arriba, en cada navegación.
+  - El carrusel avanza con un temporizador y "Abierto ahora" se actualiza cada minuto; los dos se limpian al desmontar el componente.
+  - `useAlAparecer` usa un `IntersectionObserver` para animar las tarjetas y los pasos cuando aparecen en pantalla.
   - `PerfilUsuario` hace la petición a la API al aparecer en pantalla; sus dependencias (`userId`, `intento`) hacen que se repita solo si cambia el usuario o se aprieta "Reintentar".
   - `useSesion` (`src/lib/auth.js`) se suscribe a los cambios de sesión de Supabase y se desuscribe al desmontar el componente.
-  - `StatsCounter` arranca la animación cuando el contador entra en pantalla, con un `IntersectionObserver` que se desconecta al desmontar el componente.
 
 ## SEO
 
-- Título y meta descripción propios en cada página (`useMetadatos`), porque en una SPA el `index.html` es uno solo para todas las rutas.
-- `<html lang="es">` y etiquetas semánticas: `nav`, `main`, `section`, `article`, `header`, `footer`.
-- Un solo `<h1>` por página y jerarquía de títulos ordenada (`h1` → `h2` → `h3`).
+- Título y meta descripción propios en cada página, con `<link rel="canonical">`.
+- Etiquetas semánticas (`nav`, `main`, `section`, `figure`, `footer`), un solo `<h1>` por página y jerarquía de títulos ordenada.
 - Texto alternativo en las imágenes.
-- Open Graph en `index.html` para que el enlace se vea con título y descripción al compartirlo.
-- `robots.txt` y `sitemap.xml` en `public/`.
-- Las páginas de login llevan `noindex`, para que los buscadores no las muestren en los resultados.
+- Open Graph para que el enlace se vea con imagen y descripción al compartirlo.
+- Datos estructurados de schema.org (`MedicalBusiness`, `DiagnosticLab`) con dirección, teléfono y horarios.
+- `robots.txt`, `sitemap.xml` y `noindex` en las páginas de login.
 
 ## Consumo de la API (TP8)
 
@@ -231,3 +244,11 @@ directamente en Supabase y, desde `/usuarios`, ese administrador da de alta al r
 personal y a los pacientes: cada persona recibe una contraseña provisoria que debe
 cambiar en su primer ingreso. Quien necesite una cuenta de administrador debe pedírsela
 al equipo.
+
+## Créditos de imágenes
+
+- Fotos de los logins: Gabrielle Henderson y National Cancer Institute en [Unsplash](https://unsplash.com/) (licencia de Unsplash).
+- Retratos del equipo (Salvatierra, Paz y Herrera): Roy K, vaibhav vivian y SoyBreno en [Unsplash](https://unsplash.com/) (licencia de Unsplash).
+- Íconos y favicon: [Phosphor Icons](https://phosphoricons.com/) (licencia MIT).
+- Logos de obras sociales: tomados de los sitios oficiales de cada entidad; son marcas de sus respectivos titulares.
+- Las personas del equipo y el listado de obras sociales son datos de maqueta para el trabajo práctico.

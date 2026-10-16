@@ -1,4 +1,5 @@
 import { Navigate, useNavigate } from 'react-router-dom';
+import { SignOut } from '@phosphor-icons/react';
 import ListaPerfiles from '../components/ListaPerfiles.jsx';
 import useMetadatos from '../hooks/useMetadatos.js';
 import { cerrarSesion, useSesion } from '../lib/auth.js';
@@ -10,6 +11,7 @@ function Usuarios() {
   useMetadatos({
     titulo: 'Usuarios — LIMS Laboratorio',
     descripcion: 'Listado de usuarios del sistema, solo para administradores.',
+    ruta: '/usuarios',
     indexar: false,
   });
 
@@ -26,7 +28,7 @@ function Usuarios() {
   // Mientras se verifica la sesión no se muestra nada de la lista
   if (cargando) {
     return (
-      <main id="contenido" className="py-5">
+      <main id="contenido" className="lims-usuarios">
         <p className="text-muted text-center" role="status">
           Verificando sesión…
         </p>
@@ -39,18 +41,18 @@ function Usuarios() {
   if (!perfil || perfil.debe_cambiar_password) return <Navigate to="/login-personal" replace />;
 
   return (
-    <main id="contenido" className="py-5">
+    <main id="contenido" className="lims-usuarios">
       <div className="container px-3 px-lg-4">
         <header className="lims-usuarios-cabecera">
           <div>
-            <span className="lims-usuarios-eyebrow d-inline-block mb-2">Administración</span>
-            <h1 className="lims-usuarios-titulo mb-1">Usuarios del sistema</h1>
-            <p className="text-muted mb-0">
-              Sesión iniciada como {perfil.nombre} {perfil.apellido}.
+            <p className="lims-usuarios-etiqueta">Administración</p>
+            <h1 className="lims-usuarios-titulo">Usuarios del sistema</h1>
+            <p className="lims-usuarios-sesion mb-0">
+              Sesión iniciada como <strong>{perfil.nombre} {perfil.apellido}</strong>
             </p>
           </div>
-          <button type="button" className="btn btn-outline-dark" onClick={handleLogout}>
-            <i className="fa-solid fa-right-from-bracket me-2" aria-hidden="true"></i>
+          <button type="button" className="btn lims-btn-pill lims-btn-secundario" onClick={handleLogout}>
+            <SignOut className="lims-icono me-2" aria-hidden="true" />
             Cerrar sesión
           </button>
         </header>

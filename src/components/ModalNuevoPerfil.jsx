@@ -127,7 +127,7 @@ function ModalNuevoPerfil({ onCerrar, onCreado }) {
 
   return (
     // enforceFocus={false}: deja que la ventana de SweetAlert2 reciba el foco encima de este modal
-    <Modal show onHide={guardando ? undefined : onCerrar} backdrop="static" enforceFocus={false} centered scrollable>
+    <Modal show onHide={guardando ? undefined : onCerrar} backdrop="static" enforceFocus={false} centered scrollable contentClassName="lims-modal">
       <Modal.Header closeButton={!guardando}>
         <Modal.Title as="h2" className="h5 fw-bold mb-0">
           Nuevo perfil
@@ -136,7 +136,7 @@ function ModalNuevoPerfil({ onCerrar, onCreado }) {
 
       <Modal.Body>
         <form id="form-nuevo-perfil" onSubmit={handleSubmit} noValidate>
-          <div className="btn-group w-100 mb-3" role="group" aria-label="Tipo de perfil">
+          <div className="lims-modal-tipo mb-3" role="group" aria-label="Tipo de perfil">
             <input
               type="radio"
               className="btn-check"
@@ -148,7 +148,7 @@ function ModalNuevoPerfil({ onCerrar, onCreado }) {
                 setErrores({});
               }}
             />
-            <label className="btn btn-outline-primary" htmlFor="tipo-paciente">
+            <label className="lims-modal-tipo-opcion" htmlFor="tipo-paciente">
               Paciente
             </label>
             <input
@@ -162,7 +162,7 @@ function ModalNuevoPerfil({ onCerrar, onCreado }) {
                 setErrores({});
               }}
             />
-            <label className="btn btn-outline-primary" htmlFor="tipo-personal">
+            <label className="lims-modal-tipo-opcion" htmlFor="tipo-personal">
               Personal del laboratorio
             </label>
           </div>
@@ -327,11 +327,16 @@ function ModalNuevoPerfil({ onCerrar, onCreado }) {
       </Modal.Body>
 
       <Modal.Footer>
-        <button type="button" className="btn btn-outline-secondary" onClick={onCerrar} disabled={guardando}>
+        <button
+          type="button"
+          className="btn lims-btn-pill lims-btn-secundario"
+          onClick={onCerrar}
+          disabled={guardando}
+        >
           Cancelar
         </button>
         {/* form="..." conecta este botón (fuera del <form>) con el formulario de arriba */}
-        <button type="submit" form="form-nuevo-perfil" className="btn btn-primary" disabled={guardando}>
+        <button type="submit" form="form-nuevo-perfil" className="btn lims-btn-pill lims-btn-primario" disabled={guardando}>
           {guardando ? 'Creando…' : 'Crear perfil'}
         </button>
       </Modal.Footer>

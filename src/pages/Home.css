@@ -1,109 +1,686 @@
+/* Hero */
 .lims-hero {
-  background: var(--lims-navy-800);
-  color: #ffffff;
+  position: relative;
+  padding: 56px 0 48px;
 }
 
-.lims-hero-copy {
-  padding: 44px 30px 40px 24px;
+/* En escritorio la flecha para bajar se apoya sobre el borde entre el hero y la banda azul:
+   siempre está a la vista y cae sobre el margen, sin tapar datos. En celular sigue fija abajo. */
+@media (min-width: 992px) {
+  .lims-hero .lims-indicador-scroll {
+    position: absolute;
+    bottom: -24px;
+  }
 }
 
-.lims-eyebrow {
-  font-family: var(--lims-font-mono);
-  font-size: 11px;
+.lims-kicker {
+  font-size: 0.875rem;
   font-weight: 600;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-}
-
-.lims-chip-accent {
-  padding: 4px 10px;
-  border-radius: 4px;
-  background: rgba(66, 184, 131, 0.16);
-  border: 1px solid rgba(66, 184, 131, 0.42);
-  color: #8fe0bb;
+  color: var(--lims-brand-soft);
 }
 
 .lims-hero-title {
-  font-size: clamp(1.6rem, 3.2vw, 34px);
+  font-size: clamp(2rem, 4.2vw, 3.25rem);
   font-weight: 700;
-  line-height: 1.18;
-  letter-spacing: -0.5px;
-  color: #ffffff;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: var(--bs-primary);
+  max-width: 14ch;
 }
 
-.lims-hero-lead {
-  max-width: 480px;
-  font-size: 14.5px;
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.72);
+/* Entrada del título palabra por palabra (el retraso de cada una se define en Home.jsx) */
+.lims-hero-palabra {
+  display: inline-block;
+  animation: limsPalabra 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 
-.lims-hero-media {
-  background-image: linear-gradient(rgba(15, 32, 67, 0.34), rgba(15, 32, 67, 0.34)), url('../assets/hero.jpeg');
-  background-size: cover;
-  background-position: center;
-  min-height: 340px;
+@keyframes limsPalabra {
+  from {
+    opacity: 0;
+    transform: translateY(0.35em);
+    filter: blur(6px);
+  }
 }
 
-.lims-h2 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--lims-ink);
+@media (prefers-reduced-motion: reduce) {
+  .lims-hero-palabra {
+    animation: none;
+  }
 }
 
-.lims-link-more {
+/* Lema del laboratorio: aparece cuando termina de entrar el título */
+.lims-hero-lema {
+  max-width: 34rem;
+  font-size: clamp(1.25rem, 2vw, 1.5rem);
+  font-style: italic;
+  font-weight: 500;
+  line-height: 1.4;
+  text-wrap: balance;
+  color: var(--lims-brand-soft);
+  animation: limsLema 0.8s ease 0.95s both;
+}
+
+@keyframes limsLema {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lims-hero-lema {
+    animation: none;
+  }
+}
+
+.lims-link-flecha {
   color: var(--bs-primary);
   font-weight: 600;
   text-decoration: none;
   white-space: nowrap;
 }
 
-.lims-link-more:hover,
-.lims-link-more:focus-visible {
+.lims-link-flecha:hover,
+.lims-link-flecha:focus-visible {
   text-decoration: underline;
 }
 
-.lims-access {
+/* Banda de datos clave (dirección, horario, extracciones): azul de marca para que se vea de un vistazo */
+.lims-practica {
+  background: var(--bs-primary);
+  color: #ffffff;
+  padding: 40px 0;
+}
+
+.lims-practica-lista {
+  display: grid;
+  gap: 28px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 992px) {
+  .lims-practica-lista {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0;
+  }
+
+  .lims-dato + .lims-dato {
+    border-left: 1px solid rgba(255, 255, 255, 0.2);
+    padding-left: 32px;
+  }
+
+  .lims-dato {
+    padding-right: 24px;
+  }
+}
+
+.lims-dato {
   display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1.25rem 1.5rem;
-  border-radius: 0.75rem;
-  border: 1px solid var(--lims-border);
-  text-decoration: none;
-  color: var(--lims-ink);
-  background: #ffffff;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  align-items: flex-start;
+  gap: 16px;
 }
 
-.lims-access:hover,
-.lims-access:focus-visible {
-  border-color: var(--bs-primary);
-  box-shadow: 0 2px 10px rgba(15, 32, 67, 0.08);
-  color: var(--lims-ink);
-}
-
-.lims-access-icon {
+.lims-dato-icono {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
-  background: var(--lims-surface);
-  color: var(--bs-primary);
-  font-size: 1.1rem;
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  font-size: 1.625rem;
 }
 
-.lims-access--staff .lims-access-icon {
-  color: var(--bs-success);
+.lims-dato p {
+  margin: 0;
 }
 
-.lims-access-title {
+.lims-dato-etiqueta {
+  margin-bottom: 6px !important;
+  font-size: 0.8125rem;
   font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.75);
 }
 
-.lims-access-sub {
-  font-size: 0.85rem;
-  color: var(--lims-muted);
+.lims-dato-valor {
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.35;
+  color: #ffffff;
+}
+
+/* Días en una línea chica y el horario debajo, grande y sin cortarse */
+.lims-dato-dias {
+  display: block;
+  font-size: 1rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.lims-dato-horas {
+  white-space: nowrap;
+}
+
+.lims-dato-dias + .lims-dato-horas {
+  display: block;
+}
+
+.lims-dato-valor + .lims-dato-valor {
+  margin-top: 8px !important;
+}
+
+.lims-dato-detalle {
+  margin-top: 2px !important;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.lims-dato-accion {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 12px;
+  color: #ffffff;
+  font-weight: 600;
+  text-underline-offset: 3px;
+}
+
+a.lims-dato-accion:hover,
+a.lims-dato-accion:focus-visible {
+  color: #ffffff;
+  text-decoration: underline;
+}
+
+.lims-practica :focus-visible {
+  outline: 3px solid #ffffff;
+  outline-offset: 3px;
+}
+
+.lims-estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--lims-band);
+  color: var(--lims-ink);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.lims-estado.is-abierto {
+  background: var(--lims-accent);
+  color: var(--lims-accent-ink);
+}
+
+.lims-estado-punto {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--lims-muted);
+}
+
+.lims-estado.is-abierto .lims-estado-punto {
+  background: var(--lims-accent-ink);
+}
+
+/* Secciones */
+.lims-seccion {
+  padding: 64px 0;
+}
+
+.lims-seccion--gris {
+  background: var(--lims-surface-2);
+}
+
+.lims-h2 {
+  font-size: clamp(1.5rem, 2.6vw, 2rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--lims-ink);
+  margin-bottom: 32px;
+}
+
+.lims-h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--lims-ink);
+}
+
+.lims-seccion-bajada {
+  max-width: 60ch;
+  margin-bottom: 32px;
+}
+
+.lims-encabezado-seccion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px 24px;
+  margin-bottom: 32px;
+}
+
+/* Preparación y resultados: fondo celeste para que se distingan del resto */
+.lims-seccion--celeste {
+  background: #eef3f9;
+}
+
+/* Las dos secciones van seguidas: comparten el fondo y las separa una línea */
+.lims-seccion--celeste + .lims-seccion--celeste {
+  padding-top: 0;
+}
+
+.lims-seccion--celeste + .lims-seccion--celeste > .container {
+  border-top: 1px solid rgba(28, 78, 128, 0.15);
+  padding-top: 64px;
+}
+
+/* Recorrido: pasos con ícono en círculo, unidos por una línea */
+.lims-recorrido {
+  --tam-icono: 56px;
+  display: grid;
+  gap: 32px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lims-recorrido-paso {
+  position: relative;
+  padding-left: calc(var(--tam-icono) + 20px);
+}
+
+.lims-recorrido-icono {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--tam-icono);
+  height: var(--tam-icono);
+  border-radius: 50%;
+  border: 2px solid var(--bs-primary);
+  background: #ffffff;
+  color: var(--bs-primary);
+  font-size: 1.625rem;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* Celular: la línea baja desde cada círculo hasta el siguiente */
+.lims-recorrido-paso:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: var(--tam-icono);
+  bottom: -32px;
+  left: calc(var(--tam-icono) / 2 - 1px);
+  width: 2px;
+  background: rgba(28, 78, 128, 0.25);
+}
+
+.lims-paso-numero {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--bs-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (min-width: 768px) {
+  .lims-recorrido {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .lims-recorrido-paso {
+    padding-left: 0;
+  }
+
+  .lims-recorrido-icono {
+    position: relative;
+    margin-bottom: 16px;
+  }
+
+  /* Pantallas anchas: la línea va de un círculo al siguiente, a la altura de su centro */
+  .lims-recorrido-paso:not(:last-child)::after {
+    top: calc(var(--tam-icono) / 2 - 1px);
+    bottom: auto;
+    left: calc(var(--tam-icono) + 12px);
+    right: -20px;
+    width: auto;
+    height: 2px;
+  }
+}
+
+@media (hover: hover) {
+  .lims-recorrido-paso:hover .lims-recorrido-icono {
+    background: var(--bs-primary);
+    color: #ffffff;
+  }
+}
+
+.lims-recorrido-accion {
+  display: flex;
+  justify-content: center;
+  margin-top: 40px;
+}
+
+/* Entrada escalonada: los hijos suben y se funden cuando el contenedor recibe is-visible (useAlAparecer).
+   El orden de cada hijo llega por la variable --orden. */
+.lims-aparecen > * {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+  transition-delay: calc(var(--orden, 0) * 100ms);
+}
+
+.lims-aparecen.is-visible > * {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lims-aparecen > * {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* Estudios por área: al pasar el mouse, la línea de arriba se pinta de azul de izquierda a derecha y el título toma el color de marca.
+   La línea azul es un ::before que se estira sobre el borde gris; --grosor-borde es el ancho de ese borde. */
+.lims-area.lims-linea-al-pasar {
+  --grosor-borde: 1px;
+}
+
+@media (hover: hover) {
+  .lims-linea-al-pasar {
+    position: relative;
+    border-top-color: var(--lims-border);
+  }
+
+  .lims-linea-al-pasar::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(-1 * var(--grosor-borde));
+    height: 2px;
+    background: var(--bs-primary);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.45s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  .lims-linea-al-pasar:hover::before {
+    transform: scaleX(1);
+  }
+
+  .lims-linea-al-pasar .lims-h3 {
+    transition: color 0.25s ease;
+  }
+
+  .lims-linea-al-pasar:hover .lims-h3 {
+    color: var(--bs-primary);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lims-linea-al-pasar::before {
+    transition: none;
+  }
+}
+
+/* Estudios por área */
+.lims-areas {
+  display: grid;
+  gap: 0 32px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lims-area {
+  padding: 20px 0;
+  border-top: 1px solid var(--lims-border);
+}
+
+.lims-area .lims-h3 {
+  margin-bottom: 4px;
+}
+
+@media (min-width: 768px) {
+  .lims-areas {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 992px) {
+  .lims-areas {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Obras sociales: tarjetas de ancho fijo dentro de la cinta que se desplaza */
+.lims-obra {
+  flex: 0 0 auto;
+  width: 180px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px 16px 16px;
+  border-radius: 16px;
+  border: 1px solid var(--lims-border);
+  background: #ffffff;
+  text-align: center;
+}
+
+.lims-obra img {
+  width: 100%;
+  max-width: 140px;
+  height: 56px;
+  object-fit: contain;
+}
+
+.lims-obra span {
+  color: var(--lims-ink);
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+@media (max-width: 575.98px) {
+  .lims-obra {
+    width: 150px;
+  }
+}
+
+/* Equipo */
+/* 2 columnas en celular, 3 en tablet y notebook, 6 en una fila en escritorio: siempre filas completas y a todo el ancho */
+.lims-equipo {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 768px) {
+  .lims-equipo {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+  }
+}
+
+@media (min-width: 1400px) {
+  .lims-equipo {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 20px;
+  }
+
+  .lims-persona-texto {
+    padding: 14px;
+  }
+}
+
+/* Tarjeta con la foto de fondo y el nombre encima */
+.lims-persona {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 4 / 5;
+  border-radius: 20px;
+  background: var(--lims-band);
+  box-shadow: 0 10px 24px rgba(15, 32, 67, 0.12);
+  transition: transform 0.5s ease, opacity 0.5s ease, filter 0.5s ease;
+}
+
+.lims-persona img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+}
+
+/* Degradé oscuro abajo para que el texto blanco se lea sobre cualquier foto */
+.lims-persona::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(10, 23, 48, 0.85), rgba(10, 23, 48, 0.35) 40%, transparent 65%);
+}
+
+/* El nombre va primero en el HTML (lectores de pantalla) pero se muestra debajo del cargo */
+.lims-persona-texto {
+  display: flex;
+  flex-direction: column-reverse;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  padding: 16px 18px;
+  color: #ffffff;
+}
+
+.lims-persona-cargo {
+  margin: 0 0 2px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  line-height: 1.3;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+.lims-persona-nombre {
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  line-height: 1.25;
+  color: #ffffff;
+}
+
+/* Al señalar una tarjeta, esa se agranda y las demás se atenúan y desenfocan */
+@media (hover: hover) {
+  .lims-equipo:has(.lims-persona:hover) .lims-persona:not(:hover) {
+    transform: scale(0.97);
+    opacity: 0.6;
+    filter: blur(2px);
+  }
+
+  .lims-persona:hover {
+    transform: scale(1.05);
+    z-index: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lims-persona {
+    transition: opacity 0.2s ease;
+  }
+
+  .lims-equipo:has(.lims-persona:hover) .lims-persona:not(:hover),
+  .lims-persona:hover {
+    transform: none;
+    filter: none;
+  }
+}
+
+/* Preguntas frecuentes: columna angosta y centrada, con el encabezado al medio */
+.lims-preguntas {
+  max-width: 720px;
+  margin-inline: auto;
+}
+
+.lims-preguntas-encabezado {
+  margin-bottom: 24px;
+  text-align: center;
+  text-wrap: balance;
+}
+
+.lims-preguntas-encabezado a {
+  color: var(--bs-primary);
+  font-weight: 500;
+}
+
+/* WhatsApp flotante */
+.lims-whatsapp {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 1030;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--lims-accent);
+  color: var(--lims-accent-ink);
+  font-size: 1.75rem;
+  text-decoration: none;
+  box-shadow: 0 6px 18px rgba(15, 32, 67, 0.18);
+}
+
+.lims-whatsapp:hover,
+.lims-whatsapp:focus-visible {
+  color: var(--lims-accent-ink);
+  filter: brightness(0.95);
+}
+
+#contenido :focus-visible {
+  outline: 3px solid var(--bs-primary);
+  outline-offset: 2px;
+}
+
+/* Celular: ningún texto por debajo de 16px */
+@media (max-width: 575.98px) {
+  .lims-kicker,
+  .lims-dato-etiqueta,
+  .lims-paso-numero {
+    font-size: 1rem;
+    letter-spacing: 0.02em;
+  }
+
+  .lims-persona-texto {
+    padding: 12px 14px;
+  }
+
+  .lims-persona-cargo,
+  .lims-persona-nombre {
+    font-size: 1rem;
+    letter-spacing: 0;
+    text-transform: none;
+  }
 }

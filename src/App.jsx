@@ -1,25 +1,52 @@
-import { useEffect } from 'react';
-import { Routes, Route, useLocation } from 'react-router-dom';
+import { useEffect, useRef } from 'react';
+import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import Navbar from './components/Navbar.jsx';
 import Footer from './components/Footer.jsx';
 import Home from './pages/Home.jsx';
-import Servicios from './pages/Servicios.jsx';
 import LoginPaciente from './pages/LoginPaciente.jsx';
 import LoginPersonal from './pages/LoginPersonal.jsx';
 import Usuarios from './pages/Usuarios.jsx';
 
 // Componente principal: arma la estructura común (menú, página actual y pie) y define las rutas
 function App() {
-  // useLocation devuelve la URL actual: pathname es la ruta (/servicios) y hash el ancla (#contacto)
-  const { pathname, hash } = useLocation();
+  const { pathname, search, hash, key, state } = useLocation();
+  const navigate = useNavigate();
+  const paginaAnterior = useRef(pathname);
 
-  // Si la URL trae un ancla (por ejemplo /#contacto), baja con scroll suave hasta esa sección.
-  // Se ejecuta cada vez que cambia la ruta o el ancla, que son sus dependencias.
+  // El scroll lo maneja la app: si el navegador también restaura la posición al recargar, los dos se pelean
   useEffect(() => {
-    if (!hash) return;
-    const elemento = document.getElementById(hash.slice(1));
-    elemento?.scrollIntoView({ behavior: 'smooth' });
-  }, [pathname, hash]);
+    if ('scrollRestoration' in window.history) window.history.scrollRestoration = 'manual';
+  }, []);
+
+  // En cada navegación: si hay #seccion se baja hasta ella; si no, se vuelve arriba de todo.
+  // key cambia en cada clic aunque la URL sea la misma (por ejemplo, tocar "Inicio" estando en el inicio).
+  useEffect(() => {
+    const mismaPagina = paginaAnterior.current === pathname;
+    paginaAnterior.current = pathname;
+
+    // Esta navegación solo limpió el ancla de la URL (ver más abajo): la posición ya es la correcta
+    if (state?.anclaLimpia) return undefined;
+
+    // Se espera un cuadro para que la página nueva esté pintada
+    const id = requestAnimationFrame(() => {
+      if (!hash) {
+        // En la misma página se sube con animación; al cambiar de página se arranca arriba directamente
+        window.scrollTo({ top: 0, behavior: mismaPagina ? 'smooth' : 'instant' });
+        return;
+      }
+      const elemento = document.getElementById(hash.slice(1));
+      if (elemento) {
+        // Se descuenta el alto del encabezado fijo para que no tape el título de la sección
+        const encabezado = document.querySelector('.lims-navbar')?.offsetHeight ?? 0;
+        const destino = elemento.getBoundingClientRect().top + window.scrollY - encabezado;
+        window.scrollTo({ top: destino, behavior: 'smooth' });
+      }
+      // Se quita el #seccion de la URL: al recargar la página no vuelve a saltar a la sección,
+      // y tocar dos veces el mismo enlace del menú vuelve a desplazar
+      navigate({ pathname, search }, { replace: true, state: { anclaLimpia: true } });
+    });
+    return () => cancelAnimationFrame(id);
+  }, [key, pathname, search, hash, state, navigate]);
 
   return (
     <>
@@ -28,7 +55,8 @@ function App() {
       {/* Cada Route asocia una dirección (path) con la página que se muestra */}
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/servicios" element={<Servicios />} />
+        {/* Los servicios ahora son una sección de la home; la ruta vieja redirige ahí */}
+        <Route path="/servicios" element={<Navigate to={{ pathname: '/', hash: '#servicios' }} replace />} />
         <Route path="/login-paciente" element={<LoginPaciente />} />
         <Route path="/login-personal" element={<LoginPersonal />} />
         {/* Solo para administradores: la propia página redirige al login si no hay sesión de admin */}

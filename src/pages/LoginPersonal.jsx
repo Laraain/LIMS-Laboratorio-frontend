@@ -1,11 +1,13 @@
 import { useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
+import LoginLayout from '../components/LoginLayout.jsx';
 import LoginSuccess from '../components/LoginSuccess.jsx';
 import PerfilUsuario from '../components/PerfilUsuario.jsx';
 import PrimerIngreso from '../components/PrimerIngreso.jsx';
 import useMetadatos from '../hooks/useMetadatos.js';
 import { ROLES_PERSONAL, cerrarSesion, emailDePersonal, iniciarSesion, useSesion } from '../lib/auth.js';
-import './LoginPersonal.css';
+// Foto de National Cancer Institute en Unsplash (licencia libre)
+import fotoPersonal from '../assets/login/login-personal.webp';
 
 // Mismo formato que exige la base de datos para el usuario: 3 a 32 caracteres (minúsculas, números, punto, guion)
 function esUsuarioValido(valor) {
@@ -32,6 +34,7 @@ function LoginPersonal() {
   useMetadatos({
     titulo: 'Login Personal Interno — LIMS Laboratorio',
     descripcion: 'Acceso al sistema interno del laboratorio para el personal autorizado.',
+    ruta: '/login-personal',
     indexar: false,
   });
 
@@ -80,129 +83,113 @@ function LoginPersonal() {
   if (perfil?.rol === 'admin' && !perfil.debe_cambiar_password) return <Navigate to="/usuarios" replace />;
 
   return (
-    <main id="contenido" className="d-flex justify-content-center align-items-center py-5 lims-login-personal-main">
-      <div className="w-100 mx-3 lims-login-personal-card">
-        <div className="text-center mb-4">
-          <span className="lims-login-icon mb-3">
-            <i className="fa-solid fa-user-shield" aria-hidden="true"></i>
-          </span>
-          <h1 className="h4 text-primary fw-bold">Acceso Personal Interno</h1>
-          <p className="text-muted small mb-0">Ingrese sus credenciales de sistema para continuar</p>
+    <LoginLayout
+      etiqueta="Acceso del personal"
+      titulo="Ingreso al sistema"
+      descripcion="Use su usuario y su contraseña para gestionar muestras y validar resultados."
+      foto={fotoPersonal}
+      altFoto="Bioquímica trabajando con el microscopio en el laboratorio"
+      leyenda="Todos los accesos y las validaciones de resultados quedan registrados con usuario, fecha y hora."
+      pie={
+        <>
+          ¿Es paciente? <Link to="/login-paciente">Ver mis resultados</Link>
+        </>
+      }
+    >
+      {error && (
+        <div className="alert alert-danger" role="alert">
+          {error}
         </div>
+      )}
 
-        <div className="card shadow-lg border-0">
-          <div className="card-body p-4 p-md-5">
-            {/* && : el cartel de error solo se muestra si error tiene texto */}
-            {error && (
-              <div className="alert alert-danger" role="alert">
-                {error}
+      {/* Renderizado condicional: mientras se verifica la sesión se avisa; si todavía usa la contraseña provisoria
+         se le pide elegir una propia; si ya ingresó se muestra la bienvenida con su perfil; si no, el formulario. */}
+      {cargando ? (
+        <p className="text-muted text-center py-4" role="status">
+          Verificando sesión…
+        </p>
+      ) : perfil?.debe_cambiar_password ? (
+        <PrimerIngreso nombre={perfil.nombre} pedirEmail={false} onCompletado={refrescar} onCancelar={handleLogout} />
+      ) : perfil ? (
+        <LoginSuccess
+          heading={`Bienvenido/a, ${perfil.nombre} ${perfil.apellido}`}
+          fecha={fecha}
+          onLogout={handleLogout}
+          logoutLabel="Cerrar sesión"
+          variant="primary"
+        >
+          {/* Perfil traído de la API con Axios (ver PerfilUsuario.jsx) */}
+          <PerfilUsuario userId={perfil.id} />
+        </LoginSuccess>
+      ) : (
+        <form onSubmit={handleSubmit} noValidate className="lims-login-form">
+          <div>
+            <label htmlFor="usuario" className="lims-login-label">
+              Usuario
+            </label>
+            <div className={`lims-campo${usuarioInvalido ? ' is-invalid' : ''}`}>
+              <input
+                type="text"
+                id="usuario"
+                placeholder="Ej: bioq_perez"
+                required
+                maxLength={64}
+                autoComplete="username"
+                aria-describedby="usuarioError"
+                aria-invalid={usuarioInvalido}
+                value={usuario}
+                onChange={(evento) => {
+                  setUsuario(evento.target.value);
+                  setUsuarioInvalido(false);
+                }}
+              />
+            </div>
+            {usuarioInvalido && (
+              <div className="invalid-feedback d-block" id="usuarioError">
+                Ingrese su usuario: entre 3 y 32 letras, números, puntos o guiones (ej: bioq_perez).
               </div>
             )}
+          </div>
 
-            {/* Renderizado condicional: mientras se verifica la sesión se avisa; si todavía tiene la contraseña provisoria
-               se le pide elegir una propia; si ya ingresó se muestra la bienvenida con su perfil; si no, el formulario. El formulario es controlado: cada input muestra el valor de su estado
-               (value) y lo actualiza al escribir (onChange). noValidate desactiva los mensajes del navegador para usar los propios. */}
-            {cargando ? (
-              <p className="text-muted text-center py-4" role="status">
-                Verificando sesión…
-              </p>
-            ) : perfil?.debe_cambiar_password ? (
-              <PrimerIngreso nombre={perfil.nombre} pedirEmail={false} onCompletado={refrescar} onCancelar={handleLogout} />
-            ) : perfil ? (
-              <LoginSuccess
-                heading={`Bienvenido/a, ${perfil.nombre} ${perfil.apellido}`}
-                fecha={fecha}
-                onLogout={handleLogout}
-                logoutLabel="Cerrar sesión"
-                variant="dark"
-              >
-                {/* Perfil traído de la API con Axios (ver PerfilUsuario.jsx) */}
-                <PerfilUsuario userId={perfil.id} />
-              </LoginSuccess>
-            ) : (
-              <form onSubmit={handleSubmit} noValidate>
-                <div className="mb-3">
-                  <label htmlFor="usuario" className="form-label fw-semibold small">
-                    Usuario
-                  </label>
-                  <div className="input-group">
-                    <span className="input-group-text bg-white">
-                      <i className="fa-solid fa-user text-muted" aria-hidden="true"></i>
-                    </span>
-                    <input
-                      type="text"
-                      className={`form-control ${usuarioInvalido ? 'is-invalid' : ''}`}
-                      id="usuario"
-                      placeholder="Ej: bioq_perez"
-                      required
-                      maxLength={64}
-                      autoComplete="username"
-                      aria-describedby="usuarioError"
-                      aria-invalid={usuarioInvalido}
-                      value={usuario}
-                      onChange={(evento) => {
-                        setUsuario(evento.target.value);
-                        setUsuarioInvalido(false);
-                      }}
-                    />
-                  </div>
-                  {usuarioInvalido && (
-                    <div className="invalid-feedback d-block" id="usuarioError">
-                      Ingrese su usuario: entre 3 y 32 letras, números, puntos o guiones (ej: bioq_perez).
-                    </div>
-                  )}
-                </div>
-
-                <div className="mb-4">
-                  <label htmlFor="password" className="form-label fw-semibold small">
-                    Contraseña
-                  </label>
-                  <div className="input-group">
-                    <span className="input-group-text bg-white">
-                      <i className="fa-solid fa-lock text-muted" aria-hidden="true"></i>
-                    </span>
-                    <input
-                      type="password"
-                      className={`form-control ${passwordInvalido ? 'is-invalid' : ''}`}
-                      id="password"
-                      placeholder="••••••••"
-                      required
-                      maxLength={128}
-                      autoComplete="current-password"
-                      aria-describedby="passwordError"
-                      aria-invalid={passwordInvalido}
-                      value={password}
-                      onChange={(evento) => {
-                        setPassword(evento.target.value);
-                        setPasswordInvalido(false);
-                      }}
-                    />
-                  </div>
-                  {passwordInvalido && (
-                    <div className="invalid-feedback d-block" id="passwordError">
-                      Ingrese su contraseña.
-                    </div>
-                  )}
-                </div>
-
-                <button type="submit" className="btn btn-dark w-100 py-2 fw-semibold" disabled={enviando}>
-                  <i className="fa-solid fa-right-to-bracket me-2" aria-hidden="true"></i>
-                  {enviando ? 'Ingresando…' : 'Ingresar al Sistema'}
-                </button>
-              </form>
+          <div>
+            <label htmlFor="password" className="lims-login-label">
+              Contraseña
+            </label>
+            <div className={`lims-campo${passwordInvalido ? ' is-invalid' : ''}`}>
+              <input
+                type="password"
+                id="password"
+                placeholder="Su contraseña"
+                required
+                maxLength={128}
+                autoComplete="current-password"
+                aria-describedby="passwordError"
+                aria-invalid={passwordInvalido}
+                value={password}
+                onChange={(evento) => {
+                  setPassword(evento.target.value);
+                  setPasswordInvalido(false);
+                }}
+              />
+            </div>
+            {passwordInvalido && (
+              <div className="invalid-feedback d-block" id="passwordError">
+                Ingrese su contraseña.
+              </div>
             )}
           </div>
-        </div>
 
-        <div className="d-flex gap-2 mt-3 p-3 rounded-3 lims-login-note">
-          <i className="fa-solid fa-shield-halved text-primary mt-1" aria-hidden="true"></i>
-          <p className="mb-0 small text-muted">
-            Todos los accesos y las validaciones de resultados quedan registrados con usuario, fecha y hora.
-          </p>
-        </div>
-      </div>
-    </main>
+          <button
+            type="submit"
+            className="btn lims-btn-pill lims-btn-primario lims-btn-grande w-100"
+            disabled={enviando}
+          >
+            {enviando ? 'Ingresando…' : 'Ingresar al sistema'}
+          </button>
+        </form>
+      )}
+    </LoginLayout>
   );
 }
-
+ 
 export default LoginPersonal;
