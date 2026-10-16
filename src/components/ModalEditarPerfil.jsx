@@ -147,7 +147,7 @@ function ModalEditarPerfil({ perfil, idActual, onCerrar, onGuardado }) {
   return (
     // enforceFocus={false}: deja que la ventana de SweetAlert2 reciba el foco encima de este modal
     // scrollable: en pantallas chicas solo se desplaza el formulario; el título y los botones quedan a la vista
-    <Modal show onHide={guardando ? undefined : onCerrar} backdrop="static" enforceFocus={false} centered scrollable>
+    <Modal show onHide={guardando ? undefined : onCerrar} backdrop="static" enforceFocus={false} centered scrollable contentClassName="lims-modal">
       <Modal.Header closeButton={!guardando}>
         <Modal.Title as="h2" className="h5 fw-bold mb-0">
           Editar perfil
@@ -308,11 +308,16 @@ function ModalEditarPerfil({ perfil, idActual, onCerrar, onGuardado }) {
       </Modal.Body>
 
       <Modal.Footer>
-        <button type="button" className="btn btn-outline-secondary" onClick={onCerrar} disabled={guardando}>
+        <button
+          type="button"
+          className="btn lims-btn-pill lims-btn-secundario"
+          onClick={onCerrar}
+          disabled={guardando}
+        >
           Cancelar
         </button>
         {/* form="..." conecta este botón (fuera del <form>) con el formulario de arriba */}
-        <button type="submit" form="form-editar-perfil" className="btn btn-primary" disabled={guardando}>
+        <button type="submit" form="form-editar-perfil" className="btn lims-btn-pill lims-btn-primario" disabled={guardando}>
           {guardando ? 'Guardando…' : 'Guardar cambios'}
         </button>
       </Modal.Footer>

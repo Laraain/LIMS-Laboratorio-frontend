@@ -93,6 +93,24 @@ body {
   color: #ffffff;
 }
 
+.lims-btn-secundario {
+  background: #ffffff;
+  color: var(--lims-ink);
+  border: 1px solid var(--lims-border);
+}
+
+.lims-btn-secundario:hover,
+.lims-btn-secundario:focus-visible {
+  background: #ffffff;
+  border-color: var(--bs-primary);
+  color: var(--bs-primary);
+}
+
+.lims-btn-chico {
+  padding: 6px 14px;
+  font-size: 0.9375rem;
+}
+
 .lims-btn-grande {
   padding: 14px 28px;
   font-size: 1.0625rem;

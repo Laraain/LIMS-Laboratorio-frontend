@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { PencilSimple, UserPlus } from '@phosphor-icons/react';
+import { MagnifyingGlass, PencilSimple, UserPlus } from '@phosphor-icons/react';
 import Swal from 'sweetalert2';
 import ROLES from '../data/roles.js';
 import { supabase } from '../lib/supabase.js';
@@ -27,6 +27,8 @@ function ListaPerfiles({ idActual }) {
   const [error, setError] = useState(false);
   const [intento, setIntento] = useState(0);
   const [filtroRol, setFiltroRol] = useState('todos');
+  // busqueda: texto del buscador (filtra por nombre, apellido, DNI o usuario)
+  const [busqueda, setBusqueda] = useState('');
   // editando: el perfil que se está editando en la ventana (null si no hay ninguna abierta)
   // creando: true mientras está abierta la ventana de perfil nuevo
   const [editando, setEditando] = useState(null);
@@ -101,108 +103,153 @@ function ListaPerfiles({ idActual }) {
     return (
       <div className="lims-lista-aviso" role="alert">
         <span>No se pudo cargar la lista de usuarios.</span>
-        <button type="button" className="btn btn-sm btn-outline-secondary" onClick={recargar}>
+        <button type="button" className="btn lims-btn-pill lims-btn-secundario lims-btn-chico" onClick={recargar}>
           Reintentar
         </button>
       </div>
     );
   }
 
-  // Aplica el filtro de rol sobre la lista que ya llegó (no vuelve a pedir nada a la API)
-  const visibles = filtroRol === 'todos' ? perfiles : perfiles.filter((perfil) => perfil.rol === filtroRol);
+  // Cantidad de perfiles de cada rol, para mostrarla en los botones del filtro
+  const cantidadPorRol = perfiles.reduce((cuenta, perfil) => {
+    cuenta[perfil.rol] = (cuenta[perfil.rol] ?? 0) + 1;
+    return cuenta;
+  }, {});
+
+  // Aplica el filtro de rol y la búsqueda sobre la lista que ya llegó (no vuelve a pedir nada a la API)
+  const texto = busqueda.trim().toLowerCase();
+  const visibles = perfiles.filter((perfil) => {
+    if (filtroRol !== 'todos' && perfil.rol !== filtroRol) return false;
+    if (!texto) return true;
+    const identidad = perfil.pacientes?.dni ?? perfil.personal?.usuario ?? '';
+    return `${perfil.nombre} ${perfil.apellido} ${identidad}`.toLowerCase().includes(texto);
+  });
+
+  // Botones del filtro: "Todos" más un botón por cada rol que tenga al menos un perfil
+  const opcionesFiltro = [
+    { clave: 'todos', nombre: 'Todos', cantidad: perfiles.length },
+    ...Object.entries(ROLES)
+      .filter(([clave]) => cantidadPorRol[clave])
+      .map(([clave, rol]) => ({ clave, nombre: rol.nombre, cantidad: cantidadPorRol[clave] })),
+  ];
 
   return (
-    <section aria-labelledby="usuarios-titulo">
+    <section className="lims-lista" aria-labelledby="usuarios-titulo">
       <div className="lims-lista-encabezado">
-        <h2 id="usuarios-titulo" className="lims-lista-titulo">
-          Perfiles creados
-        </h2>
-        <div className="lims-lista-acciones">
-          <button type="button" className="btn btn-primary btn-sm" onClick={() => setCreando(true)}>
-            <UserPlus className="lims-icono me-2" aria-hidden="true" />
-            Nuevo perfil
-          </button>
-          <div className="lims-lista-filtro">
-            <label htmlFor="filtro-rol" className="form-label small mb-0">
-              Rol
-            </label>
-            <select
-              id="filtro-rol"
-              className="form-select form-select-sm"
-              value={filtroRol}
-              onChange={(evento) => setFiltroRol(evento.target.value)}
+        <div>
+          <h2 id="usuarios-titulo" className="lims-lista-titulo">
+            Perfiles creados
+          </h2>
+          <p className="lims-lista-resumen mb-0" aria-live="polite">
+            Mostrando {visibles.length} de {perfiles.length} perfiles
+          </p>
+        </div>
+        <button
+          type="button"
+          className="btn lims-btn-pill lims-btn-primario"
+          onClick={() => setCreando(true)}
+        >
+          <UserPlus className="lims-icono me-2" aria-hidden="true" />
+          Nuevo perfil
+        </button>
+      </div>
+
+      <div className="lims-lista-controles">
+        <div className="lims-lista-filtro" role="group" aria-label="Filtrar por rol">
+          {/* map(): un botón por cada opción del filtro; aria-pressed indica cuál está elegido */}
+          {opcionesFiltro.map((opcion) => (
+            <button
+              key={opcion.clave}
+              type="button"
+              className="lims-filtro-boton"
+              aria-pressed={filtroRol === opcion.clave}
+              onClick={() => setFiltroRol(opcion.clave)}
             >
-              <option value="todos">Todos</option>
-              {/* map(): una opción por cada rol de la lista ROLES */}
-              {Object.entries(ROLES).map(([clave, rol]) => (
-                <option key={clave} value={clave}>
-                  {rol.nombre}
-                </option>
-              ))}
-            </select>
-          </div>
+              {opcion.nombre}
+              <span className="lims-filtro-cantidad">{opcion.cantidad}</span>
+            </button>
+          ))}
+        </div>
+        <div className="lims-lista-busqueda">
+          <MagnifyingGlass className="lims-icono" aria-hidden="true" />
+          <label htmlFor="buscar-perfil" className="visually-hidden">
+            Buscar por nombre, DNI o usuario
+          </label>
+          <input
+            type="search"
+            id="buscar-perfil"
+            placeholder="Buscar por nombre, DNI o usuario"
+            value={busqueda}
+            onChange={(evento) => setBusqueda(evento.target.value)}
+          />
         </div>
       </div>
 
-      <p className="text-muted small" aria-live="polite">
-        Mostrando {visibles.length} de {perfiles.length} perfiles.
-      </p>
-
-      <div className="table-responsive">
-        {/* En pantallas chicas, cada fila se muestra como tarjeta (ver ListaPerfiles.css): data-label es el texto de cada dato */}
-        <table className="table align-middle lims-tabla-perfiles">
-          <thead>
-            <tr>
-              <th scope="col">Nombre</th>
-              <th scope="col">Rol</th>
-              <th scope="col">DNI / Usuario</th>
-              <th scope="col">Cargo</th>
-              <th scope="col">Teléfono</th>
-              <th scope="col">Cuenta</th>
-              <th scope="col">Alta</th>
-              <th scope="col">
-                <span className="visually-hidden">Acciones</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {/* map(): por cada perfil arma una fila de la tabla, sin repetir código */}
-            {visibles.map((perfil) => (
-              <tr key={perfil.id}>
-                <td className="fw-semibold lims-celda-nombre">
-                  {perfil.apellido}, {perfil.nombre}
-                </td>
-                <td data-label="Rol">
-                  <span className={`badge text-bg-${ROLES[perfil.rol]?.color ?? 'secondary'}`}>
-                    {ROLES[perfil.rol]?.nombre ?? perfil.rol}
-                  </span>
-                </td>
-                <td data-label="DNI / Usuario">{perfil.pacientes?.dni ?? perfil.personal?.usuario ?? '—'}</td>
-                <td data-label="Cargo">{perfil.personal?.cargo ?? '—'}</td>
-                <td data-label="Teléfono">{perfil.telefono ?? '—'}</td>
-                <td
-                  data-label="Cuenta"
-                  className={perfil.activo ? 'text-success fw-semibold' : 'text-danger fw-semibold'}
-                >
-                  {perfil.activo ? 'Activa' : 'Inactiva'}
-                </td>
-                <td data-label="Alta">{new Date(perfil.created_at).toLocaleDateString('es-AR')}</td>
-                <td className="text-end lims-celda-acciones">
-                  <button
-                    type="button"
-                    className="btn btn-sm btn-outline-primary"
-                    aria-label={`Editar a ${perfil.apellido}, ${perfil.nombre}`}
-                    onClick={() => setEditando(perfil)}
-                  >
-                    <PencilSimple className="lims-icono me-1" aria-hidden="true" />
-                    Editar
-                  </button>
-                </td>
+      {visibles.length === 0 ? (
+        <div className="lims-lista-aviso">No hay perfiles que coincidan con la búsqueda.</div>
+      ) : (
+        <div className="lims-tabla-contenedor">
+          {/* En pantallas chicas, cada fila se muestra como tarjeta (ver ListaPerfiles.css): data-label es el texto de cada dato */}
+          <table className="table align-middle mb-0 lims-tabla-perfiles">
+            <thead>
+              <tr>
+                <th scope="col">Nombre</th>
+                <th scope="col">Rol</th>
+                <th scope="col">Cargo</th>
+                <th scope="col">Teléfono</th>
+                <th scope="col">Cuenta</th>
+                <th scope="col">Alta</th>
+                <th scope="col">
+                  <span className="visually-hidden">Acciones</span>
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {/* map(): por cada perfil arma una fila de la tabla, sin repetir código */}
+              {visibles.map((perfil) => (
+                <tr key={perfil.id}>
+                  <td className="lims-celda-nombre">
+                    <span className="lims-avatar" aria-hidden="true">
+                      {perfil.nombre.charAt(0)}
+                      {perfil.apellido.charAt(0)}
+                    </span>
+                    <span>
+                      <span className="lims-celda-nombre-texto">
+                        {perfil.apellido}, {perfil.nombre}
+                      </span>
+                      <span className="lims-celda-identidad">
+                        {perfil.pacientes?.dni ? `DNI ${perfil.pacientes.dni}` : (perfil.personal?.usuario ?? '—')}
+                      </span>
+                    </span>
+                  </td>
+                  <td data-label="Rol">
+                    <span className={`lims-rol lims-rol--${perfil.rol}`}>{ROLES[perfil.rol]?.nombre ?? perfil.rol}</span>
+                  </td>
+                  <td data-label="Cargo">{perfil.personal?.cargo ?? '—'}</td>
+                  <td data-label="Teléfono">{perfil.telefono ?? '—'}</td>
+                  <td data-label="Cuenta">
+                    <span className={`lims-cuenta${perfil.activo ? '' : ' lims-cuenta--inactiva'}`}>
+                      {perfil.activo ? 'Activa' : 'Inactiva'}
+                    </span>
+                  </td>
+                  <td data-label="Alta">{new Date(perfil.created_at).toLocaleDateString('es-AR')}</td>
+                  <td className="text-end lims-celda-acciones">
+                    <button
+                      type="button"
+                      className="btn lims-btn-pill lims-btn-secundario lims-btn-chico"
+                      aria-label={`Editar a ${perfil.apellido}, ${perfil.nombre}`}
+                      onClick={() => setEditando(perfil)}
+                    >
+                      <PencilSimple className="lims-icono me-1" aria-hidden="true" />
+                      Editar
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {/* Las ventanas solo existen mientras están abiertas. key={editando.id}: cada perfil arma su propio formulario */}
       {editando && (

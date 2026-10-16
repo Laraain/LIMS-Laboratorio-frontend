@@ -1,10 +1,10 @@
-// Nombre legible y color (clase de Bootstrap) de cada rol que guarda la base de datos
+// Nombre legible de cada rol que guarda la base de datos. El color de cada uno está en ListaPerfiles.css (.lims-rol--clave)
 const ROLES = {
-  admin: { nombre: 'Administrador', color: 'dark' },
-  bioquimico: { nombre: 'Bioquímico', color: 'primary' },
-  tecnico: { nombre: 'Técnico', color: 'info' },
-  recepcion: { nombre: 'Recepción', color: 'warning' },
-  paciente: { nombre: 'Paciente', color: 'success' },
+  admin: { nombre: 'Administrador' },
+  bioquimico: { nombre: 'Bioquímico' },
+  tecnico: { nombre: 'Técnico' },
+  recepcion: { nombre: 'Recepción' },
+  paciente: { nombre: 'Paciente' },
 };
 
 export default ROLES;

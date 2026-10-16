@@ -4,11 +4,12 @@
   justify-content: center;
   flex-wrap: wrap;
   gap: 10px 14px;
-  padding: 32px 16px;
-  border: 1px solid var(--lims-border);
-  border-radius: 0.75rem;
-  background: var(--lims-surface-2);
+  padding: 40px 16px;
+  border: 1px dashed var(--lims-border);
+  border-radius: 16px;
+  background: #ffffff;
   color: var(--lims-muted);
+  text-align: center;
 }
 
 .lims-lista-encabezado {
@@ -16,38 +17,261 @@
   align-items: flex-end;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 12px 24px;
-  margin-bottom: 8px;
+  gap: 16px 24px;
+  margin-bottom: 20px;
 }
 
 .lims-lista-titulo {
-  margin: 0;
+  margin: 0 0 2px;
   font-size: 1.25rem;
   font-weight: 700;
   color: var(--lims-ink);
 }
 
-.lims-lista-filtro {
+.lims-lista-resumen {
+  color: var(--lims-muted);
+}
+
+/* Filtro por rol y buscador */
+.lims-lista-controles {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  margin-bottom: 16px;
+}
+
+.lims-lista-filtro {
+  display: flex;
+  flex-wrap: wrap;
   gap: 8px;
 }
 
-.lims-lista-filtro .form-select {
-  width: auto;
-  min-width: 10rem;
+.lims-filtro-boton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px 6px 14px;
+  border: 1px solid var(--lims-border);
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--lims-text);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
 }
 
-.lims-lista-acciones {
+.lims-filtro-boton:hover {
+  border-color: var(--bs-primary);
+  color: var(--bs-primary);
+}
+
+.lims-filtro-boton[aria-pressed='true'] {
+  border-color: var(--bs-primary);
+  background: var(--bs-primary);
+  color: #ffffff;
+}
+
+.lims-filtro-cantidad {
+  min-width: 1.6em;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--lims-surface);
+  color: var(--lims-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.lims-filtro-boton[aria-pressed='true'] .lims-filtro-cantidad {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+.lims-lista-busqueda {
+  position: relative;
+  flex: 0 1 22rem;
+}
+
+.lims-lista-busqueda svg {
+  position: absolute;
+  top: 50%;
+  left: 14px;
+  transform: translateY(-50%);
+  color: var(--lims-muted);
+  pointer-events: none;
+}
+
+.lims-lista-busqueda input {
+  width: 100%;
+  padding: 9px 16px 9px 40px;
+  border: 1px solid var(--lims-border);
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--lims-ink);
+}
+
+.lims-lista-busqueda input:focus {
+  border-color: var(--bs-primary);
+  outline: 3px solid rgba(28, 78, 128, 0.18);
+}
+
+/* Tabla dentro de una tarjeta blanca */
+.lims-tabla-contenedor {
+  overflow-x: auto;
+  border: 1px solid var(--lims-border);
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.lims-tabla-perfiles {
+  --bs-table-bg: transparent;
+}
+
+.lims-tabla-perfiles thead th {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--lims-border);
+  background: var(--lims-surface-2);
+  color: var(--lims-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.lims-tabla-perfiles tbody td {
+  padding: 14px 16px;
+  border-color: var(--lims-border-soft);
+  color: var(--lims-text);
+}
+
+.lims-tabla-perfiles td[data-label='Teléfono'],
+.lims-tabla-perfiles td[data-label='Alta'] {
+  white-space: nowrap;
+}
+
+.lims-tabla-perfiles tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.lims-tabla-perfiles tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+.lims-tabla-perfiles tbody tr:hover {
+  background: var(--lims-surface-2);
+}
+
+/* Nombre con las iniciales en un círculo y el DNI o usuario debajo */
+.lims-tabla-perfiles td.lims-celda-nombre {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 12px 20px;
+  gap: 12px;
+  min-width: 15rem;
 }
 
-/* Pantallas chicas: la tabla de 8 columnas obligaba a desplazarse y ocultaba el botón Editar.
+.lims-avatar {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #eef3f9;
+  color: var(--bs-primary);
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.lims-celda-nombre-texto {
+  display: block;
+  font-weight: 600;
+  color: var(--lims-ink);
+}
+
+.lims-celda-identidad {
+  display: block;
+  font-size: 0.875rem;
+  color: var(--lims-muted);
+}
+
+/* Rol: etiqueta de fondo suave, con un color por rol */
+.lims-rol {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--lims-surface);
+  color: var(--lims-text);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.lims-rol--admin {
+  background: #e2e8f0;
+  color: #1e293b;
+}
+
+.lims-rol--bioquimico {
+  background: #e3ecf6;
+  color: #1c4e80;
+}
+
+.lims-rol--tecnico {
+  background: #dff3f0;
+  color: #146b5c;
+}
+
+.lims-rol--recepcion {
+  background: #fbf0dc;
+  color: #8a5a0b;
+}
+
+.lims-rol--paciente {
+  background: #e3f4e8;
+  color: #1f6b3a;
+}
+
+/* Estado de la cuenta: punto verde (activa) o rojo (inactiva) */
+.lims-cuenta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.lims-cuenta::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #2e9d5b;
+}
+
+.lims-cuenta--inactiva {
+  color: var(--lims-muted);
+}
+
+.lims-cuenta--inactiva::before {
+  background: #c2413b;
+}
+
+/* Hasta 1200px: la tabla de 7 columnas no entra y ocultaba el botón Editar.
    Cada fila pasa a ser una tarjeta con un dato por renglón (el título del dato sale de data-label). */
-@media (max-width: 991.98px) {
+@media (max-width: 1199.98px) {
+  .lims-tabla-contenedor {
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+  }
+
   .lims-tabla-perfiles thead {
     position: absolute;
     width: 1px;
@@ -68,11 +292,15 @@
     gap: 12px;
   }
 
-  .lims-tabla-perfiles tr {
-    padding: 12px 16px;
+  .lims-tabla-perfiles tbody tr {
+    padding: 16px;
     border: 1px solid var(--lims-border);
-    border-radius: 0.75rem;
-    background: var(--lims-surface-2);
+    border-radius: 16px;
+    background: #ffffff;
+  }
+
+  .lims-tabla-perfiles tbody tr:hover {
+    background: #ffffff;
   }
 
   .lims-tabla-perfiles.table > tbody > tr > td {
@@ -91,7 +319,7 @@
   .lims-tabla-perfiles td[data-label]::before {
     content: attr(data-label);
     flex-shrink: 0;
-    font-size: 0.85rem;
+    font-size: 0.875rem;
     font-weight: 600;
     color: var(--lims-muted);
     text-align: left;
@@ -99,8 +327,10 @@
 
   .lims-tabla-perfiles.table > tbody > tr > td.lims-celda-nombre {
     justify-content: flex-start;
-    padding-bottom: 8px;
-    font-size: 1.05rem;
+    min-width: 0;
+    margin-bottom: 8px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--lims-border-soft);
     text-align: left;
   }
 
@@ -112,13 +342,104 @@
     width: 100%;
   }
 
-  /* Los controles de arriba ocupan todo el ancho y no se cortan */
-  .lims-lista-acciones,
-  .lims-lista-acciones .lims-lista-filtro {
-    width: 100%;
+  .lims-lista-busqueda {
+    flex-basis: 100%;
+  }
+}
+
+/* Celular: ningún texto por debajo de 16px */
+@media (max-width: 575.98px) {
+  .lims-filtro-boton,
+  .lims-rol,
+  .lims-celda-identidad,
+  .lims-tabla-perfiles td[data-label]::before {
+    font-size: 1rem;
   }
 
-  .lims-lista-filtro .form-select {
-    flex: 1;
+  .lims-lista-encabezado .btn {
+    width: 100%;
   }
+}
+
+/* Ventanas de alta y edición (react-bootstrap Modal con contentClassName="lims-modal") */
+.lims-modal {
+  border: 0;
+  border-radius: 20px;
+  box-shadow: 0 24px 60px rgba(15, 32, 67, 0.18);
+}
+
+.lims-modal .modal-header {
+  padding: 20px 24px 12px;
+  border-bottom: 0;
+}
+
+.lims-modal .modal-title {
+  color: var(--lims-ink);
+}
+
+.lims-modal .modal-body {
+  padding: 8px 24px 16px;
+}
+
+.lims-modal .modal-footer {
+  gap: 8px;
+  padding: 16px 24px 20px;
+  border-top: 1px solid var(--lims-border-soft);
+}
+
+.lims-modal .modal-footer > * {
+  margin: 0;
+}
+
+.lims-modal .form-control,
+.lims-modal .form-select {
+  border-color: var(--lims-border);
+  border-radius: 10px;
+  background-color: var(--lims-surface-2);
+}
+
+.lims-modal .form-control:focus,
+.lims-modal .form-select:focus {
+  border-color: var(--bs-primary);
+  background-color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(28, 78, 128, 0.18);
+}
+
+.lims-modal .form-control:disabled,
+.lims-modal .form-control[readonly] {
+  color: var(--lims-muted);
+}
+
+.lims-modal .form-check-input:checked {
+  border-color: var(--bs-primary);
+  background-color: var(--bs-primary);
+}
+
+/* Selector Paciente / Personal: dos opciones en una cápsula, la elegida en azul */
+.lims-modal-tipo {
+  display: flex;
+  padding: 4px;
+  border-radius: 999px;
+  background: var(--lims-surface);
+}
+
+.lims-modal-tipo-opcion {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 999px;
+  color: var(--lims-text);
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.btn-check:checked + .lims-modal-tipo-opcion {
+  background: var(--bs-primary);
+  color: #ffffff;
+}
+
+.btn-check:focus-visible + .lims-modal-tipo-opcion {
+  outline: 3px solid rgba(28, 78, 128, 0.35);
+  outline-offset: 2px;
 }
