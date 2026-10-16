@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { MagnifyingGlass, PencilSimple, UserPlus } from '@phosphor-icons/react';
+import { List, MagnifyingGlass, PencilSimple, SquaresFour, UserPlus } from '@phosphor-icons/react';
 import Swal from 'sweetalert2';
 import ROLES from '../data/roles.js';
 import { supabase } from '../lib/supabase.js';
@@ -12,6 +12,16 @@ import './ListaPerfiles.css';
 const API_URL = import.meta.env.VITE_API_URL;
 // Clave pública del proyecto (también viene del .env): Supabase la pide en cada petición
 const API_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+// Vista con la que arranca la lista: en pantallas de menos de 1200px la tabla no entra, así que se usan tarjetas
+function vistaInicial() {
+  return window.matchMedia('(max-width: 1199.98px)').matches ? 'tarjetas' : 'lista';
+}
+
+const VISTAS = [
+  { clave: 'lista', nombre: 'Lista', icono: List },
+  { clave: 'tarjetas', nombre: 'Tarjetas', icono: SquaresFour },
+];
 
 // Tabla con todos los perfiles creados. Los pide a la API con Axios apenas aparece en pantalla.
 // La base de datos (políticas RLS) solo devuelve todos los perfiles si quien consulta es del personal.
@@ -29,6 +39,8 @@ function ListaPerfiles({ idActual }) {
   const [filtroRol, setFiltroRol] = useState('todos');
   // busqueda: texto del buscador (filtra por nombre, apellido, DNI o usuario)
   const [busqueda, setBusqueda] = useState('');
+  // vista: 'lista' muestra la tabla y 'tarjetas' una tarjeta por perfil
+  const [vista, setVista] = useState(vistaInicial);
   // editando: el perfil que se está editando en la ventana (null si no hay ninguna abierta)
   // creando: true mientras está abierta la ventana de perfil nuevo
   const [editando, setEditando] = useState(null);
@@ -170,26 +182,42 @@ function ListaPerfiles({ idActual }) {
             </button>
           ))}
         </div>
-        <div className="lims-lista-busqueda">
-          <MagnifyingGlass className="lims-icono" aria-hidden="true" />
-          <label htmlFor="buscar-perfil" className="visually-hidden">
-            Buscar por nombre, DNI o usuario
-          </label>
-          <input
-            type="search"
-            id="buscar-perfil"
-            placeholder="Buscar por nombre, DNI o usuario"
-            value={busqueda}
-            onChange={(evento) => setBusqueda(evento.target.value)}
-          />
+        <div className="lims-lista-herramientas">
+          <div className="lims-lista-vista" role="group" aria-label="Forma de ver los perfiles">
+            {VISTAS.map(({ clave, nombre, icono: Icono }) => (
+              <button
+                key={clave}
+                type="button"
+                className="lims-vista-boton"
+                aria-pressed={vista === clave}
+                onClick={() => setVista(clave)}
+              >
+                <Icono className="lims-icono" aria-hidden="true" />
+                {nombre}
+              </button>
+            ))}
+          </div>
+          <div className="lims-lista-busqueda">
+            <MagnifyingGlass className="lims-icono" aria-hidden="true" />
+            <label htmlFor="buscar-perfil" className="visually-hidden">
+              Buscar por nombre, DNI o usuario
+            </label>
+            <input
+              type="search"
+              id="buscar-perfil"
+              placeholder="Buscar por nombre, DNI o usuario"
+              value={busqueda}
+              onChange={(evento) => setBusqueda(evento.target.value)}
+            />
+          </div>
         </div>
       </div>
 
       {visibles.length === 0 ? (
         <div className="lims-lista-aviso">No hay perfiles que coincidan con la búsqueda.</div>
       ) : (
-        <div className="lims-tabla-contenedor">
-          {/* En pantallas chicas, cada fila se muestra como tarjeta (ver ListaPerfiles.css): data-label es el texto de cada dato */}
+        <div className={`lims-tabla-contenedor${vista === 'tarjetas' ? ' lims-tabla-contenedor--tarjetas' : ''}`}>
+          {/* En la vista de tarjetas, cada fila se muestra como tarjeta (ver ListaPerfiles.css): data-label es el texto de cada dato */}
           <table className="table align-middle mb-0 lims-tabla-perfiles">
             <thead>
               <tr>

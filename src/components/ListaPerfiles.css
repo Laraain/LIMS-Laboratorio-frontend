@@ -93,6 +93,7 @@
 .lims-lista-busqueda {
   position: relative;
   flex: 0 1 22rem;
+  min-width: 16rem;
 }
 
 .lims-lista-busqueda svg {
@@ -118,8 +119,56 @@
   outline: 3px solid rgba(28, 78, 128, 0.18);
 }
 
+/* Botones para elegir la vista: lista (tabla) o tarjetas */
+.lims-lista-vista {
+  display: inline-flex;
+  padding: 4px;
+  border-radius: 999px;
+  background: var(--lims-surface);
+}
+
+.lims-vista-boton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--lims-text);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.lims-vista-boton:hover {
+  color: var(--bs-primary);
+}
+
+.lims-vista-boton[aria-pressed='true'] {
+  background: #ffffff;
+  color: var(--bs-primary);
+  box-shadow: 0 1px 3px rgba(15, 32, 67, 0.12);
+}
+
+.lims-lista-herramientas {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+}
+
+/* En el celular el buscador baja a su propio renglón */
+@media (max-width: 575.98px) {
+  .lims-lista-herramientas {
+    flex-wrap: wrap;
+  }
+}
+
 /* Tabla dentro de una tarjeta blanca */
 .lims-tabla-contenedor {
+  /* relative: el texto oculto "Acciones" (position absolute) queda dentro y no ensancha la página en el celular */
+  position: relative;
   overflow-x: auto;
   border: 1px solid var(--lims-border);
   border-radius: 16px;
@@ -262,88 +311,93 @@
   background: #c2413b;
 }
 
-/* Hasta 1200px: la tabla de 7 columnas no entra y ocultaba el botón Editar.
-   Cada fila pasa a ser una tarjeta con un dato por renglón (el título del dato sale de data-label). */
+/* Vista en tarjetas (botón "Tarjetas" o pantallas de menos de 1200px, donde no entran las 7 columnas):
+   cada fila pasa a ser una tarjeta con un dato por renglón (el título del dato sale de data-label). */
+.lims-tabla-contenedor--tarjetas {
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.lims-tabla-contenedor--tarjetas .lims-tabla-perfiles thead {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+.lims-tabla-contenedor--tarjetas .lims-tabla-perfiles,
+.lims-tabla-contenedor--tarjetas .lims-tabla-perfiles tr {
+  display: block;
+}
+
+/* Tarjetas en columnas: una sola en celular y dos o más en tablet */
+.lims-tabla-contenedor--tarjetas .lims-tabla-perfiles tbody {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+  gap: 12px;
+}
+
+.lims-tabla-contenedor--tarjetas .lims-tabla-perfiles tbody tr {
+  padding: 16px;
+  border: 1px solid var(--lims-border);
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.lims-tabla-contenedor--tarjetas .lims-tabla-perfiles tbody tr:hover {
+  background: #ffffff;
+}
+
+.lims-tabla-contenedor--tarjetas .lims-tabla-perfiles.table > tbody > tr > td {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 6px 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.lims-tabla-contenedor--tarjetas .lims-tabla-perfiles td[data-label]::before {
+  content: attr(data-label);
+  flex-shrink: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--lims-muted);
+  text-align: left;
+}
+
+.lims-tabla-contenedor--tarjetas .lims-tabla-perfiles.table > tbody > tr > td.lims-celda-nombre {
+  justify-content: flex-start;
+  min-width: 0;
+  margin-bottom: 8px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--lims-border-soft);
+  text-align: left;
+}
+
+.lims-tabla-contenedor--tarjetas .lims-tabla-perfiles.table > tbody > tr > td.lims-celda-acciones {
+  padding-top: 12px;
+}
+
+.lims-tabla-contenedor--tarjetas .lims-tabla-perfiles .lims-celda-acciones .btn {
+  width: 100%;
+}
+
 @media (max-width: 1199.98px) {
-  .lims-tabla-contenedor {
-    overflow: visible;
-    border: 0;
-    border-radius: 0;
-    background: transparent;
-  }
-
-  .lims-tabla-perfiles thead {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-  }
-
-  .lims-tabla-perfiles,
-  .lims-tabla-perfiles tr {
-    display: block;
-  }
-
-  /* Tarjetas en columnas: una sola en celular y dos o más en tablet */
-  .lims-tabla-perfiles tbody {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
-    gap: 12px;
-  }
-
-  .lims-tabla-perfiles tbody tr {
-    padding: 16px;
-    border: 1px solid var(--lims-border);
-    border-radius: 16px;
-    background: #ffffff;
-  }
-
-  .lims-tabla-perfiles tbody tr:hover {
-    background: #ffffff;
-  }
-
-  .lims-tabla-perfiles.table > tbody > tr > td {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    padding: 6px 0;
-    border: 0;
-    background: transparent;
-    box-shadow: none;
-    text-align: right;
-    overflow-wrap: anywhere;
-  }
-
-  .lims-tabla-perfiles td[data-label]::before {
-    content: attr(data-label);
-    flex-shrink: 0;
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--lims-muted);
-    text-align: left;
-  }
-
-  .lims-tabla-perfiles.table > tbody > tr > td.lims-celda-nombre {
-    justify-content: flex-start;
-    min-width: 0;
-    margin-bottom: 8px;
-    padding-bottom: 14px;
-    border-bottom: 1px solid var(--lims-border-soft);
-    text-align: left;
-  }
-
-  .lims-tabla-perfiles.table > tbody > tr > td.lims-celda-acciones {
-    padding-top: 12px;
-  }
-
-  .lims-tabla-perfiles .lims-celda-acciones .btn {
-    width: 100%;
+  .lims-lista-herramientas {
+    flex-basis: 100%;
   }
 
   .lims-lista-busqueda {
-    flex-basis: 100%;
+    flex: 1 1 14rem;
+    min-width: 0;
   }
 }
 
@@ -352,7 +406,7 @@
   .lims-filtro-boton,
   .lims-rol,
   .lims-celda-identidad,
-  .lims-tabla-perfiles td[data-label]::before {
+  .lims-tabla-contenedor--tarjetas .lims-tabla-perfiles td[data-label]::before {
     font-size: 1rem;
   }
 
