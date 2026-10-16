@@ -1,90 +1,92 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import LoginLayout from '../components/LoginLayout.jsx';
 import LoginSuccess from '../components/LoginSuccess.jsx';
+import PerfilUsuario from '../components/PerfilUsuario.jsx';
+import PrimerIngreso from '../components/PrimerIngreso.jsx';
 import useMetadatos from '../hooks/useMetadatos.js';
+import { ROLES_PERSONAL, cerrarSesion, emailDePersonal, iniciarSesion, useSesion } from '../lib/auth.js';
 // Foto de National Cancer Institute en Unsplash (licencia libre)
 import fotoPersonal from '../assets/login/login-personal.webp';
- 
-const CREDENCIALES = { usuario: 'bioq_perez', password: 'Lab2026!' };
-const SESSION_KEY = 'lims_personal_activo';
- 
-function leerSesion() {
-  try {
-    const datos = JSON.parse(sessionStorage.getItem(SESSION_KEY));
-    if (datos && typeof datos.usuario === 'string' && typeof datos.fecha === 'string') return datos;
-  } catch {
-    // sessionStorage puede estar bloqueado o con un valor corrupto: nunca debe romper la página
-  }
-  return null;
+
+// Mismo formato que exige la base de datos para el usuario: 3 a 32 caracteres (minúsculas, números, punto, guion)
+function esUsuarioValido(valor) {
+  return /^[a-z0-9._-]{3,32}$/.test(valor);
 }
- 
-function guardarSesion(usuario, fecha) {
-  try {
-    sessionStorage.setItem(SESSION_KEY, JSON.stringify({ usuario, fecha }));
-  } catch {
-    // ver leerSesion()
-  }
-}
- 
-function borrarSesion() {
-  try {
-    sessionStorage.removeItem(SESSION_KEY);
-  } catch {
-    // ver leerSesion()
-  }
-}
- 
+
 function LoginPersonal() {
+  // Estados del formulario (useState): cada vez que uno cambia, React vuelve a dibujar la pantalla.
+  // usuario y password: lo que el usuario escribe en cada campo
+  // error: mensaje cuando los datos no coinciden con las credenciales
+  // usuarioInvalido / passwordInvalido: marcan en rojo el campo que quedó vacío o mal escrito
   const [usuario, setUsuario] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [usuarioInvalido, setUsuarioInvalido] = useState(false);
   const [passwordInvalido, setPasswordInvalido] = useState(false);
-  const [sesion, setSesion] = useState(() => leerSesion());
- 
+  // enviando: true mientras se espera la respuesta del servidor (deshabilita el botón)
+  const [enviando, setEnviando] = useState(false);
+  // useSesion (src/lib/auth.js) devuelve la sesión activa: cargando (se está verificando), perfil (quién ingresó),
+  // fecha (cuándo ingresó) y refrescar (vuelve a leer la sesión)
+  const { cargando, perfil, fecha, refrescar } = useSesion(ROLES_PERSONAL);
+
+  // Título y descripción de la pestaña; noindex para que los buscadores no muestren el login
   useMetadatos({
-    titulo: 'Acceso del personal — LIMS Laboratorio',
-    descripcion: 'Ingreso al sistema de gestión del laboratorio para el personal.',
+    titulo: 'Login Personal Interno — LIMS Laboratorio',
+    descripcion: 'Acceso al sistema interno del laboratorio para el personal autorizado.',
     ruta: '/login-personal',
     indexar: false,
   });
- 
-  function handleSubmit(evento) {
+
+  // Se ejecuta al enviar el formulario: valida los campos y pide el ingreso a Supabase
+  async function handleSubmit(evento) {
+    // Evita que el navegador recargue la página al enviar el formulario
     evento.preventDefault();
     setError('');
- 
-    const usuarioLimpio = usuario.trim();
-    const usuarioOk = usuarioLimpio !== '';
+
+    const usuarioLimpio = usuario.trim().toLowerCase();
+    const usuarioOk = esUsuarioValido(usuarioLimpio);
     const passwordOk = password !== '';
- 
+
     setUsuarioInvalido(!usuarioOk);
     setPasswordInvalido(!passwordOk);
+    // Si algún campo está mal se corta acá: los errores ya quedaron marcados con los set de arriba
     if (!usuarioOk || !passwordOk) return;
- 
-    if (usuarioLimpio === CREDENCIALES.usuario && password === CREDENCIALES.password) {
-      const fecha = new Date().toLocaleString('es-AR');
-      guardarSesion(usuarioLimpio, fecha);
-      setSesion({ usuario: usuarioLimpio, fecha });
-    } else {
-      setError('Usuario o contraseña incorrectos. Verifique sus credenciales e intente nuevamente.');
+
+    // Pide el ingreso a Supabase Auth (src/lib/auth.js). Si falla, se muestra el mensaje de error
+    setEnviando(true);
+    const resultado = await iniciarSesion(emailDePersonal(usuarioLimpio), password, ROLES_PERSONAL);
+    setEnviando(false);
+    if (resultado.error) {
+      setError(
+        resultado.error === 'credenciales'
+          ? 'Usuario o contraseña incorrectos. Verifique sus credenciales e intente nuevamente.'
+          : resultado.error,
+      );
+      return;
     }
+    setPassword('');
+    await refrescar();
   }
- 
-  function handleLogout() {
-    borrarSesion();
-    setSesion(null);
+
+  // Cierra la sesión en Supabase y deja el formulario vacío
+  async function handleLogout() {
+    await cerrarSesion();
     setUsuario('');
     setPassword('');
     setUsuarioInvalido(false);
     setPasswordInvalido(false);
   }
- 
+
+  // El administrador no ve la bienvenida de este login: entra directo al listado de usuarios
+  // (salvo que todavía tenga la contraseña provisoria: antes tiene que elegir una propia)
+  if (perfil?.rol === 'admin' && !perfil.debe_cambiar_password) return <Navigate to="/usuarios" replace />;
+
   return (
     <LoginLayout
       etiqueta="Acceso del personal"
       titulo="Ingreso al sistema"
-      descripcion="Use su usuario o matrícula y su contraseña para gestionar muestras y validar resultados."
+      descripcion="Use su usuario y su contraseña para gestionar muestras y validar resultados."
       foto={fotoPersonal}
       altFoto="Bioquímica trabajando con el microscopio en el laboratorio"
       leyenda="Todos los accesos y las validaciones de resultados quedan registrados con usuario, fecha y hora."
@@ -100,19 +102,30 @@ function LoginPersonal() {
         </div>
       )}
 
-      {sesion ? (
+      {/* Renderizado condicional: mientras se verifica la sesión se avisa; si todavía usa la contraseña provisoria
+         se le pide elegir una propia; si ya ingresó se muestra la bienvenida con su perfil; si no, el formulario. */}
+      {cargando ? (
+        <p className="text-muted text-center py-4" role="status">
+          Verificando sesión…
+        </p>
+      ) : perfil?.debe_cambiar_password ? (
+        <PrimerIngreso nombre={perfil.nombre} pedirEmail={false} onCompletado={refrescar} onCancelar={handleLogout} />
+      ) : perfil ? (
         <LoginSuccess
-          heading={`Bienvenido/a, ${sesion.usuario}`}
-          fecha={sesion.fecha}
+          heading={`Bienvenido/a, ${perfil.nombre} ${perfil.apellido}`}
+          fecha={fecha}
           onLogout={handleLogout}
           logoutLabel="Cerrar sesión"
           variant="primary"
-        />
+        >
+          {/* Perfil traído de la API con Axios (ver PerfilUsuario.jsx) */}
+          <PerfilUsuario userId={perfil.id} />
+        </LoginSuccess>
       ) : (
         <form onSubmit={handleSubmit} noValidate className="lims-login-form">
           <div>
             <label htmlFor="usuario" className="lims-login-label">
-              Usuario o matrícula
+              Usuario
             </label>
             <div className={`lims-campo${usuarioInvalido ? ' is-invalid' : ''}`}>
               <input
@@ -133,7 +146,7 @@ function LoginPersonal() {
             </div>
             {usuarioInvalido && (
               <div className="invalid-feedback d-block" id="usuarioError">
-                Ingrese su usuario o matrícula.
+                Ingrese su usuario: entre 3 y 32 letras, números, puntos o guiones (ej: bioq_perez).
               </div>
             )}
           </div>
@@ -166,8 +179,12 @@ function LoginPersonal() {
             )}
           </div>
 
-          <button type="submit" className="btn lims-btn-pill lims-btn-primario lims-btn-grande w-100">
-            Ingresar al sistema
+          <button
+            type="submit"
+            className="btn lims-btn-pill lims-btn-primario lims-btn-grande w-100"
+            disabled={enviando}
+          >
+            {enviando ? 'Ingresando…' : 'Ingresar al sistema'}
           </button>
         </form>
       )}

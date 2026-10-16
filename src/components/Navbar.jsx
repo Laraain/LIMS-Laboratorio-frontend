@@ -5,6 +5,7 @@ import Container from 'react-bootstrap/Container';
 import logo from '../assets/logo1.png';
 import './Navbar.css';
 
+// Barra de navegación superior, hecha con React Bootstrap (en el celular se colapsa en un menú)
 function Navbar() {
   return (
     <BsNavbar expand="lg" sticky="top" className="lims-navbar">
@@ -22,6 +23,8 @@ function Navbar() {
 
         <BsNavbar.Collapse id="navbarNav">
           <Nav className="me-auto align-items-lg-center gap-lg-4 py-3 py-lg-0">
+            {/* as={NavLink}: el enlace navega con React Router sin recargar y se marca como activo en la página actual.
+               end: "Inicio" solo se marca activo en "/" exacto, y no en todas las rutas. */}
             <Nav.Link as={NavLink} to="/" end className="lims-nav-link">
               Inicio
             </Nav.Link>
@@ -31,6 +34,7 @@ function Navbar() {
             <Nav.Link as={Link} to="/#preparacion" className="lims-nav-link">
               Preparación
             </Nav.Link>
+            {/* Lleva a la sección de contacto del pie (ver el useEffect de App.jsx) */}
             <Nav.Link as={Link} to="/#contacto" className="lims-nav-link">
               Contacto
             </Nav.Link>

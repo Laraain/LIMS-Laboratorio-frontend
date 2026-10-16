@@ -1,6 +1,10 @@
 import './ServiceCard.css';
 
+// Tarjeta reutilizable de un servicio. Recibe todos sus datos por props (desestructuradas entre llaves),
+// así el mismo componente sirve para cualquier servicio. icono es un componente de Phosphor: se renombra a Icono
+// porque React solo trata como componente a lo que empieza con mayúscula.
 function ServiceCard({ foto, altFoto, icono: Icono, variante, titulo, descripcion }) {
+  // variante (azul o verde) cambia el color de la tarjeta agregando una clase CSS
   return (
     <article className={`lims-service-card lims-service-card--${variante} h-100`}>
       <div className="lims-service-media">

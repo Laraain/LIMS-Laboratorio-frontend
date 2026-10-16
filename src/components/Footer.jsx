@@ -15,6 +15,7 @@ import './Footer.css';
 
 const iconosRedes = { facebook: FacebookLogo, instagram: InstagramLogo, whatsapp: WhatsappLogo, maps: MapTrifold };
 
+// Pie de página con la información del laboratorio, el contacto y las redes sociales
 function Footer() {
   return (
     <footer className="lims-footer" id="contacto">

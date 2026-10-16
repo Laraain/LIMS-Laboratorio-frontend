@@ -24,7 +24,17 @@ function fijarMeta(clave, nombre, contenido) {
   );
 }
 
-// Título, descripción, URL canónica y si la página se indexa, actualizados en cada ruta de la SPA
+// Hook propio para el SEO: actualiza el título, la descripción, la URL canónica y si la página se indexa.
+//
+// ¿Por qué hace falta? En React hay un solo archivo HTML (index.html) para todo el sitio.
+// Al pasar de una página a otra no se carga un HTML nuevo: React solo cambia lo que se ve.
+// Entonces, si no hacemos nada, todas las páginas tendrían el mismo título y la misma descripción.
+//
+// Cómo se usa, al principio de cada página:
+//   useMetadatos({ titulo: 'Título de la pestaña', descripcion: 'Texto que muestra Google', ruta: '/login-paciente' });
+//
+// indexar: si es false, le pide a Google que no muestre esa página en los resultados de búsqueda.
+// Se usa en los logins, porque no tiene sentido que alguien los encuentre buscando en Google.
 function useMetadatos({ titulo, descripcion, ruta, indexar = true }) {
   useEffect(() => {
     const url = `${sitio.url}${ruta}`;

@@ -5,7 +5,9 @@ import Footer from './components/Footer.jsx';
 import Home from './pages/Home.jsx';
 import LoginPaciente from './pages/LoginPaciente.jsx';
 import LoginPersonal from './pages/LoginPersonal.jsx';
+import Usuarios from './pages/Usuarios.jsx';
 
+// Componente principal: arma la estructura común (menú, página actual y pie) y define las rutas
 function App() {
   const { pathname, search, hash, key, state } = useLocation();
   const navigate = useNavigate();
@@ -48,13 +50,17 @@ function App() {
 
   return (
     <>
+      {/* Navbar y Footer quedan fuera de <Routes>: se muestran en todas las páginas */}
       <Navbar />
+      {/* Cada Route asocia una dirección (path) con la página que se muestra */}
       <Routes>
         <Route path="/" element={<Home />} />
         {/* Los servicios ahora son una sección de la home; la ruta vieja redirige ahí */}
         <Route path="/servicios" element={<Navigate to={{ pathname: '/', hash: '#servicios' }} replace />} />
         <Route path="/login-paciente" element={<LoginPaciente />} />
         <Route path="/login-personal" element={<LoginPersonal />} />
+        {/* Solo para administradores: la propia página redirige al login si no hay sesión de admin */}
+        <Route path="/usuarios" element={<Usuarios />} />
       </Routes>
       <Footer />
     </>

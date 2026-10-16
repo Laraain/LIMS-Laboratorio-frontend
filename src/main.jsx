@@ -6,6 +6,8 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import './index.css'
 import App from './App.jsx'
 
+// Punto de entrada: monta la app dentro del <div id="root"> del index.html.
+// BrowserRouter habilita la navegación entre páginas sin recargar (React Router).
 // Íconos Phosphor en trazo fino; toman el tamaño y el color del texto que los rodea
 const estiloIconos = { weight: 'light', size: '1.15em', className: 'lims-icono' }
 

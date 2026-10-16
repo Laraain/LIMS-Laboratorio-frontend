@@ -1,5 +1,5 @@
-# Los logins no se bloquean acá: se excluyen con <meta name="robots" content="noindex">,
-# que los buscadores solo pueden leer si tienen permitido entrar a la página.
+# Se permite recorrer todo el sitio. Los logins no se bloquean acá:
+# llevan <meta name="robots" content="noindex">, que el buscador solo lee si puede entrar a la página.
 User-agent: *
 Allow: /
 
