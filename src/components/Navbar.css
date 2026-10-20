@@ -44,3 +44,129 @@
     font-size: 0.9375rem;
   }
 }
+
+/* Barra dentro del panel del personal: botón del menú lateral, logo, "Inicio" y la sesión a la derecha */
+.lims-navbar--panel .container-fluid {
+  flex-wrap: nowrap;
+}
+
+.lims-navbar-menu {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  margin-left: -6px;
+  border: none;
+  border-radius: 0.625rem;
+  /* Relleno con el azul de marca para que se distinga del fondo blanco y gris de la página */
+  background: var(--bs-primary);
+  box-shadow: 0 2px 6px rgba(var(--bs-primary-rgb), 0.28);
+  font-size: 1.375rem;
+  color: #ffffff;
+  transition:
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.lims-navbar-menu:hover {
+  background: var(--lims-primary-hover);
+  box-shadow: 0 4px 10px rgba(var(--bs-primary-rgb), 0.35);
+}
+
+.lims-navbar-menu:active {
+  box-shadow: none;
+}
+
+.lims-navbar-sesion {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+.lims-navbar-usuario,
+.lims-navbar-reloj {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.lims-navbar-usuario {
+  min-width: 0;
+  font-weight: 600;
+  color: var(--lims-ink);
+}
+
+.lims-navbar-usuario .lims-icono {
+  font-size: 1.25rem;
+  color: var(--lims-brand-soft);
+}
+
+/* Separador entre el nombre y la hora */
+.lims-navbar-reloj {
+  padding-left: 16px;
+  border-left: 1px solid var(--lims-border);
+  font-family: var(--lims-font-mono);
+  font-size: 0.9375rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--lims-muted);
+}
+
+.lims-navbar-sesion .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Tablet: el nombre se corta con "…" si no entra */
+@media (max-width: 991.98px) {
+  .lims-navbar-usuario {
+    max-width: 22ch;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+  }
+
+  .lims-navbar-usuario .lims-icono {
+    display: none;
+  }
+}
+
+/* Celular: el nombre pasa al menú lateral y el botón queda solo con el ícono */
+@media (max-width: 575.98px) {
+  .lims-navbar-usuario {
+    display: none;
+  }
+
+  .lims-navbar-reloj {
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .lims-navbar-reloj .lims-icono {
+    display: none;
+  }
+
+  .lims-navbar-salir {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .lims-navbar-sesion {
+    gap: 10px;
+  }
+
+  .lims-navbar-sesion .btn {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    justify-content: center;
+  }
+}
