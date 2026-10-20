@@ -1,8 +1,6 @@
 import { useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import LoginLayout from '../components/LoginLayout.jsx';
-import LoginSuccess from '../components/LoginSuccess.jsx';
-import PerfilUsuario from '../components/PerfilUsuario.jsx';
 import PrimerIngreso from '../components/PrimerIngreso.jsx';
 import useMetadatos from '../hooks/useMetadatos.js';
 import { ROLES_PERSONAL, cerrarSesion, emailDePersonal, iniciarSesion, useSesion } from '../lib/auth.js';
@@ -26,9 +24,9 @@ function LoginPersonal() {
   const [passwordInvalido, setPasswordInvalido] = useState(false);
   // enviando: true mientras se espera la respuesta del servidor (deshabilita el botón)
   const [enviando, setEnviando] = useState(false);
-  // useSesion (src/lib/auth.js) devuelve la sesión activa: cargando (se está verificando), perfil (quién ingresó),
-  // fecha (cuándo ingresó) y refrescar (vuelve a leer la sesión)
-  const { cargando, perfil, fecha, refrescar } = useSesion(ROLES_PERSONAL);
+  // useSesion (src/lib/auth.js) devuelve la sesión activa: cargando (se está verificando), perfil (quién ingresó)
+  // y refrescar (vuelve a leer la sesión)
+  const { cargando, perfil, refrescar } = useSesion(ROLES_PERSONAL);
 
   // Título y descripción de la pestaña; noindex para que los buscadores no muestren el login
   useMetadatos({
@@ -78,9 +76,9 @@ function LoginPersonal() {
     setPasswordInvalido(false);
   }
 
-  // El administrador no ve la bienvenida de este login: entra directo al listado de usuarios
-  // (salvo que todavía tenga la contraseña provisoria: antes tiene que elegir una propia)
-  if (perfil?.rol === 'admin' && !perfil.debe_cambiar_password) return <Navigate to="/usuarios" replace />;
+  // Con la sesión iniciada se entra al panel del personal (salvo que todavía tenga la contraseña provisoria:
+  // antes tiene que elegir una propia)
+  if (perfil && !perfil.debe_cambiar_password) return <Navigate to="/panel" replace />;
 
   return (
     <LoginLayout
@@ -103,24 +101,13 @@ function LoginPersonal() {
       )}
 
       {/* Renderizado condicional: mientras se verifica la sesión se avisa; si todavía usa la contraseña provisoria
-         se le pide elegir una propia; si ya ingresó se muestra la bienvenida con su perfil; si no, el formulario. */}
+         se le pide elegir una propia; si no, el formulario. Con la sesión completa ya se redirigió al panel (arriba). */}
       {cargando ? (
         <p className="text-muted text-center py-4" role="status">
           Verificando sesión…
         </p>
       ) : perfil?.debe_cambiar_password ? (
         <PrimerIngreso nombre={perfil.nombre} pedirEmail={false} onCompletado={refrescar} onCancelar={handleLogout} />
-      ) : perfil ? (
-        <LoginSuccess
-          heading={`Bienvenido/a, ${perfil.nombre} ${perfil.apellido}`}
-          fecha={fecha}
-          onLogout={handleLogout}
-          logoutLabel="Cerrar sesión"
-          variant="primary"
-        >
-          {/* Perfil traído de la API con Axios (ver PerfilUsuario.jsx) */}
-          <PerfilUsuario userId={perfil.id} />
-        </LoginSuccess>
       ) : (
         <form onSubmit={handleSubmit} noValidate className="lims-login-form">
           <div>

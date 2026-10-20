@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import ROLES from '../data/roles.js';
 import { supabase } from '../lib/supabase.js';
 import './PerfilUsuario.css';
 
@@ -10,18 +11,9 @@ const API_URL = import.meta.env.VITE_API_URL;
 // Clave pública del proyecto (también viene del .env): Supabase la pide en cada petición
 const API_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
-// Nombre legible de cada rol que guarda la base de datos
-const ROLES = {
-  paciente: 'Paciente',
-  admin: 'Administrador',
-  bioquimico: 'Bioquímico',
-  tecnico: 'Técnico',
-  recepcion: 'Recepción',
-};
-
 // Muestra los datos de la cuenta que ingresó. Los pide a la API con Axios apenas aparece en pantalla.
-// Prop userId: el id de la persona, que recibe desde el login.
-function PerfilUsuario({ userId }) {
+// Props: userId (el id de la persona) · titulo (encabezado de la tarjeta)
+function PerfilUsuario({ userId, titulo = 'Mi perfil' }) {
   // Estados (useState): cada vez que uno cambia, React vuelve a dibujar el componente
   // perfil: los datos que devolvió la API (null mientras no llegaron)
   // cargando: true hasta que la API responde, para mostrar el aviso de carga
@@ -129,7 +121,7 @@ function PerfilUsuario({ userId }) {
   return (
     <section className="lims-perfil" aria-labelledby="perfil-titulo">
       <h3 id="perfil-titulo" className="lims-perfil-titulo">
-        Mi perfil
+        {titulo}
       </h3>
       <dl className="lims-perfil-lista">
         {/* map(): por cada fila arma un par etiqueta-valor, sin repetir código */}

@@ -2,11 +2,59 @@ import { NavLink, Link } from 'react-router-dom';
 import BsNavbar from 'react-bootstrap/Navbar';
 import Nav from 'react-bootstrap/Nav';
 import Container from 'react-bootstrap/Container';
+import { List, SignOut, UserCircle } from '@phosphor-icons/react';
+import Reloj from './Reloj.jsx';
 import logo from '../assets/logo1.png';
 import './Navbar.css';
 
-// Barra de navegación superior, hecha con React Bootstrap (en el celular se colapsa en un menú)
-function Navbar() {
+// Barra de navegación superior, hecha con React Bootstrap (en el celular se colapsa en un menú).
+// Sin props es la barra del sitio público. Dentro del panel del personal recibe la sesión y cambia:
+// perfil y fecha: quién ingresó y cuándo · menuAbierto / onAlternarMenu: botón que muestra o esconde el menú lateral
+// onCerrarSesion: botón "Cerrar sesión"
+function Navbar({ perfil, fecha, menuAbierto, onAlternarMenu, onCerrarSesion }) {
+  if (perfil) {
+    return (
+      <BsNavbar sticky="top" className="lims-navbar lims-navbar--panel">
+        <Container fluid className="px-3 px-lg-4 gap-2 gap-sm-3">
+          <button
+            type="button"
+            className="lims-navbar-menu"
+            onClick={onAlternarMenu}
+            aria-controls="panel-menu"
+            aria-expanded={menuAbierto}
+            aria-label={menuAbierto ? 'Esconder menú' : 'Mostrar menú'}
+          >
+            {/* Trazo más grueso que el resto de los íconos: es el control principal del panel */}
+            <List weight="bold" aria-hidden="true" />
+          </button>
+
+          <BsNavbar.Brand as={NavLink} to="/" className="d-flex align-items-center py-0 me-0">
+            <img src={logo} alt="LIMS Laboratorio Bioquímico" height="30" />
+          </BsNavbar.Brand>
+
+          {/* Con la sesión iniciada "Inicio" lleva a la bienvenida del panel, no a la home del sitio */}
+          <Nav className="me-auto ms-sm-2">
+            <Nav.Link as={NavLink} to="/panel" end className="lims-nav-link">
+              Inicio
+            </Nav.Link>
+          </Nav>
+
+          <div className="lims-navbar-sesion">
+            <span className="lims-navbar-usuario">
+              <UserCircle aria-hidden="true" />
+              {perfil.nombre} {perfil.apellido}
+            </span>
+            <Reloj className="lims-navbar-reloj" titulo={`Sesión iniciada el ${fecha}`} />
+            <button type="button" className="btn lims-btn-pill lims-btn-secundario lims-btn-chico" onClick={onCerrarSesion}>
+              <SignOut className="lims-icono" aria-hidden="true" />
+              <span className="lims-navbar-salir">Cerrar sesión</span>
+            </button>
+          </div>
+        </Container>
+      </BsNavbar>
+    );
+  }
+
   return (
     <BsNavbar expand="lg" sticky="top" className="lims-navbar">
       <Container className="px-3 px-lg-4">
