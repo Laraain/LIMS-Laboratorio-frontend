@@ -15,7 +15,8 @@ function App() {
   const { pathname, search, hash, key, state } = useLocation();
   const navigate = useNavigate();
   const paginaAnterior = useRef(pathname);
-  // El panel del personal dibuja su propia barra superior, con la sesión y el botón del menú lateral
+  // El panel del personal dibuja su propia barra superior (con la sesión y el botón del menú lateral)
+  // y no lleva el pie del sitio: es una herramienta de trabajo y el menú ocupa todo el alto
   const enPanel = pathname.startsWith('/panel');
 
   // El scroll lo maneja la app: si el navegador también restaura la posición al recargar, los dos se pelean
@@ -55,7 +56,7 @@ function App() {
 
   return (
     <>
-      {/* Navbar y Footer quedan fuera de <Routes>: se muestran en todas las páginas (el panel trae su propia Navbar) */}
+      {/* Navbar y Footer quedan fuera de <Routes>: se muestran en todas las páginas del sitio público */}
       {!enPanel && <Navbar />}
       {/* Cada Route asocia una dirección (path) con la página que se muestra */}
       <Routes>
@@ -74,7 +75,7 @@ function App() {
         {/* La administración de perfiles ahora vive dentro del panel; la ruta vieja redirige ahí */}
         <Route path="/usuarios" element={<Navigate to="/panel/usuarios" replace />} />
       </Routes>
-      <Footer />
+      {!enPanel && <Footer />}
     </>
   );
 }
