@@ -1,0 +1,133 @@
+/* Panel del personal: menú lateral + contenido sobre fondo gris claro (las tarjetas blancas se destacan) */
+.lims-panel {
+  display: flex;
+  flex: 1;
+  background: var(--lims-surface-2);
+}
+
+.lims-panel-contenido {
+  flex: 1;
+  min-width: 0;
+  padding: 40px 0 64px;
+}
+
+.lims-panel-verificando {
+  min-height: 70vh;
+  padding: 48px 16px;
+  background: var(--lims-surface-2);
+}
+
+/* Encabezado que comparten las páginas del panel */
+.lims-panel-cabecera {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px 24px;
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--lims-border);
+}
+
+/* Mismos textos que el encabezado de los logins */
+.lims-panel-etiqueta {
+  margin-bottom: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--lims-brand-soft);
+}
+
+.lims-panel-titulo {
+  margin-bottom: 8px;
+  font-size: clamp(1.75rem, 3.4vw, 2.5rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: var(--bs-primary);
+}
+
+.lims-panel-texto {
+  color: var(--lims-muted);
+}
+
+/* Bienvenida: texto centrado en el espacio del contenido */
+.lims-bienvenida {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100svh - 68px - 104px);
+  padding: 24px 16px;
+  text-align: center;
+}
+
+.lims-bienvenida-icono {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  margin-bottom: 24px;
+  border-radius: 999px;
+  background: rgba(var(--bs-primary-rgb), 0.08);
+  font-size: 2rem;
+  color: var(--bs-primary);
+}
+
+.lims-bienvenida-titulo {
+  max-width: 22ch;
+  margin-bottom: 16px;
+  font-size: clamp(1.75rem, 3.6vw, 2.75rem);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  color: var(--bs-primary);
+  text-wrap: balance;
+}
+
+.lims-bienvenida-titulo span {
+  color: var(--lims-ink);
+}
+
+.lims-bienvenida-rol {
+  margin-bottom: 8px;
+  font-size: 1.125rem;
+  color: var(--lims-text);
+}
+
+.lims-bienvenida-rol strong {
+  font-weight: 600;
+  color: var(--lims-ink);
+}
+
+.lims-bienvenida-fecha {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--lims-muted);
+}
+
+/* Mi perfil: la tarjeta de datos con un ancho cómodo de leer */
+.lims-panel-perfil {
+  max-width: 560px;
+}
+
+.lims-panel-perfil .lims-perfil {
+  background: #ffffff;
+}
+
+/* Celular: ningún texto por debajo de 16px y los botones del encabezado a todo el ancho */
+@media (max-width: 575.98px) {
+  .lims-panel-contenido {
+    padding-top: 32px;
+  }
+
+  .lims-panel-etiqueta {
+    font-size: 1rem;
+  }
+
+  .lims-panel-cabecera .btn {
+    width: 100%;
+  }
+}

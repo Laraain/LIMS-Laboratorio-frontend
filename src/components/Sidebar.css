@@ -1,0 +1,219 @@
+/* Menú lateral del panel. En la PC queda fijo a la izquierda, debajo de la barra de arriba;
+   en el celular (menos de 992px) se abre por encima del contenido. Las dos versiones se pueden esconder. */
+.lims-sidebar {
+  position: sticky;
+  top: 68px;
+  align-self: flex-start;
+  flex: 0 0 auto;
+  /* El ancho se ajusta a la opción más larga, sin cortarla en dos líneas */
+  width: max-content;
+  height: calc(100svh - 68px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: #ffffff;
+  border-right: 1px solid var(--lims-border-soft);
+  /* Permite animar el ancho desde max-content hasta 0 (en navegadores que no lo soportan, se esconde sin animación) */
+  interpolate-size: allow-keywords;
+  transition:
+    width 0.22s ease,
+    visibility 0.22s;
+}
+
+/* El interior mide lo que su contenido: al esconder el menú se achica el contenedor, no se reacomoda el texto */
+.lims-sidebar-interior {
+  width: max-content;
+  min-width: 100%;
+  padding: 20px 10px;
+}
+
+/* Escondido en la PC: el contenido pasa a ocupar todo el ancho.
+   visibility: hidden además saca los enlaces del recorrido con Tab */
+.lims-panel--cerrado .lims-sidebar {
+  width: 0;
+  visibility: hidden;
+  border-right-width: 0;
+}
+
+.lims-sidebar-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding-inline: 10px;
+}
+
+/* Mismo estilo que las etiquetas de los encabezados del sitio */
+.lims-sidebar-etiqueta {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--lims-brand-soft);
+}
+
+/* El botón para cerrar y el nombre de la persona solo hacen falta en el celular */
+.lims-sidebar-cerrar,
+.lims-sidebar-usuario {
+  display: none;
+}
+
+.lims-sidebar-lista {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lims-sidebar-enlace {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px 9px 10px;
+  border-radius: 0.625rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  line-height: 1.3;
+  white-space: nowrap;
+  color: var(--lims-text);
+  text-decoration: none;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.lims-sidebar-enlace .lims-icono {
+  font-size: 1.2rem;
+  color: var(--lims-brand-soft);
+}
+
+.lims-sidebar-enlace:hover {
+  background: var(--lims-surface-2);
+  color: var(--bs-primary);
+}
+
+/* Opción de la página actual: fondo azul suave, texto y barrita lateral en el azul de marca */
+.lims-sidebar-enlace.active {
+  position: relative;
+  background: rgba(var(--bs-primary-rgb), 0.08);
+  color: var(--bs-primary);
+  font-weight: 600;
+}
+
+.lims-sidebar-enlace.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: 999px;
+  background: var(--bs-primary);
+}
+
+.lims-sidebar-enlace:hover .lims-icono,
+.lims-sidebar-enlace.active .lims-icono {
+  color: var(--bs-primary);
+}
+
+.lims-sidebar :focus-visible {
+  outline: 3px solid var(--bs-primary);
+  outline-offset: 2px;
+}
+
+.lims-sidebar-fondo {
+  display: none;
+}
+
+/* Celular y tablet: el menú se abre por encima del contenido, con un fondo oscuro detrás */
+@media (max-width: 991.98px) {
+  .lims-sidebar,
+  .lims-panel--cerrado .lims-sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    /* Con flex-start (el valor de la PC) el menú fijo se achicaría al alto de su contenido */
+    align-self: stretch;
+    z-index: 1045;
+    width: max-content;
+    max-width: 86vw;
+    height: auto;
+    border-right: 1px solid var(--lims-border-soft);
+    box-shadow: 0 12px 40px rgba(10, 23, 48, 0.18);
+    transform: translateX(-100%);
+    visibility: hidden;
+    transition:
+      transform 0.25s ease,
+      visibility 0.25s;
+  }
+
+  .lims-panel--abierto .lims-sidebar {
+    transform: none;
+    visibility: visible;
+  }
+
+
+  .lims-sidebar-cerrar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    margin-right: -8px;
+    border: none;
+    border-radius: 999px;
+    background: transparent;
+    font-size: 1.25rem;
+    color: var(--lims-ink);
+  }
+
+  .lims-sidebar-cerrar:hover {
+    background: var(--lims-surface-2);
+  }
+
+  .lims-sidebar-fondo {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 1040;
+    background: rgba(10, 23, 48, 0.45);
+  }
+}
+
+/* En el celular la barra de arriba no muestra el nombre: va dentro del menú */
+@media (max-width: 575.98px) {
+  .lims-sidebar-usuario {
+    display: grid;
+    gap: 2px;
+    margin: 0 0 16px;
+    padding: 12px;
+    border-radius: 0.625rem;
+    background: var(--lims-surface-2);
+  }
+
+  .lims-sidebar-usuario strong {
+    font-weight: 600;
+    color: var(--lims-ink);
+    overflow-wrap: anywhere;
+  }
+
+  .lims-sidebar-usuario span {
+    color: var(--lims-muted);
+  }
+
+  /* En el celular ningún texto baja de 16px, como en el resto del sitio */
+  .lims-sidebar-enlace {
+    padding-block: 13px;
+    font-size: 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lims-sidebar,
+  .lims-panel--cerrado .lims-sidebar,
+  .lims-sidebar-enlace {
+    transition: none;
+  }
+}
