@@ -9,6 +9,7 @@ import Panel from './pages/Panel.jsx';
 import PanelInicio from './pages/PanelInicio.jsx';
 import MiPerfil from './pages/MiPerfil.jsx';
 import Usuarios from './pages/Usuarios.jsx';
+import Analisis from './pages/Analisis.jsx';
 
 // Componente principal: arma la estructura común (menú, página actual y pie) y define las rutas
 function App() {
@@ -69,6 +70,8 @@ function App() {
         <Route path="/panel" element={<Panel />}>
           <Route index element={<PanelInicio />} />
           <Route path="perfil" element={<MiPerfil />} />
+          {/* La ve todo el personal; solo el administrador puede modificar el catálogo */}
+          <Route path="analisis" element={<Analisis />} />
           {/* Solo para administradores: la propia página redirige al inicio del panel si el rol no es admin */}
           <Route path="usuarios" element={<Usuarios />} />
         </Route>

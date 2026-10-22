@@ -1,0 +1,24 @@
+/* Catálogo de análisis: usa la tabla y las tarjetas de ListaPerfiles.css y agrega solo lo propio */
+
+/* Código del análisis en una etiqueta, en el lugar que en perfiles ocupan las iniciales */
+.lims-codigo {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  min-width: 4.5rem;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: #eef3f9;
+  color: var(--bs-primary);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+/* Números alineados en columna (todas las cifras ocupan el mismo ancho) y sin cortarse en dos renglones */
+.lims-celda-numero {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
