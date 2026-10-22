@@ -69,6 +69,8 @@ export const horarios = {
     { dias: 'Sábados', horas: '8:00 a 12:00' },
   ],
   lineasExtracciones: [{ dias: 'Lunes a sábados', horas: '8:00 a 10:00' }],
+  // Horario de extracción que usa el panel. aviso: desde esa hora recepción ve cuántos pacientes quedan en espera
+  extraccion: { dias: [1, 2, 3, 4, 5, 6], desde: '08:00', hasta: '10:00', aviso: '09:30' },
 };
 
 export const carrusel = [

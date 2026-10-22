@@ -1,0 +1,262 @@
+/* Fila de atención: recepción, extracción y configuración. Usa los textos y avisos de ListaPerfiles.css */
+
+/* Tarjeta blanca que comparten los bloques de estas pantallas */
+.lims-fila,
+.lims-registro,
+.lims-llamado,
+.lims-config {
+  padding: 24px;
+  border: 1px solid var(--lims-border);
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.lims-config {
+  max-width: 36rem;
+}
+
+.lims-config-campo {
+  width: 8rem;
+}
+
+/* ── Aviso de cierre (recepción, desde las 9:30) ── */
+.lims-aviso-cierre {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding: 16px 20px;
+  border: 1px solid #f0c36d;
+  border-radius: 12px;
+  background: #fff8e6;
+  color: #5c4100;
+}
+
+.lims-aviso-cierre-icono {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  color: #b07800;
+}
+
+/* ── Registro de llegada ── */
+.lims-registro-busqueda {
+  margin-bottom: 8px;
+}
+
+.lims-registro-resultado {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--lims-border-soft);
+}
+
+.lims-registro-paciente {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.lims-registro-paciente-icono {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  padding: 8px;
+  border-radius: 50%;
+  background: #eef3f9;
+  color: var(--bs-primary);
+}
+
+.lims-registro-ya,
+.lims-registro-nuevo {
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: var(--lims-surface-2);
+  color: var(--lims-text);
+}
+
+.lims-registro-nuevo {
+  margin-bottom: 20px;
+}
+
+/* Número de atención grande en la ventana de SweetAlert2 */
+.lims-swal-numero {
+  margin-bottom: 8px;
+  font-size: 4rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--bs-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Fila del día ── */
+.lims-fila-encabezado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px 16px;
+  margin-bottom: 16px;
+}
+
+.lims-fila-resumen {
+  color: var(--lims-muted);
+}
+
+.lims-fila-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lims-fila-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--lims-border-soft);
+  border-radius: 12px;
+  background: var(--lims-surface-2);
+}
+
+/* El que está llamado se destaca: es el que tiene que ir al box */
+.lims-fila-item--llamado {
+  border-color: var(--lims-accent);
+  background: #ecf8f5;
+}
+
+.lims-fila-item--atendido,
+.lims-fila-item--se_retiro {
+  opacity: 0.75;
+}
+
+.lims-fila-numero {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  min-width: 48px;
+  height: 48px;
+  padding: 0 8px;
+  border-radius: 12px;
+  background: #ffffff;
+  color: var(--bs-primary);
+  font-size: 1.375rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  box-shadow: inset 0 0 0 1px var(--lims-border);
+}
+
+.lims-fila-datos {
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+
+.lims-fila-etiqueta {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.lims-fila-etiqueta--pediatrica {
+  background: #f3e8ff;
+  color: #6b21a8;
+}
+
+.lims-fila-estado {
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.lims-fila-estado--en_espera {
+  background: #eef3f9;
+  color: var(--bs-primary);
+}
+
+.lims-fila-estado--llamado {
+  background: var(--lims-accent);
+  color: #ffffff;
+}
+
+.lims-fila-estado--atendido {
+  background: #e7f6ec;
+  color: #1f6b3a;
+}
+
+.lims-fila-estado--se_retiro {
+  background: var(--lims-surface);
+  color: var(--lims-muted);
+}
+
+.lims-fila-terminados {
+  margin-top: 16px;
+}
+
+.lims-fila-terminados summary {
+  margin-bottom: 8px;
+  color: var(--lims-muted);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ── Extracción ── */
+.lims-box-selector {
+  min-width: 10rem;
+}
+
+.lims-llamado-actual {
+  padding: 20px;
+  border: 2px solid var(--lims-accent);
+  border-radius: 16px;
+  background: #ecf8f5;
+}
+
+.lims-llamado-numero {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 3.5rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--bs-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.lims-llamado-nombre {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--lims-ink);
+}
+
+.lims-llamado-vacio {
+  color: var(--lims-text);
+}
+
+.lims-llamado-boton {
+  width: 100%;
+  padding-top: 14px;
+  padding-bottom: 14px;
+  font-size: 1.125rem;
+}
+
+@media (max-width: 575.98px) {
+  .lims-fila,
+  .lims-registro,
+  .lims-llamado,
+  .lims-config {
+    padding: 16px;
+  }
+
+  .lims-box-selector {
+    width: 100%;
+  }
+}

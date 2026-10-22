@@ -5,6 +5,8 @@ import Modal from 'react-bootstrap/Modal';
 import ROLES from '../data/roles.js';
 import { FUNCIONES_URL, encabezados, mensajeDeErrorApi } from '../lib/api.js';
 import { ROLES_PERSONAL } from '../lib/auth.js';
+import { datosObraSocial, erroresObraSocial } from '../lib/obrasSociales.js';
+import CamposObraSocial from './CamposObraSocial.jsx';
 
 // Valores con los que arranca el formulario (los dos tipos de perfil comparten estos campos)
 const DATOS_INICIALES = {
@@ -14,6 +16,8 @@ const DATOS_INICIALES = {
   dni: '',
   fechaNacimiento: '',
   sexo: '',
+  obraSocial: '',
+  nroAfiliado: '',
   usuario: '',
   rol: 'tecnico',
   cargo: '',
@@ -61,6 +65,7 @@ function ModalNuevoPerfil({ onCerrar, onCreado }) {
         ? {
             dni: !/^\d{7,8}$/.test(dni),
             fechaNacimiento: datos.fechaNacimiento === '' || datos.fechaNacimiento > hoy || datos.fechaNacimiento < '1900-01-01',
+            ...erroresObraSocial(datos.obraSocial, datos.nroAfiliado),
           }
         : {
             usuario: !/^[a-z0-9._-]{3,32}$/.test(usuario),
@@ -79,6 +84,7 @@ function ModalNuevoPerfil({ onCerrar, onCreado }) {
             fecha_nacimiento: datos.fechaNacimiento,
             sexo: datos.sexo,
             telefono: datos.telefono.trim(),
+            ...datosObraSocial(datos.obraSocial, datos.nroAfiliado),
           }
         : {
             usuario,
@@ -239,6 +245,20 @@ function ModalNuevoPerfil({ onCerrar, onCreado }) {
                     <option value="X">X</option>
                   </select>
                 </div>
+                <CamposObraSocial
+                  prefijo="nuevo"
+                  obraSocial={datos.obraSocial}
+                  nroAfiliado={datos.nroAfiliado}
+                  errores={errores}
+                  onObraSocial={(valor) => {
+                    setDatos((previos) => ({ ...previos, obraSocial: valor }));
+                    setErrores((previos) => ({ ...previos, obraSocial: false, nroAfiliado: false }));
+                  }}
+                  onNroAfiliado={(valor) => {
+                    setDatos((previos) => ({ ...previos, nroAfiliado: valor }));
+                    setErrores((previos) => ({ ...previos, nroAfiliado: false }));
+                  }}
+                />
               </>
             ) : (
               <>
