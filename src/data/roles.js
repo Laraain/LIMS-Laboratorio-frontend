@@ -7,4 +7,9 @@ const ROLES = {
   paciente: { nombre: 'Paciente' },
 };
 
+// Quiénes usan cada pantalla de la fila de atención (el admin entra a todas)
+export const ROLES_RECEPCION = ['recepcion', 'admin'];
+// Extrae el técnico; el bioquímico queda habilitado por alguna eventualidad
+export const ROLES_EXTRACCION = ['tecnico', 'bioquimico', 'admin'];
+
 export default ROLES;
