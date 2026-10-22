@@ -22,11 +22,19 @@ export function mensajeDeErrorApi(error) {
   if (respuesta?.error) return respuesta.error;
   // La API de tablas responde con un código de PostgreSQL: 23505 = dato repetido, 23514 = formato inválido
   if (respuesta?.code === '23505') {
-    return /matricula/i.test(respuesta.message ?? '')
-      ? 'Esa matrícula ya está asignada a otra persona.'
-      : 'Ya existe otro registro con ese dato.';
+    const detalle = respuesta.message ?? '';
+    if (/matricula/i.test(detalle)) return 'Esa matrícula ya está asignada a otra persona.';
+    if (/analisis_codigo/i.test(detalle)) return 'Ya existe otro análisis con ese código.';
+    return 'Ya existe otro registro con ese dato.';
   }
   if (respuesta?.code === '23514') return 'Alguno de los datos no tiene un formato válido.';
+  // Errores que lanzan las funciones de la fila de atención, con el mensaje en español
+  if (respuesta?.code === '42501') {
+    return /row-level security/i.test(respuesta.message ?? '')
+      ? 'No tiene permiso para hacer esta operación.'
+      : respuesta.message;
+  }
+  if (['22023', 'P0002'].includes(respuesta?.code) && respuesta.message) return respuesta.message;
   if (!error.response) return 'No se pudo conectar con el servidor. Revise su conexión e intente nuevamente.';
   return 'Ocurrió un error inesperado. Intente nuevamente.';
 }

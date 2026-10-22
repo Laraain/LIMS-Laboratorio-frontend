@@ -18,6 +18,7 @@ El sitio informa a los pacientes cómo prepararse para sus estudios, los horario
 - **Login del personal** con usuario y contraseña, con la misma validación.
 - **Autenticación real con Supabase Auth**: la sesión se mantiene al recargar la página y se puede cerrar.
 - **Panel de administración** (`/usuarios`): al ingresar como administrador se muestran todos los perfiles creados, con sus datos y roles, y un filtro por rol. Desde ahí el administrador **crea perfiles nuevos** (pacientes y personal) y **edita los existentes**, en ventanas (modales). Los demás usuarios ven solo su propio perfil.
+- **Catálogo de análisis** (`/panel/analisis`): todo el personal ve los estudios que hace el laboratorio, con su tipo de muestra y tubo, valor de referencia, unidad y demora, con filtro por tipo de muestra y buscador. El administrador **agrega análisis**, **los edita** y **los da de baja** (no se borran: dejan de ofrecerse en órdenes nuevas), en una ventana con validación de cada campo.
 - **Perfil del usuario**: al ingresar se muestran sus datos (nombre, rol, DNI o usuario, etc.), pedidos a la API de Supabase con Axios, con aviso de carga y manejo de errores.
 - **Navegación sin recargar la página** entre las distintas vistas, con barra de navegación y pie comunes a todo el sitio.
 - **Diseño adaptable** a celular, tablet y escritorio, con textos de al menos 16 px en el celular.
