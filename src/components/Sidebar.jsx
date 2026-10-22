@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { House, UserCircle, UsersThree, X } from '@phosphor-icons/react';
+import { Flask, House, UserCircle, UsersThree, X } from '@phosphor-icons/react';
 import ROLES from '../data/roles.js';
 import './Sidebar.css';
 
@@ -8,6 +8,7 @@ import './Sidebar.css';
 const OPCIONES = [
   { ruta: '/panel', texto: 'Inicio', icono: House, end: true },
   { ruta: '/panel/perfil', texto: 'Mi perfil', icono: UserCircle },
+  { ruta: '/panel/analisis', texto: 'Catálogo de análisis', icono: Flask },
   { ruta: '/panel/usuarios', texto: 'Administración de perfiles', icono: UsersThree, roles: ['admin'] },
 ];
 
