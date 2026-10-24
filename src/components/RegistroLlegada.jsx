@@ -38,8 +38,9 @@ async function buscarPorDni(dni) {
 // Recepción: registra la llegada de un paciente a la fila del día.
 // 1. Se busca por DNI. 2. Si no está cargado, se completa su ficha: al guardarla se crea también su cuenta del portal.
 // 3. Se elige el tipo de extracción y se registra la llegada: la base le asigna el número del día.
-// Props: fila (la fila de hoy, para avisar si ya está registrado) · onRegistrado (se llama después de registrar)
-function RegistroLlegada({ fila, onRegistrado }) {
+// Props: fila (la fila de hoy, para avisar si ya está registrado) · sucursal (donde se registra la llegada)
+// sucursales (todas, para nombrar la otra si el paciente ya está allá) · onRegistrado (se llama después de registrar)
+function RegistroLlegada({ fila, sucursal, sucursales, onRegistrado }) {
   const [dniBuscado, setDniBuscado] = useState('');
   const [errorDni, setErrorDni] = useState(false);
   const [buscando, setBuscando] = useState(false);
@@ -98,6 +99,22 @@ function RegistroLlegada({ fila, onRegistrado }) {
 
   // Muestra el número asignado y ofrece seguir con la carga de la orden
   async function mostrarNumero(turno, paciente, yaRegistrado) {
+    // Un paciente se registra una sola vez por día: si ya está en la fila de la otra sucursal, se avisa y nada más
+    if (turno.sucursal_id !== sucursal.id) {
+      const otra = sucursales.find((opcion) => opcion.id === turno.sucursal_id);
+      await Swal.fire({
+        icon: 'warning',
+        title: 'Ya está registrado en otra sucursal',
+        html:
+          `<p class="mb-1">${escapar(paciente.apellido)}, ${escapar(paciente.nombre)} está hoy en la fila de ` +
+          `<strong>${escapar(otra?.nombre ?? 'otra sucursal')}</strong> con el número ${escapar(turno.numero)}.</p>` +
+          '<p class="mb-0">Si se cambió de sucursal, pídale a esa recepción que lo marque como "Se retiró".</p>',
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#1c4e80',
+      });
+      return;
+    }
+
     const { isConfirmed } = await Swal.fire({
       icon: yaRegistrado ? 'info' : 'success',
       title: yaRegistrado ? 'Ya estaba en la fila de hoy' : 'Llegada registrada',
@@ -129,7 +146,7 @@ function RegistroLlegada({ fila, onRegistrado }) {
     const paciente = resultado.paciente;
     setGuardando(true);
     try {
-      const { turno, ya_registrado: yaRegistrado } = await registrarLlegada(paciente.id, tipo);
+      const { turno, ya_registrado: yaRegistrado } = await registrarLlegada(paciente.id, tipo, sucursal.id);
       onRegistrado();
       await mostrarNumero(turno, paciente, yaRegistrado);
       reiniciar();
@@ -208,7 +225,7 @@ function RegistroLlegada({ fila, onRegistrado }) {
     });
 
     try {
-      const { turno, ya_registrado: yaRegistrado } = await registrarLlegada(alta.paciente_id, tipo);
+      const { turno, ya_registrado: yaRegistrado } = await registrarLlegada(alta.paciente_id, tipo, sucursal.id);
       onRegistrado();
       await mostrarNumero(turno, { nombre: ficha.nombre.trim(), apellido: ficha.apellido.trim() }, yaRegistrado);
       reiniciar();
