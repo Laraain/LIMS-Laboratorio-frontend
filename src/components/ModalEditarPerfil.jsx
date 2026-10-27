@@ -5,6 +5,9 @@ import Modal from 'react-bootstrap/Modal';
 import ROLES from '../data/roles.js';
 import { API_URL, encabezados, mensajeDeErrorApi } from '../lib/api.js';
 import { ROLES_PERSONAL } from '../lib/auth.js';
+import { datosObraSocial, erroresObraSocial, PARTICULAR } from '../lib/obrasSociales.js';
+import CamposObraSocial from './CamposObraSocial.jsx';
+import { hoyTucuman } from '../lib/hora.js';
 
 // PATCH a una tabla: modifica la fila cuya columna sea igual al valor indicado.
 // Si la política de seguridad no deja modificar esa fila, la API responde bien pero sin filas:
@@ -23,21 +26,34 @@ async function modificar(tabla, columna, valor, datos, headers) {
 
 // Ventana para ver los datos de un perfil y, si se decide, modificarlos.
 // Props: perfil (la fila que eligió el admin) · idActual (el id del admin que está logueado)
+// pacienteId: id de la ficha en pacientes (permite editar aunque todavía no tenga cuenta)
+// soloDatos: recepción edita los datos del paciente, pero no puede activar ni desactivar cuentas
 // onCerrar: cierra la ventana sin guardar · onGuardado: se llama después de guardar
-function ModalEditarPerfil({ perfil, idActual, onCerrar, onGuardado }) {
+function ModalEditarPerfil({ perfil, idActual, pacienteId, soloDatos = false, onCerrar, onGuardado }) {
   const esPersonal = perfil.rol !== 'paciente';
   // El admin no puede desactivar su propia cuenta ni cambiarse el rol: se quedaría sin acceso
   const esMiCuenta = perfil.id === idActual;
+  // Con soloDatos el estado de la cuenta no se muestra ni se envía; sin perfil tampoco hay cuenta que administrar
+  const puedeAdministrarCuenta = !soloDatos && Boolean(perfil.id);
 
   // Estados (useState): cada campo del formulario arranca con el valor actual del perfil.
   // La ventana se crea de nuevo para cada perfil (ver key en ListaPerfiles), por eso alcanza con inicializarlos así.
   const [nombre, setNombre] = useState(perfil.nombre);
   const [apellido, setApellido] = useState(perfil.apellido);
   const [telefono, setTelefono] = useState(perfil.telefono ?? '');
-  const [activo, setActivo] = useState(perfil.activo);
+  const [activo, setActivo] = useState(perfil.activo ?? true);
   const [rol, setRol] = useState(perfil.rol);
   const [cargo, setCargo] = useState(perfil.personal?.cargo ?? '');
   const [matricula, setMatricula] = useState(perfil.personal?.matricula ?? '');
+  // Datos de la ficha del paciente (perfil.pacientes viene de la consulta a la API)
+  const [fechaNacimiento, setFechaNacimiento] = useState(perfil.pacientes?.fecha_nacimiento ?? '');
+  const [sexo, setSexo] = useState(perfil.pacientes?.sexo ?? '');
+  const [domicilio, setDomicilio] = useState(perfil.pacientes?.domicilio ?? '');
+  // En la base, obra_social_id nulo significa "particular"
+  const [obraSocial, setObraSocial] = useState(
+    perfil.pacientes ? (perfil.pacientes.obra_social_id ? String(perfil.pacientes.obra_social_id) : PARTICULAR) : '',
+  );
+  const [nroAfiliado, setNroAfiliado] = useState(perfil.pacientes?.nro_afiliado ?? '');
   const [errores, setErrores] = useState({});
   const [guardando, setGuardando] = useState(false);
 
@@ -46,10 +62,16 @@ function ModalEditarPerfil({ perfil, idActual, onCerrar, onGuardado }) {
     evento.preventDefault();
 
     // Validación: nombre y apellido obligatorios; el bioquímico necesita matrícula
+    // y el paciente, fecha de nacimiento y obra social
     const nuevosErrores = {
       nombre: nombre.trim() === '',
       apellido: apellido.trim() === '',
       matricula: esPersonal && rol === 'bioquimico' && matricula.trim() === '',
+      ...(!esPersonal && {
+        fechaNacimiento:
+          fechaNacimiento === '' || fechaNacimiento > hoyTucuman() || fechaNacimiento < '1900-01-01',
+        ...erroresObraSocial(obraSocial, nroAfiliado),
+      }),
     };
     setErrores(nuevosErrores);
     if (Object.values(nuevosErrores).some(Boolean)) return;
@@ -59,7 +81,7 @@ function ModalEditarPerfil({ perfil, idActual, onCerrar, onGuardado }) {
       nombre: nombre.trim(),
       apellido: apellido.trim(),
       telefono: telefono.trim() || null,
-      activo,
+      ...(puedeAdministrarCuenta && { activo }),
       ...(esPersonal && { rol }),
     };
     const cambiosPerfil = Object.fromEntries(
@@ -72,11 +94,31 @@ function ModalEditarPerfil({ perfil, idActual, onCerrar, onGuardado }) {
         cambiosPersonal.matricula = matricula.trim() || null;
       }
     }
-    // El paciente guarda su nombre y teléfono también en su ficha: se mantienen iguales
+    // Ficha del paciente: nombre, apellido y teléfono se guardan también en pacientes,
+    // y se suman los datos propios de la ficha (nacimiento, sexo, domicilio y obra social)
     const cambiosFicha = {};
     if (!esPersonal) {
-      ['nombre', 'apellido', 'telefono'].forEach((campo) => {
-        if (campo in cambiosPerfil) cambiosFicha[campo] = cambiosPerfil[campo];
+      const ficha = {
+        nombre: nuevoPerfil.nombre,
+        apellido: nuevoPerfil.apellido,
+        telefono: nuevoPerfil.telefono,
+        fecha_nacimiento: fechaNacimiento,
+        sexo: sexo || null,
+        domicilio: domicilio.trim() || null,
+        ...datosObraSocial(obraSocial, nroAfiliado),
+      };
+      const fichaActual = {
+        nombre: perfil.nombre,
+        apellido: perfil.apellido,
+        telefono: perfil.telefono ?? null,
+        fecha_nacimiento: perfil.pacientes?.fecha_nacimiento ?? null,
+        sexo: perfil.pacientes?.sexo ?? null,
+        domicilio: perfil.pacientes?.domicilio ?? null,
+        obra_social_id: perfil.pacientes?.obra_social_id ?? null,
+        nro_afiliado: perfil.pacientes?.nro_afiliado ?? null,
+      };
+      Object.entries(ficha).forEach(([campo, valor]) => {
+        if (valor !== fichaActual[campo]) cambiosFicha[campo] = valor;
       });
     }
 
@@ -108,7 +150,9 @@ function ModalEditarPerfil({ perfil, idActual, onCerrar, onGuardado }) {
     try {
       // Cada PATCH va a una tabla distinta; "return=representation" hace que la API devuelva la fila modificada
       const headers = { ...(await encabezados()), Prefer: 'return=representation' };
-      if (hayPerfil) {
+      // Recepción no administra cuentas: solo se guarda la ficha del paciente (igual que en RegistroLlegada).
+      // Si el paciente todavía no tiene perfil, tampoco hay nada que actualizar en perfiles.
+      if (hayPerfil && !soloDatos && perfil.id) {
         await modificar('perfiles', 'id', perfil.id, cambiosPerfil, headers);
         seGuardoAlgo = true;
       }
@@ -117,7 +161,8 @@ function ModalEditarPerfil({ perfil, idActual, onCerrar, onGuardado }) {
         seGuardoAlgo = true;
       }
       if (hayFicha) {
-        await modificar('pacientes', 'perfil_id', perfil.id, cambiosFicha, headers);
+        // La ficha se busca por su propio id cuando la ventana la recibe; si no, por el perfil
+        await modificar('pacientes', pacienteId ? 'id' : 'perfil_id', pacienteId ?? perfil.id, cambiosFicha, headers);
         seGuardoAlgo = true;
       }
       await Swal.fire({
@@ -150,7 +195,7 @@ function ModalEditarPerfil({ perfil, idActual, onCerrar, onGuardado }) {
     <Modal show onHide={guardando ? undefined : onCerrar} backdrop="static" enforceFocus={false} centered scrollable contentClassName="lims-modal">
       <Modal.Header closeButton={!guardando}>
         <Modal.Title as="h2" className="h5 fw-bold mb-0">
-          Editar perfil
+          {esPersonal ? 'Editar perfil' : 'Editar paciente'}
         </Modal.Title>
       </Modal.Header>
 
@@ -223,6 +268,66 @@ function ModalEditarPerfil({ perfil, idActual, onCerrar, onGuardado }) {
               />
             </div>
 
+            {!esPersonal && (
+              <>
+                <div className="col-sm-6">
+                  <label htmlFor="editar-nacimiento" className="form-label fw-semibold small">
+                    Fecha de nacimiento
+                  </label>
+                  <input
+                    type="date"
+                    id="editar-nacimiento"
+                    className={`form-control ${errores.fechaNacimiento ? 'is-invalid' : ''}`}
+                    value={fechaNacimiento}
+                    onChange={(evento) => {
+                      setFechaNacimiento(evento.target.value);
+                      setErrores((previos) => ({ ...previos, fechaNacimiento: false }));
+                    }}
+                  />
+                  {errores.fechaNacimiento && <div className="invalid-feedback">Ingrese una fecha válida.</div>}
+                </div>
+                <div className="col-sm-6">
+                  <label htmlFor="editar-sexo" className="form-label fw-semibold small">
+                    Sexo
+                  </label>
+                  <select id="editar-sexo" className="form-select" value={sexo} onChange={(evento) => setSexo(evento.target.value)}>
+                    <option value="">Sin especificar</option>
+                    <option value="F">Femenino</option>
+                    <option value="M">Masculino</option>
+                    <option value="X">X</option>
+                  </select>
+                </div>
+                <div className="col-12">
+                  <label htmlFor="editar-domicilio" className="form-label fw-semibold small">
+                    Domicilio
+                  </label>
+                  <input
+                    type="text"
+                    id="editar-domicilio"
+                    className="form-control"
+                    maxLength={120}
+                    placeholder="Calle, número, localidad"
+                    value={domicilio}
+                    onChange={(evento) => setDomicilio(evento.target.value)}
+                  />
+                </div>
+                <CamposObraSocial
+                  prefijo="editar"
+                  obraSocial={obraSocial}
+                  nroAfiliado={nroAfiliado}
+                  errores={errores}
+                  onObraSocial={(valor) => {
+                    setObraSocial(valor);
+                    setErrores((previos) => ({ ...previos, obraSocial: false, nroAfiliado: false }));
+                  }}
+                  onNroAfiliado={(valor) => {
+                    setNroAfiliado(valor);
+                    setErrores((previos) => ({ ...previos, nroAfiliado: false }));
+                  }}
+                />
+              </>
+            )}
+
             {esPersonal && (
               <>
                 <div className="col-sm-6">
@@ -282,27 +387,29 @@ function ModalEditarPerfil({ perfil, idActual, onCerrar, onGuardado }) {
               </>
             )}
 
-            <div className="col-12">
-              <div className="form-check form-switch">
-                <input
-                  type="checkbox"
-                  role="switch"
-                  id="editar-activo"
-                  className="form-check-input"
-                  checked={activo}
-                  disabled={esMiCuenta}
-                  onChange={(evento) => setActivo(evento.target.checked)}
-                />
-                <label htmlFor="editar-activo" className="form-check-label">
-                  Cuenta activa
-                </label>
+            {puedeAdministrarCuenta && (
+              <div className="col-12">
+                <div className="form-check form-switch">
+                  <input
+                    type="checkbox"
+                    role="switch"
+                    id="editar-activo"
+                    className="form-check-input"
+                    checked={activo}
+                    disabled={esMiCuenta}
+                    onChange={(evento) => setActivo(evento.target.checked)}
+                  />
+                  <label htmlFor="editar-activo" className="form-check-label">
+                    Cuenta activa
+                  </label>
+                </div>
+                <div className="form-text">
+                  {esMiCuenta
+                    ? 'Su propia cuenta no se puede desactivar ni cambiar de rol.'
+                    : 'Una cuenta inactiva no puede iniciar sesión.'}
+                </div>
               </div>
-              <div className="form-text">
-                {esMiCuenta
-                  ? 'Su propia cuenta no se puede desactivar ni cambiar de rol.'
-                  : 'Una cuenta inactiva no puede iniciar sesión.'}
-              </div>
-            </div>
+            )}
           </div>
         </form>
       </Modal.Body>

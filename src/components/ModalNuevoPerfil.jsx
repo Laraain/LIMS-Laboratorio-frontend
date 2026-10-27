@@ -3,7 +3,7 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 import Modal from 'react-bootstrap/Modal';
 import ROLES from '../data/roles.js';
-import { FUNCIONES_URL, encabezados, mensajeDeErrorApi } from '../lib/api.js';
+import { API_URL, FUNCIONES_URL, encabezados, mensajeDeErrorApi } from '../lib/api.js';
 import { ROLES_PERSONAL } from '../lib/auth.js';
 import { datosObraSocial, erroresObraSocial } from '../lib/obrasSociales.js';
 import CamposObraSocial from './CamposObraSocial.jsx';
@@ -16,6 +16,7 @@ const DATOS_INICIALES = {
   dni: '',
   fechaNacimiento: '',
   sexo: '',
+  domicilio: '',
   obraSocial: '',
   nroAfiliado: '',
   usuario: '',
@@ -33,7 +34,8 @@ function escapar(texto) {
 // La cuenta de acceso solo se puede crear desde el servidor (necesita la clave secreta de Supabase), por eso
 // el formulario llama a una función de servidor: crear-paciente o crear-personal.
 // Props: onCerrar: cierra la ventana · onCreado: se llama después de crear el perfil
-function ModalNuevoPerfil({ onCerrar, onCreado }) {
+// soloPacientes: recepción solo puede dar de alta pacientes, así que se esconde la opción "Personal"
+function ModalNuevoPerfil({ onCerrar, onCreado, soloPacientes = false }) {
   // tipo: "paciente" o "personal" · datos: todos los campos del formulario · errores: campos mal cargados
   // guardando: true mientras se espera la respuesta del servidor
   const [tipo, setTipo] = useState('paciente');
@@ -75,6 +77,29 @@ function ModalNuevoPerfil({ onCerrar, onCreado }) {
     setErrores(nuevosErrores);
     if (Object.values(nuevosErrores).some(Boolean)) return;
 
+    // Antes de crear un paciente se fija si el DNI ya existe: el aviso es más claro que el error de la base.
+    // Si la consulta falla, se sigue igual: la función de servidor vuelve a controlar el DNI.
+    if (tipo === 'paciente') {
+      try {
+        const { data } = await axios.get(`${API_URL}/pacientes`, {
+          headers: await encabezados(),
+          params: { select: 'id', dni: `eq.${dni}` },
+        });
+        if (data.length > 0) {
+          await Swal.fire({
+            icon: 'error',
+            title: 'Ese DNI ya está registrado',
+            text: 'Ya existe un paciente con ese DNI. Búsquelo en la lista para ver o editar sus datos.',
+            confirmButtonText: 'Entendido',
+            confirmButtonColor: '#1c4e80',
+          });
+          return;
+        }
+      } catch (errorPeticion) {
+        console.error('No se pudo verificar el DNI:', errorPeticion);
+      }
+    }
+
     const cuerpo =
       tipo === 'paciente'
         ? {
@@ -84,6 +109,7 @@ function ModalNuevoPerfil({ onCerrar, onCreado }) {
             fecha_nacimiento: datos.fechaNacimiento,
             sexo: datos.sexo,
             telefono: datos.telefono.trim(),
+            domicilio: datos.domicilio.trim() || null,
             ...datosObraSocial(datos.obraSocial, datos.nroAfiliado),
           }
         : {
@@ -102,11 +128,27 @@ function ModalNuevoPerfil({ onCerrar, onCreado }) {
       const funcion = tipo === 'paciente' ? 'crear-paciente' : 'crear-personal';
       const response = await axios.post(`${FUNCIONES_URL}/${funcion}`, cuerpo, { headers: await encabezados() });
 
+      // La función crear-paciente todavía no guarda el domicilio: se completa en la ficha recién creada.
+      // Cuando la función lo acepte, este PATCH se puede quitar.
+      let avisoDomicilio = false;
+      if (tipo === 'paciente' && datos.domicilio.trim()) {
+        try {
+          await axios.patch(
+            `${API_URL}/pacientes?id=eq.${response.data.paciente_id}`,
+            { domicilio: datos.domicilio.trim() },
+            { headers: await encabezados() },
+          );
+        } catch (errorDomicilio) {
+          console.error('No se pudo guardar el domicilio:', errorDomicilio);
+          avisoDomicilio = true;
+        }
+      }
+
       // La contraseña provisoria se muestra UNA sola vez: el admin tiene que entregársela a la persona
       const acceso = response.data.dni ?? response.data.usuario;
       await Swal.fire({
         icon: 'success',
-        title: 'Perfil creado',
+        title: soloPacientes ? 'Paciente creado' : 'Perfil creado',
         html:
           `<p class="mb-2">${tipo === 'paciente' ? 'DNI' : 'Usuario'}: <strong>${escapar(acceso)}</strong></p>` +
           `<p class="mb-2">Contraseña provisoria: <strong style="font-family: monospace; font-size: 1.25em;">${escapar(response.data.password_provisoria)}</strong></p>` +
@@ -117,6 +159,15 @@ function ModalNuevoPerfil({ onCerrar, onCreado }) {
         allowOutsideClick: false,
         allowEscapeKey: false,
       });
+      if (avisoDomicilio) {
+        await Swal.fire({
+          icon: 'warning',
+          title: 'Falta el domicilio',
+          text: 'El paciente se creó, pero no se pudo guardar el domicilio. Edítelo desde la lista de pacientes.',
+          confirmButtonText: 'Entendido',
+          confirmButtonColor: '#1c4e80',
+        });
+      }
       onCreado();
     } catch (error) {
       console.error('No se pudo crear el perfil:', error);
@@ -136,42 +187,45 @@ function ModalNuevoPerfil({ onCerrar, onCreado }) {
     <Modal show onHide={guardando ? undefined : onCerrar} backdrop="static" enforceFocus={false} centered scrollable contentClassName="lims-modal">
       <Modal.Header closeButton={!guardando}>
         <Modal.Title as="h2" className="h5 fw-bold mb-0">
-          Nuevo perfil
+          {soloPacientes ? 'Nuevo paciente' : 'Nuevo perfil'}
         </Modal.Title>
       </Modal.Header>
 
       <Modal.Body>
         <form id="form-nuevo-perfil" onSubmit={handleSubmit} noValidate>
-          <div className="lims-modal-tipo mb-3" role="group" aria-label="Tipo de perfil">
-            <input
-              type="radio"
-              className="btn-check"
-              name="tipo-perfil"
-              id="tipo-paciente"
-              checked={tipo === 'paciente'}
-              onChange={() => {
-                setTipo('paciente');
-                setErrores({});
-              }}
-            />
-            <label className="lims-modal-tipo-opcion" htmlFor="tipo-paciente">
-              Paciente
-            </label>
-            <input
-              type="radio"
-              className="btn-check"
-              name="tipo-perfil"
-              id="tipo-personal"
-              checked={tipo === 'personal'}
-              onChange={() => {
-                setTipo('personal');
-                setErrores({});
-              }}
-            />
-            <label className="lims-modal-tipo-opcion" htmlFor="tipo-personal">
-              Personal del laboratorio
-            </label>
-          </div>
+          {/* Recepción solo crea pacientes: no se le muestra el selector de tipo */}
+          {!soloPacientes && (
+            <div className="lims-modal-tipo mb-3" role="group" aria-label="Tipo de perfil">
+              <input
+                type="radio"
+                className="btn-check"
+                name="tipo-perfil"
+                id="tipo-paciente"
+                checked={tipo === 'paciente'}
+                onChange={() => {
+                  setTipo('paciente');
+                  setErrores({});
+                }}
+              />
+              <label className="lims-modal-tipo-opcion" htmlFor="tipo-paciente">
+                Paciente
+              </label>
+              <input
+                type="radio"
+                className="btn-check"
+                name="tipo-perfil"
+                id="tipo-personal"
+                checked={tipo === 'personal'}
+                onChange={() => {
+                  setTipo('personal');
+                  setErrores({});
+                }}
+              />
+              <label className="lims-modal-tipo-opcion" htmlFor="tipo-personal">
+                Personal del laboratorio
+              </label>
+            </div>
+          )}
 
           <div className="row g-3">
             <div className="col-sm-6">
@@ -244,6 +298,20 @@ function ModalNuevoPerfil({ onCerrar, onCreado }) {
                     <option value="M">Masculino</option>
                     <option value="X">X</option>
                   </select>
+                </div>
+                <div className="col-12">
+                  <label htmlFor="nuevo-domicilio" className="form-label fw-semibold small">
+                    Domicilio
+                  </label>
+                  <input
+                    type="text"
+                    id="nuevo-domicilio"
+                    className="form-control"
+                    maxLength={120}
+                    placeholder="Calle, número, localidad"
+                    value={datos.domicilio}
+                    onChange={cambiar('domicilio')}
+                  />
                 </div>
                 <CamposObraSocial
                   prefijo="nuevo"

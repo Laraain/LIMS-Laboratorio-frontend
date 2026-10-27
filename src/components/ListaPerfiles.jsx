@@ -65,7 +65,7 @@ function ListaPerfiles({ idActual }) {
         const response = await axios.get(`${API_URL}/perfiles`, {
           headers: { apikey: API_KEY, Authorization: `Bearer ${token}` },
           params: {
-            select: 'id,nombre,apellido,rol,telefono,activo,created_at,pacientes(dni),personal(usuario,cargo,matricula)',
+            select: 'id,nombre,apellido,rol,telefono,activo,created_at,pacientes(dni,fecha_nacimiento,sexo,domicilio,obra_social_id,nro_afiliado),personal(usuario,cargo,matricula)',
             order: 'apellido.asc,nombre.asc',
           },
         });

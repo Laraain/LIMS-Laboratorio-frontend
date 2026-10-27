@@ -10,6 +10,7 @@ import PanelInicio from './pages/PanelInicio.jsx';
 import MiPerfil from './pages/MiPerfil.jsx';
 import Usuarios from './pages/Usuarios.jsx';
 import Analisis from './pages/Analisis.jsx';
+import Pacientes from './pages/Pacientes.jsx';
 import Recepcion from './pages/Recepcion.jsx';
 import Extraccion from './pages/Extraccion.jsx';
 import Sucursales from './pages/Sucursales.jsx';
@@ -77,6 +78,8 @@ function App() {
           <Route path="analisis" element={<Analisis />} />
           {/* Fila de atención: cada página redirige al inicio del panel si el rol no corresponde */}
           <Route path="recepcion" element={<Recepcion />} />
+          {/* Gestión de pacientes: la ven recepción y el admin; la propia página redirige si el rol no corresponde */}
+          <Route path="pacientes" element={<Pacientes />} />
           <Route path="extraccion" element={<Extraccion />} />
           <Route path="sucursales" element={<Sucursales />} />
           {/* "Configuración" pasó a llamarse "Sucursales": la ruta vieja redirige */}
