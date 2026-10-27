@@ -1,21 +1,21 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Navigate, useOutletContext } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import { CheckCircle, Megaphone, SignOut } from '@phosphor-icons/react';
 import FilaDelDia from '../components/FilaDelDia.jsx';
 import { ROLES_EXTRACCION } from '../data/roles.js';
 import { mensajeDeErrorApi } from '../lib/api.js';
-import { TIPOS_EXTRACCION, finalizarAtencion, leerConfiguracion, llamarSiguiente, useFilaDelDia } from '../lib/fila.js';
+import { TIPOS_EXTRACCION, finalizarAtencion, llamarSiguiente, useFilaDelDia } from '../lib/fila.js';
 import { edadDesde, horaDe } from '../lib/hora.js';
 import useMetadatos from '../hooks/useMetadatos.js';
 import '../components/ListaPerfiles.css';
 
-// El box elegido se recuerda en esta computadora, para no elegirlo cada vez que se entra
-const CLAVE_BOX = 'lims-box-extraccion';
+// El box elegido se recuerda en esta computadora (uno por sucursal), para no elegirlo cada vez que se entra
+const claveBox = (sucursalId) => `lims-box-extraccion-${sucursalId}`;
 
-function boxGuardado() {
+function boxGuardado(sucursalId) {
   try {
-    return Number(localStorage.getItem(CLAVE_BOX)) || null;
+    return Number(localStorage.getItem(claveBox(sucursalId))) || null;
   } catch {
     return null;
   }
@@ -31,40 +31,27 @@ function Extraccion() {
     indexar: false,
   });
 
-  const { perfil } = useOutletContext();
-  const { fila, cargando, error, recargar } = useFilaDelDia();
-  // cantidadBoxes: viene de la configuración del laboratorio (null mientras carga)
-  const [cantidadBoxes, setCantidadBoxes] = useState(null);
-  const [box, setBox] = useState(boxGuardado);
+  const { perfil, sucursal } = useOutletContext();
+  const { fila, cargando, error, recargar } = useFilaDelDia(sucursal.id);
+  // Cada sucursal tiene su cantidad de boxes (la define el admin en Sucursales)
+  const cantidadBoxes = sucursal.cantidad_boxes;
+  // boxes: el box elegido en cada sucursal ({ idSucursal: número }), para que cambiar de sucursal no lo pierda
+  const [boxes, setBoxes] = useState(() => ({ [sucursal.id]: boxGuardado(sucursal.id) }));
+  const box = boxes[sucursal.id] ?? boxGuardado(sucursal.id);
   const [trabajando, setTrabajando] = useState(false);
-
-  useEffect(() => {
-    let vigente = true;
-    leerConfiguracion()
-      .then((configuracion) => {
-        if (vigente) setCantidadBoxes(configuracion.cantidad_boxes);
-      })
-      .catch((errorPeticion) => {
-        console.error('No se pudo leer la configuración:', errorPeticion);
-        if (vigente) setCantidadBoxes(0);
-      });
-    return () => {
-      vigente = false;
-    };
-  }, []);
 
   if (!ROLES_EXTRACCION.includes(perfil.rol)) return <Navigate to="/panel" replace />;
 
   // Si el admin redujo la cantidad de boxes, el box guardado puede no existir más
-  const boxValido = box && cantidadBoxes && box <= cantidadBoxes ? box : null;
+  const boxValido = box && box <= cantidadBoxes ? box : null;
   const enEspera = fila.filter((turno) => turno.estado === 'en_espera').length;
   // Paciente que este box llamó y todavía no terminó
   const actual = boxValido && fila.find((turno) => turno.estado === 'llamado' && turno.box === boxValido);
 
   function elegirBox(numero) {
-    setBox(numero);
+    setBoxes((previos) => ({ ...previos, [sucursal.id]: numero }));
     try {
-      localStorage.setItem(CLAVE_BOX, String(numero));
+      localStorage.setItem(claveBox(sucursal.id), String(numero));
     } catch {
       // Sin almacenamiento local solo hay que volver a elegirlo la próxima vez
     }
@@ -84,7 +71,7 @@ function Extraccion() {
   async function llamar() {
     setTrabajando(true);
     try {
-      const turno = await llamarSiguiente(boxValido);
+      const turno = await llamarSiguiente(boxValido, sucursal.id);
       if (!turno) {
         Swal.fire({
           icon: 'info',
@@ -127,32 +114,30 @@ function Extraccion() {
     <div className="container px-3 px-lg-4">
       <header className="lims-panel-cabecera">
         <div>
-          <p className="lims-panel-etiqueta">Extracción</p>
+          <p className="lims-panel-etiqueta">Extracción · {sucursal.nombre}</p>
           <h1 className="lims-panel-titulo">Llamado de pacientes</h1>
           <p className="lims-panel-texto mb-0">Elija su box y llame al siguiente paciente de la fila.</p>
         </div>
-        {cantidadBoxes > 0 && (
-          <div className="lims-box-selector">
-            <label htmlFor="box" className="form-label fw-semibold small mb-1">
-              Su box
-            </label>
-            <select
-              id="box"
-              className="form-select"
-              value={boxValido ?? ''}
-              onChange={(evento) => elegirBox(Number(evento.target.value))}
-            >
-              <option value="" disabled>
-                Elija su box
+        <div className="lims-box-selector">
+          <label htmlFor="box" className="form-label fw-semibold small mb-1">
+            Su box
+          </label>
+          <select
+            id="box"
+            className="form-select"
+            value={boxValido ?? ''}
+            onChange={(evento) => elegirBox(Number(evento.target.value))}
+          >
+            <option value="" disabled>
+              Elija su box
+            </option>
+            {Array.from({ length: cantidadBoxes }, (_, indice) => indice + 1).map((numero) => (
+              <option key={numero} value={numero}>
+                Box {numero}
               </option>
-              {Array.from({ length: cantidadBoxes }, (_, indice) => indice + 1).map((numero) => (
-                <option key={numero} value={numero}>
-                  Box {numero}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
+            ))}
+          </select>
+        </div>
       </header>
 
       <div className="row g-4">
@@ -162,18 +147,7 @@ function Extraccion() {
               {boxValido ? `Box ${boxValido}` : 'Box de extracción'}
             </h2>
 
-            {cantidadBoxes === null && (
-              <div className="lims-lista-aviso" role="status">
-                <span className="spinner-border spinner-border-sm" aria-hidden="true"></span>
-                Cargando…
-              </div>
-            )}
-            {cantidadBoxes === 0 && (
-              <div className="lims-lista-aviso" role="alert">
-                No se pudo leer la configuración de los boxes. Recargue la página.
-              </div>
-            )}
-            {cantidadBoxes > 0 && !boxValido && (
+            {!boxValido && (
               <p className="lims-panel-texto mb-0">Elija arriba en qué box está atendiendo para empezar a llamar.</p>
             )}
 

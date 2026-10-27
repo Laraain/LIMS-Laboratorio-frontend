@@ -13,7 +13,7 @@ import Analisis from './pages/Analisis.jsx';
 import Pacientes from './pages/Pacientes.jsx';
 import Recepcion from './pages/Recepcion.jsx';
 import Extraccion from './pages/Extraccion.jsx';
-import Configuracion from './pages/Configuracion.jsx';
+import Sucursales from './pages/Sucursales.jsx';
 
 // Componente principal: arma la estructura común (menú, página actual y pie) y define las rutas
 function App() {
@@ -81,7 +81,9 @@ function App() {
           {/* Gestión de pacientes: la ven recepción y el admin; la propia página redirige si el rol no corresponde */}
           <Route path="pacientes" element={<Pacientes />} />
           <Route path="extraccion" element={<Extraccion />} />
-          <Route path="configuracion" element={<Configuracion />} />
+          <Route path="sucursales" element={<Sucursales />} />
+          {/* "Configuración" pasó a llamarse "Sucursales": la ruta vieja redirige */}
+          <Route path="configuracion" element={<Navigate to="/panel/sucursales" replace />} />
           {/* Solo para administradores: la propia página redirige al inicio del panel si el rol no es admin */}
           <Route path="usuarios" element={<Usuarios />} />
         </Route>
