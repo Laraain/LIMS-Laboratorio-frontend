@@ -11,5 +11,7 @@ const ROLES = {
 export const ROLES_RECEPCION = ['recepcion', 'admin'];
 // Extrae el técnico; el bioquímico queda habilitado por alguna eventualidad
 export const ROLES_EXTRACCION = ['tecnico', 'bioquimico', 'admin'];
+// Gestión de pacientes: la hace recepción y también el admin
+export const ROLES_PACIENTES = ['recepcion', 'admin'];
 
 export default ROLES;
