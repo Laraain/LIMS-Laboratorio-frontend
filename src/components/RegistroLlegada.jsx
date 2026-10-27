@@ -1,7 +1,7 @@
 import { Fragment, useRef, useState } from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
-import { IdentificationCard, MagnifyingGlass, UserPlus } from '@phosphor-icons/react';
+import { IdentificationCard, MagnifyingGlass, UserPlus, PencilSimple } from '@phosphor-icons/react';
 import { API_URL, FUNCIONES_URL, encabezados, mensajeDeErrorApi } from '../lib/api.js';
 import { ESTADOS_TURNO, TIPOS_EXTRACCION, registrarLlegada } from '../lib/fila.js';
 import { edadDesde, hoyTucuman } from '../lib/hora.js';
@@ -18,43 +18,41 @@ const FICHA_VACIA = {
   nroAfiliado: '',
 };
 
-// Escapa los caracteres especiales antes de armar el HTML de una ventana de SweetAlert2
 function escapar(texto) {
   return String(texto).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 }
 
-// Busca la ficha de un paciente por DNI. Devuelve la ficha o null si no está cargado.
 async function buscarPorDni(dni) {
   const response = await axios.get(`${API_URL}/pacientes`, {
     headers: await encabezados(),
     params: {
-      select: 'id,dni,nombre,apellido,fecha_nacimiento,perfil_id,nro_afiliado,obras_sociales(nombre)',
+      // Se agregaron sexo, telefono y obra_social_id para poder precargar el formulario de edición
+      select: 'id,dni,nombre,apellido,fecha_nacimiento,sexo,telefono,obra_social_id,nro_afiliado,obras_sociales(nombre)',
       dni: `eq.${dni}`,
     },
   });
   return response.data[0] ?? null;
 }
 
-// Recepción: registra la llegada de un paciente a la fila del día.
-// 1. Se busca por DNI. 2. Si no está cargado, se completa su ficha: al guardarla se crea también su cuenta del portal.
-// 3. Se elige el tipo de extracción y se registra la llegada: la base le asigna el número del día.
-// Props: fila (la fila de hoy, para avisar si ya está registrado) · onRegistrado (se llama después de registrar)
 function RegistroLlegada({ fila, onRegistrado }) {
   const [dniBuscado, setDniBuscado] = useState('');
   const [errorDni, setErrorDni] = useState(false);
   const [buscando, setBuscando] = useState(false);
-  // resultado: null (sin buscar) · { paciente } si está cargado · { nuevo: dni } si hay que darlo de alta
   const [resultado, setResultado] = useState(null);
+  
+  // Nuevo estado para controlar si estamos en modo edición
+  const [editando, setEditando] = useState(false);
+  
   const [tipo, setTipo] = useState('ambulatoria');
   const [ficha, setFicha] = useState(FICHA_VACIA);
   const [errores, setErrores] = useState({});
   const [guardando, setGuardando] = useState(false);
   const campoDni = useRef(null);
 
-  // Vuelve a empezar para el próximo paciente
   function reiniciar() {
     setDniBuscado('');
     setResultado(null);
+    setEditando(false);
     setTipo('ambulatoria');
     setFicha(FICHA_VACIA);
     setErrores({});
@@ -68,7 +66,6 @@ function RegistroLlegada({ fila, onRegistrado }) {
 
   async function handleBuscar(evento) {
     evento.preventDefault();
-    // Acepta el DNI con puntos o espacios (30.123.456)
     const dni = dniBuscado.replace(/[.\s]/g, '');
     if (!/^\d{7,8}$/.test(dni)) {
       setErrorDni(true);
@@ -79,6 +76,7 @@ function RegistroLlegada({ fila, onRegistrado }) {
     try {
       const paciente = await buscarPorDni(dni);
       setResultado(paciente ? { paciente } : { nuevo: dni });
+      setEditando(false);
       setFicha(FICHA_VACIA);
       setErrores({});
       setTipo('ambulatoria');
@@ -96,7 +94,74 @@ function RegistroLlegada({ fila, onRegistrado }) {
     }
   }
 
-  // Muestra el número asignado y ofrece seguir con la carga de la orden
+  function iniciarEdicion() {
+    setFicha({
+      nombre: resultado.paciente.nombre || '',
+      apellido: resultado.paciente.apellido || '',
+      fechaNacimiento: resultado.paciente.fecha_nacimiento || '',
+      sexo: resultado.paciente.sexo || '',
+      telefono: resultado.paciente.telefono || '',
+      obraSocial: resultado.paciente.obra_social_id || '',
+      nroAfiliado: resultado.paciente.nro_afiliado || '',
+    });
+    setEditando(true);
+  }
+
+  async function guardarEdicion(evento) {
+    evento.preventDefault();
+    const nuevosErrores = {
+      nombre: ficha.nombre.trim() === '',
+      apellido: ficha.apellido.trim() === '',
+      fechaNacimiento:
+        ficha.fechaNacimiento === '' || ficha.fechaNacimiento > hoyTucuman() || ficha.fechaNacimiento < '1900-01-01',
+      ...erroresObraSocial(ficha.obraSocial, ficha.nroAfiliado),
+    };
+    setErrores(nuevosErrores);
+    if (Object.values(nuevosErrores).some(Boolean)) return;
+
+    setGuardando(true);
+    try {
+      await axios.patch(
+        `${API_URL}/pacientes?id=eq.${resultado.paciente.id}`,
+        {
+          nombre: ficha.nombre.trim(),
+          apellido: ficha.apellido.trim(),
+          fecha_nacimiento: ficha.fechaNacimiento,
+          sexo: ficha.sexo,
+          telefono: ficha.telefono.trim(),
+          ...datosObraSocial(ficha.obraSocial, ficha.nroAfiliado),
+        },
+        { headers: await encabezados() }
+      );
+
+      // Recargamos el paciente para mostrar el resumen actualizado
+      const pacienteActualizado = await buscarPorDni(resultado.paciente.dni);
+      setResultado({ paciente: pacienteActualizado });
+      setEditando(false);
+      setFicha(FICHA_VACIA);
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Datos actualizados',
+        toast: true,
+        position: 'top-end',
+        timer: 3000,
+        showConfirmButton: false,
+      });
+    } catch (error) {
+      console.error('No se pudo actualizar al paciente:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'No pudimos actualizar los datos',
+        text: mensajeDeErrorApi(error),
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#1c4e80',
+      });
+    } finally {
+      setGuardando(false);
+    }
+  }
+
   async function mostrarNumero(turno, paciente, yaRegistrado) {
     const { isConfirmed } = await Swal.fire({
       icon: yaRegistrado ? 'info' : 'success',
@@ -113,7 +178,6 @@ function RegistroLlegada({ fila, onRegistrado }) {
       allowOutsideClick: false,
     });
     if (isConfirmed) {
-      // La pantalla de órdenes es la próxima etapa del sistema
       await Swal.fire({
         icon: 'info',
         title: 'Carga de órdenes',
@@ -124,7 +188,6 @@ function RegistroLlegada({ fila, onRegistrado }) {
     }
   }
 
-  // Paciente ya cargado: solo se registra la llegada
   async function registrarExistente() {
     const paciente = resultado.paciente;
     setGuardando(true);
@@ -147,7 +210,6 @@ function RegistroLlegada({ fila, onRegistrado }) {
     }
   }
 
-  // Paciente nuevo: se crea la ficha con su cuenta del portal y después se registra la llegada
   async function registrarNuevo(evento) {
     evento.preventDefault();
     const nuevosErrores = {
@@ -164,7 +226,6 @@ function RegistroLlegada({ fila, onRegistrado }) {
     setGuardando(true);
     let alta;
     try {
-      // La cuenta del portal solo se crea desde el servidor (necesita la clave secreta): función crear-paciente
       const response = await axios.post(
         `${FUNCIONES_URL}/crear-paciente`,
         {
@@ -192,7 +253,6 @@ function RegistroLlegada({ fila, onRegistrado }) {
       return;
     }
 
-    // La contraseña provisoria se muestra UNA sola vez: va antes que cualquier otro aviso
     await Swal.fire({
       icon: 'success',
       title: 'Paciente dado de alta',
@@ -213,7 +273,6 @@ function RegistroLlegada({ fila, onRegistrado }) {
       await mostrarNumero(turno, { nombre: ficha.nombre.trim(), apellido: ficha.apellido.trim() }, yaRegistrado);
       reiniciar();
     } catch (error) {
-      // La ficha ya quedó creada: alcanza con buscarlo de nuevo por DNI y registrar la llegada
       console.error('No se pudo registrar la llegada:', error);
       await Swal.fire({
         icon: 'error',
@@ -228,10 +287,8 @@ function RegistroLlegada({ fila, onRegistrado }) {
     }
   }
 
-  // ¿El paciente encontrado ya está en la fila de hoy?
   const turnoDeHoy = resultado?.paciente && fila.find((turno) => turno.paciente_id === resultado.paciente.id);
 
-  // Elección ambulatoria / pediátrica (los dos van en la misma fila)
   const selectorTipo = (
     <fieldset className="col-12">
       <legend className="form-label fw-semibold small mb-2">Tipo de extracción</legend>
@@ -253,6 +310,94 @@ function RegistroLlegada({ fila, onRegistrado }) {
         ))}
       </div>
     </fieldset>
+  );
+
+  // Extraemos los inputs de la ficha para reutilizarlos en "Nuevo" y "Editar"
+  const camposFicha = (
+    <>
+      <div className="col-sm-6">
+        <label htmlFor="ficha-nombre" className="form-label fw-semibold small">
+          Nombre <span className="text-danger">*</span>
+        </label>
+        <input
+          type="text"
+          id="ficha-nombre"
+          className={`form-control ${errores.nombre ? 'is-invalid' : ''}`}
+          maxLength={60}
+          value={ficha.nombre}
+          onChange={(evento) => cambiarFicha('nombre', evento.target.value)}
+        />
+        {errores.nombre && <div className="invalid-feedback">Ingrese el nombre.</div>}
+      </div>
+      <div className="col-sm-6">
+        <label htmlFor="ficha-apellido" className="form-label fw-semibold small">
+          Apellido <span className="text-danger">*</span>
+        </label>
+        <input
+          type="text"
+          id="ficha-apellido"
+          className={`form-control ${errores.apellido ? 'is-invalid' : ''}`}
+          maxLength={60}
+          value={ficha.apellido}
+          onChange={(evento) => cambiarFicha('apellido', evento.target.value)}
+        />
+        {errores.apellido && <div className="invalid-feedback">Ingrese el apellido.</div>}
+      </div>
+      <div className="col-sm-6">
+        <label htmlFor="ficha-nacimiento" className="form-label fw-semibold small">
+          Fecha de nacimiento <span className="text-danger">*</span>
+        </label>
+        <input
+          type="date"
+          id="ficha-nacimiento"
+          className={`form-control ${errores.fechaNacimiento ? 'is-invalid' : ''}`}
+          max={hoyTucuman()}
+          value={ficha.fechaNacimiento}
+          onChange={(evento) => cambiarFicha('fechaNacimiento', evento.target.value)}
+        />
+        {errores.fechaNacimiento && <div className="invalid-feedback">Ingrese una fecha válida.</div>}
+      </div>
+      <div className="col-sm-6">
+        <label htmlFor="ficha-sexo" className="form-label fw-semibold small">
+          Sexo
+        </label>
+        <select
+          id="ficha-sexo"
+          className="form-select"
+          value={ficha.sexo}
+          onChange={(evento) => cambiarFicha('sexo', evento.target.value)}
+        >
+          <option value="">Sin especificar</option>
+          <option value="F">Femenino</option>
+          <option value="M">Masculino</option>
+          <option value="X">X</option>
+        </select>
+      </div>
+      <CamposObraSocial
+        prefijo="ficha"
+        obraSocial={ficha.obraSocial}
+        nroAfiliado={ficha.nroAfiliado}
+        errores={errores}
+        onObraSocial={(valor) => {
+          cambiarFicha('obraSocial', valor);
+          setErrores((previos) => ({ ...previos, nroAfiliado: false }));
+        }}
+        onNroAfiliado={(valor) => cambiarFicha('nroAfiliado', valor)}
+      />
+      <div className="col-sm-6">
+        <label htmlFor="ficha-telefono" className="form-label fw-semibold small">
+          Teléfono
+        </label>
+        <input
+          type="tel"
+          id="ficha-telefono"
+          className="form-control"
+          maxLength={30}
+          value={ficha.telefono}
+          onChange={(evento) => cambiarFicha('telefono', evento.target.value)}
+        />
+      </div>
+    </>
   );
 
   return (
@@ -295,21 +440,31 @@ function RegistroLlegada({ fila, onRegistrado }) {
         )}
       </form>
 
-      {resultado?.paciente && (
+      {/* Flujo: Paciente encontrado */}
+      {resultado?.paciente && !editando && (
         <div className="lims-registro-resultado" aria-live="polite">
-          <div className="lims-registro-paciente">
-            <IdentificationCard className="lims-registro-paciente-icono" aria-hidden="true" />
-            <div>
-              <p className="lims-celda-nombre-texto mb-0">
-                {resultado.paciente.apellido}, {resultado.paciente.nombre}
-              </p>
-              <p className="lims-celda-identidad mb-0">
-                DNI {resultado.paciente.dni} · {edadDesde(resultado.paciente.fecha_nacimiento)} años ·{' '}
-                {resultado.paciente.obras_sociales
-                  ? `${resultado.paciente.obras_sociales.nombre} (afiliado ${resultado.paciente.nro_afiliado})`
-                  : 'Particular'}
-              </p>
+          <div className="d-flex justify-content-between align-items-start mb-3">
+            <div className="lims-registro-paciente mb-0">
+              <IdentificationCard className="lims-registro-paciente-icono" aria-hidden="true" />
+              <div>
+                <p className="lims-celda-nombre-texto mb-0">
+                  {resultado.paciente.apellido}, {resultado.paciente.nombre}
+                </p>
+                <p className="lims-celda-identidad mb-0">
+                  DNI {resultado.paciente.dni} · {edadDesde(resultado.paciente.fecha_nacimiento)} años ·{' '}
+                  {resultado.paciente.obras_sociales
+                    ? `${resultado.paciente.obras_sociales.nombre} (afiliado ${resultado.paciente.nro_afiliado})`
+                    : 'Particular'}
+                </p>
+              </div>
             </div>
+            <button 
+              type="button" 
+              className="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1"
+              onClick={iniciarEdicion}
+            >
+              <PencilSimple size={16} /> Editar datos
+            </button>
           </div>
 
           {turnoDeHoy ? (
@@ -338,6 +493,33 @@ function RegistroLlegada({ fila, onRegistrado }) {
         </div>
       )}
 
+      {/* Flujo: Editando paciente existente */}
+      {resultado?.paciente && editando && (
+        <form className="lims-registro-resultado" onSubmit={guardarEdicion} noValidate aria-live="polite">
+          <p className="fw-semibold text-primary mb-3">
+            <PencilSimple className="me-2" aria-hidden="true" />
+            Editando datos de {resultado.paciente.nombre} {resultado.paciente.apellido}
+          </p>
+          <div className="row g-3">
+            {camposFicha}
+            <div className="col-12 d-flex flex-wrap gap-2 mt-4">
+              <button type="submit" className="btn lims-btn-pill lims-btn-primario" disabled={guardando}>
+                {guardando ? 'Guardando…' : 'Guardar cambios'}
+              </button>
+              <button 
+                type="button" 
+                className="btn lims-btn-pill lims-btn-secundario" 
+                onClick={() => { setEditando(false); setFicha(FICHA_VACIA); setErrores({}); }} 
+                disabled={guardando}
+              >
+                Cancelar edición
+              </button>
+            </div>
+          </div>
+        </form>
+      )}
+
+      {/* Flujo: Paciente nuevo */}
       {resultado?.nuevo && (
         <form className="lims-registro-resultado" onSubmit={registrarNuevo} noValidate aria-live="polite">
           <p className="lims-registro-nuevo">
@@ -346,90 +528,9 @@ function RegistroLlegada({ fila, onRegistrado }) {
             también su cuenta del portal.
           </p>
           <div className="row g-3">
-            <div className="col-sm-6">
-              <label htmlFor="ficha-nombre" className="form-label fw-semibold small">
-                Nombre <span className="text-danger">*</span>
-              </label>
-              <input
-                type="text"
-                id="ficha-nombre"
-                className={`form-control ${errores.nombre ? 'is-invalid' : ''}`}
-                maxLength={60}
-                value={ficha.nombre}
-                onChange={(evento) => cambiarFicha('nombre', evento.target.value)}
-              />
-              {errores.nombre && <div className="invalid-feedback">Ingrese el nombre.</div>}
-            </div>
-            <div className="col-sm-6">
-              <label htmlFor="ficha-apellido" className="form-label fw-semibold small">
-                Apellido <span className="text-danger">*</span>
-              </label>
-              <input
-                type="text"
-                id="ficha-apellido"
-                className={`form-control ${errores.apellido ? 'is-invalid' : ''}`}
-                maxLength={60}
-                value={ficha.apellido}
-                onChange={(evento) => cambiarFicha('apellido', evento.target.value)}
-              />
-              {errores.apellido && <div className="invalid-feedback">Ingrese el apellido.</div>}
-            </div>
-            <div className="col-sm-6">
-              <label htmlFor="ficha-nacimiento" className="form-label fw-semibold small">
-                Fecha de nacimiento <span className="text-danger">*</span>
-              </label>
-              <input
-                type="date"
-                id="ficha-nacimiento"
-                className={`form-control ${errores.fechaNacimiento ? 'is-invalid' : ''}`}
-                max={hoyTucuman()}
-                value={ficha.fechaNacimiento}
-                onChange={(evento) => cambiarFicha('fechaNacimiento', evento.target.value)}
-              />
-              {errores.fechaNacimiento && <div className="invalid-feedback">Ingrese una fecha válida.</div>}
-            </div>
-            <div className="col-sm-6">
-              <label htmlFor="ficha-sexo" className="form-label fw-semibold small">
-                Sexo
-              </label>
-              <select
-                id="ficha-sexo"
-                className="form-select"
-                value={ficha.sexo}
-                onChange={(evento) => cambiarFicha('sexo', evento.target.value)}
-              >
-                <option value="">Sin especificar</option>
-                <option value="F">Femenino</option>
-                <option value="M">Masculino</option>
-                <option value="X">X</option>
-              </select>
-            </div>
-            <CamposObraSocial
-              prefijo="ficha"
-              obraSocial={ficha.obraSocial}
-              nroAfiliado={ficha.nroAfiliado}
-              errores={errores}
-              onObraSocial={(valor) => {
-                cambiarFicha('obraSocial', valor);
-                setErrores((previos) => ({ ...previos, nroAfiliado: false }));
-              }}
-              onNroAfiliado={(valor) => cambiarFicha('nroAfiliado', valor)}
-            />
-            <div className="col-sm-6">
-              <label htmlFor="ficha-telefono" className="form-label fw-semibold small">
-                Teléfono
-              </label>
-              <input
-                type="tel"
-                id="ficha-telefono"
-                className="form-control"
-                maxLength={30}
-                value={ficha.telefono}
-                onChange={(evento) => cambiarFicha('telefono', evento.target.value)}
-              />
-            </div>
+            {camposFicha}
             {selectorTipo}
-            <div className="col-12 d-flex flex-wrap gap-2">
+            <div className="col-12 d-flex flex-wrap gap-2 mt-4">
               <button type="submit" className="btn lims-btn-pill lims-btn-primario" disabled={guardando}>
                 {guardando ? 'Guardando…' : 'Dar de alta y registrar llegada'}
               </button>
