@@ -19,8 +19,8 @@ function Recepcion() {
     indexar: false,
   });
 
-  const { perfil } = useOutletContext();
-  const { fila, cargando, error, recargar } = useFilaDelDia();
+  const { perfil, sucursal, sucursales } = useOutletContext();
+  const { fila, cargando, error, recargar } = useFilaDelDia(sucursal.id);
 
   if (!ROLES_RECEPCION.includes(perfil.rol)) return <Navigate to="/panel" replace />;
 
@@ -57,7 +57,7 @@ function Recepcion() {
     <div className="container px-3 px-lg-4">
       <header className="lims-panel-cabecera">
         <div>
-          <p className="lims-panel-etiqueta">Recepción</p>
+          <p className="lims-panel-etiqueta">Recepción · {sucursal.nombre}</p>
           <h1 className="lims-panel-titulo">Llegada de pacientes</h1>
           <p className="lims-panel-texto mb-0">
             Se atiende por orden de llegada. Busque al paciente por DNI y regístrelo en la fila de hoy.
@@ -69,7 +69,7 @@ function Recepcion() {
 
       <div className="row g-4">
         <div className="col-xl-6">
-          <RegistroLlegada fila={fila} onRegistrado={recargar} />
+          <RegistroLlegada fila={fila} sucursal={sucursal} sucursales={sucursales} onRegistrado={recargar} />
         </div>
         <div className="col-xl-6">
           <FilaDelDia fila={fila} cargando={cargando} error={error} onRetirar={retirar} />

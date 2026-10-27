@@ -1,8 +1,11 @@
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import { Navigate, Outlet, useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2';
+import ElegirSucursal from '../components/ElegirSucursal.jsx';
 import Navbar from '../components/Navbar.jsx';
 import Sidebar from '../components/Sidebar.jsx';
 import { ROLES_PERSONAL, cerrarSesion, useSesion } from '../lib/auth.js';
+import { guardarSucursal, olvidarSucursal, sucursalElegida, useSucursales } from '../lib/sucursal.js';
 import './Panel.css';
 
 // Desde este ancho para abajo el menú lateral se abre por encima del contenido (igual que en Sidebar.css)
@@ -44,6 +47,14 @@ function guardarMenuAbierto(abierto) {
 function Panel() {
   const navigate = useNavigate();
   const { cargando, perfil, fecha } = useSesion(ROLES_PERSONAL);
+  const sesionValida = Boolean(perfil && !perfil.debe_cambiar_password);
+  // Sucursal en la que trabaja hoy: se elige al entrar (ver ElegirSucursal)
+  const { sucursales, cargando: cargandoSucursales, error: errorSucursales, recargar: recargarSucursales } =
+    useSucursales(sesionValida);
+  const [idSucursal, setIdSucursal] = useState(sucursalElegida);
+  // Si la sucursal elegida se desactivó (o todavía no se eligió), sucursal queda vacía y se vuelve a preguntar
+  const sucursal = sucursales.find((opcion) => opcion.id === idSucursal && opcion.activa) ?? null;
+  const sucursalesActivas = sucursales.filter((opcion) => opcion.activa);
   const esMovil = useSyncExternalStore(suscribirAncho, esMovilAhora);
   // En la PC el menú arranca como se dejó la última vez; en el celular arranca escondido
   const [abiertoEscritorio, setAbiertoEscritorio] = useState(leerMenuAbierto);
@@ -69,8 +80,31 @@ function Panel() {
     guardarMenuAbierto(!abiertoEscritorio);
   }
 
+  function elegirSucursal(id) {
+    guardarSucursal(id);
+    setIdSucursal(id);
+  }
+
+  // Vuelve a la pantalla de elección de sucursal, después de confirmar (evita cambiarla por un toque sin querer)
+  async function cambiarSucursal() {
+    const lugar = sucursal.localidad ? `${sucursal.nombre} (${sucursal.localidad})` : sucursal.nombre;
+    const { isConfirmed } = await Swal.fire({
+      icon: 'question',
+      title: '¿Cambiar de sucursal?',
+      text: `Está trabajando en ${lugar}. Va a volver a la pantalla para elegir la sucursal.`,
+      showCancelButton: true,
+      confirmButtonText: 'Sí, cambiar',
+      cancelButtonText: `Seguir en ${sucursal.nombre}`,
+      confirmButtonColor: '#1c4e80',
+    });
+    if (!isConfirmed) return;
+    olvidarSucursal();
+    setIdSucursal(null);
+  }
+
   // Cierra la sesión en Supabase y vuelve al login del personal
   async function handleCerrarSesion() {
+    olvidarSucursal();
     await cerrarSesion();
     navigate('/login-personal', { replace: true });
   }
@@ -91,13 +125,34 @@ function Panel() {
 
   // Sin sesión del personal se vuelve al login (Navigate redirige sin recargar la página).
   // Si todavía tiene la contraseña provisoria, el login le pide elegir una propia antes de entrar.
-  if (!perfil || perfil.debe_cambiar_password) return <Navigate to="/login-personal" replace />;
+  if (!sesionValida) return <Navigate to="/login-personal" replace />;
+
+  // Todavía sin sucursal: antes de usar el panel se elige en cuál trabaja hoy
+  if (!sucursal) {
+    return (
+      <>
+        <Navbar perfil={perfil} fecha={fecha} onCerrarSesion={handleCerrarSesion} />
+        <main id="contenido" className="lims-panel-verificando">
+          <ElegirSucursal
+            perfil={perfil}
+            sucursales={sucursalesActivas}
+            cargando={cargandoSucursales}
+            error={errorSucursales}
+            onReintentar={recargarSucursales}
+            onElegir={elegirSucursal}
+          />
+        </main>
+      </>
+    );
+  }
 
   return (
     <>
       <Navbar
         perfil={perfil}
         fecha={fecha}
+        sucursal={sucursal}
+        onCambiarSucursal={cambiarSucursal}
         menuAbierto={menuAbierto}
         onAlternarMenu={alternarMenu}
         onCerrarSesion={handleCerrarSesion}
@@ -111,8 +166,9 @@ function Panel() {
           onNavegar={() => setAbiertoMovil(false)}
         />
         <main id="contenido" className="lims-panel-contenido">
-          {/* Cada página del panel recibe quién ingresó y cuándo con useOutletContext() */}
-          <Outlet context={{ perfil, fecha }} />
+          {/* Cada página del panel recibe con useOutletContext() quién ingresó, cuándo y en qué sucursal trabaja.
+              recargarSucursales: la página Sucursales lo usa después de modificar una sucursal */}
+          <Outlet context={{ perfil, fecha, sucursal, sucursales, recargarSucursales }} />
         </main>
       </div>
     </>
