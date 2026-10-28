@@ -24,6 +24,7 @@ export function mensajeDeErrorApi(error) {
   if (respuesta?.code === '23505') {
     const detalle = respuesta.message ?? '';
     if (/dni/i.test(detalle)) return 'Ya existe un paciente con ese DNI.';
+    if (/medicos_matricula/i.test(detalle)) return 'Ya hay un médico con esa matrícula.';
     if (/matricula/i.test(detalle)) return 'Esa matrícula ya está asignada a otra persona.';
     if (/analisis_codigo/i.test(detalle)) return 'Ya existe otro análisis con ese código.';
     if (/sucursales_prefijo/i.test(detalle)) return 'Ya hay otra sucursal con ese prefijo.';

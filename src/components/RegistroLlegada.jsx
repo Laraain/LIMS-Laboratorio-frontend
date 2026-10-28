@@ -1,5 +1,6 @@
 import { Fragment, useRef, useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import { IdentificationCard, MagnifyingGlass, UserPlus, PencilSimple } from '@phosphor-icons/react';
 import { API_URL, FUNCIONES_URL, encabezados, mensajeDeErrorApi } from '../lib/api.js';
@@ -53,6 +54,7 @@ function RegistroLlegada({ fila, sucursal, sucursales, onRegistrado }) {
   const [errores, setErrores] = useState({});
   const [guardando, setGuardando] = useState(false);
   const campoDni = useRef(null);
+  const navigate = useNavigate();
 
   function reiniciar() {
     setDniBuscado('');
@@ -200,15 +202,8 @@ function RegistroLlegada({ fila, sucursal, sucursales, onRegistrado }) {
       confirmButtonColor: '#1c4e80',
       allowOutsideClick: false,
     });
-    if (isConfirmed) {
-      await Swal.fire({
-        icon: 'info',
-        title: 'Carga de órdenes',
-        text: 'La carga de órdenes todavía no está disponible: se agrega en la próxima etapa del sistema.',
-        confirmButtonText: 'Entendido',
-        confirmButtonColor: '#1c4e80',
-      });
-    }
+    // paciente: { id, dni, nombre, apellido, obra_social_id } para precargar la orden
+    if (isConfirmed) navigate('/panel/ordenes', { state: { paciente } });
   }
 
   async function registrarExistente() {
@@ -294,7 +289,17 @@ function RegistroLlegada({ fila, sucursal, sucursales, onRegistrado }) {
     try {
       const { turno, ya_registrado: yaRegistrado } = await registrarLlegada(alta.paciente_id, tipo, sucursal.id);
       onRegistrado();
-      await mostrarNumero(turno, { nombre: ficha.nombre.trim(), apellido: ficha.apellido.trim() }, yaRegistrado);
+      await mostrarNumero(
+        turno,
+        {
+          id: alta.paciente_id,
+          dni: resultado.nuevo,
+          nombre: ficha.nombre.trim(),
+          apellido: ficha.apellido.trim(),
+          obra_social_id: datosObraSocial(ficha.obraSocial, ficha.nroAfiliado).obra_social_id,
+        },
+        yaRegistrado,
+      );
       reiniciar();
     } catch (error) {
       console.error('No se pudo registrar la llegada:', error);
