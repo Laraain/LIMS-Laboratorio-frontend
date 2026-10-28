@@ -44,3 +44,28 @@ export function datosObraSocial(obraSocial, nroAfiliado) {
   if (obraSocial === PARTICULAR) return { obra_social_id: null, nro_afiliado: null };
   return { obra_social_id: Number(obraSocial), nro_afiliado: nroAfiliado.trim() };
 }
+
+// Todas las obras sociales, activas e inactivas, para la pantalla de administración (solo admin)
+export async function listarObrasSociales() {
+  const response = await axios.get(`${API_URL}/obras_sociales`, {
+    headers: await encabezados(),
+    params: { select: 'id,nombre,codigo,activa', order: 'nombre.asc' },
+  });
+  return response.data;
+}
+
+// Guarda una obra social: sin id la crea, con id modifica solo los campos recibidos.
+// Devuelve la fila guardada. Sin permiso de admin la API responde sin filas: se avisa con un mensaje claro.
+export async function guardarObraSocial(datos, id = null) {
+  // "return=representation": la API devuelve la fila guardada
+  const headers = { ...(await encabezados()), Prefer: 'return=representation' };
+  const respuesta = id
+    ? await axios.patch(`${API_URL}/obras_sociales`, datos, { headers, params: { id: `eq.${id}` } })
+    : await axios.post(`${API_URL}/obras_sociales`, datos, { headers });
+  if (!Array.isArray(respuesta.data) || respuesta.data.length !== 1) {
+    throw Object.assign(new Error('La API no devolvió la obra social guardada'), {
+      mensajeUsuario: 'No tiene permiso para modificar las obras sociales.',
+    });
+  }
+  return respuesta.data[0];
+}
