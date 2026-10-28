@@ -14,6 +14,7 @@ import Pacientes from './pages/Pacientes.jsx';
 import Recepcion from './pages/Recepcion.jsx';
 import Extraccion from './pages/Extraccion.jsx';
 import Sucursales from './pages/Sucursales.jsx';
+import ObrasSociales from './pages/ObrasSociales.jsx';
 
 // Componente principal: arma la estructura común (menú, página actual y pie) y define las rutas
 function App() {
@@ -82,6 +83,8 @@ function App() {
           <Route path="pacientes" element={<Pacientes />} />
           <Route path="extraccion" element={<Extraccion />} />
           <Route path="sucursales" element={<Sucursales />} />
+          {/* Solo para administradores: la propia página redirige al inicio del panel si el rol no es admin */}
+          <Route path="obras-sociales" element={<ObrasSociales />} />
           {/* "Configuración" pasó a llamarse "Sucursales": la ruta vieja redirige */}
           <Route path="configuracion" element={<Navigate to="/panel/sucursales" replace />} />
           {/* Solo para administradores: la propia página redirige al inicio del panel si el rol no es admin */}
@@ -89,6 +92,8 @@ function App() {
         </Route>
         {/* La administración de perfiles ahora vive dentro del panel; la ruta vieja redirige ahí */}
         <Route path="/usuarios" element={<Navigate to="/panel/usuarios" replace />} />
+        {/* Atajo a la administración de obras sociales */}
+        <Route path="/obras-sociales" element={<Navigate to="/panel/obras-sociales" replace />} />
       </Routes>
       {!enPanel && <Footer />}
     </>

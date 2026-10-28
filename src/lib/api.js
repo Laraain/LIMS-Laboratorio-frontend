@@ -28,6 +28,8 @@ export function mensajeDeErrorApi(error) {
     if (/analisis_codigo/i.test(detalle)) return 'Ya existe otro análisis con ese código.';
     if (/sucursales_prefijo/i.test(detalle)) return 'Ya hay otra sucursal con ese prefijo.';
     if (/sucursales_nombre/i.test(detalle)) return 'Ya hay otra sucursal con ese nombre.';
+    if (/obras_sociales_nombre/i.test(detalle)) return 'Ya hay otra obra social con ese nombre.';
+    if (/obras_sociales_codigo/i.test(detalle)) return 'Ya hay otra obra social con ese código.';
     return 'Ya existe otro registro con ese dato.';
   }
   if (respuesta?.code === '23514') return 'Alguno de los datos no tiene un formato válido.';
