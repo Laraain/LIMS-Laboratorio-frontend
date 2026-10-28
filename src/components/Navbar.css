@@ -125,6 +125,11 @@
   border-color: var(--bs-primary);
 }
 
+/* Cuando es solo informativa (personal con sucursal fija) no parece un botón */
+.lims-navbar-sucursal--fija:hover {
+  border-color: var(--lims-border);
+}
+
 .lims-navbar-sucursal:focus-visible {
   outline: 3px solid var(--lims-accent);
   outline-offset: 2px;

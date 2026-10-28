@@ -2,9 +2,10 @@ import { useCallback, useEffect, useState } from 'react';
 import axios from 'axios';
 import { API_URL, encabezados } from './api.js';
 
-// Sucursales del laboratorio. Cada persona del personal elige al entrar en cuál trabaja:
-// la elección dura lo que dura la sesión en esa pestaña, y la próxima vez se le propone la última que usó.
-// La sucursal es un filtro de trabajo (qué fila, qué boxes, qué numeración), no un límite de seguridad.
+// Sucursales del laboratorio. Cada empleado pertenece a una sucursal (personal.sucursal_id)
+// y solo ve las órdenes, muestras y resultados de esa sucursal: la base lo controla con RLS.
+// El administrador no está limitado: elige al entrar en cuál quiere trabajar y puede cambiarla.
+// La elección dura lo que dura la sesión en esa pestaña, y la próxima vez se le propone la última que usó.
 
 // Elección de esta sesión (se borra al cerrar la pestaña o la sesión)
 const CLAVE_SESION = 'lims-sucursal';
