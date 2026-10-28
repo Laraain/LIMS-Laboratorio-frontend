@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import Modal from 'react-bootstrap/Modal';
-import { MagnifyingGlass, Plus, Trash, UserPlus, X } from '@phosphor-icons/react';
+import { MagnifyingGlass, Plus, Stack, Trash, UserPlus, X } from '@phosphor-icons/react';
 import { API_URL, encabezados, mensajeDeErrorApi } from '../lib/api.js';
 import { hoyTucuman } from '../lib/hora.js';
+import { listarGrupos } from '../lib/grupos.js';
 import { PARTICULAR, useObrasSociales } from '../lib/obrasSociales.js';
 import { buscarMedicos, crearMedico, crearOrden, leerCatalogoActivo, modificarOrden, turnoDeHoy } from '../lib/ordenes.js';
 import './ModalOrden.css';
@@ -57,7 +58,7 @@ function ModalOrden({ orden, sucursal, pacienteInicial = null, onCerrar, onGuard
   );
   const [observaciones, setObservaciones] = useState(orden?.observaciones ?? '');
 
-  // estudios: [{ analisis_id, codigo, nombre, cubierto }]
+  // estudios: [{ analisis_id, codigo, nombre, cubierto, grupo_id, grupo }] (grupo: nombre del grupo del que vino)
   const [estudios, setEstudios] = useState(
     esNueva
       ? []
@@ -66,21 +67,28 @@ function ModalOrden({ orden, sucursal, pacienteInicial = null, onCerrar, onGuard
           codigo: estudio.analisis.codigo,
           nombre: estudio.analisis.nombre,
           cubierto: estudio.cubierto,
+          grupo_id: estudio.grupo_id,
+          grupo: estudio.grupos_analisis?.nombre ?? null,
         })),
   );
   const [catalogo, setCatalogo] = useState([]);
+  // grupos: los grupos activos (ej: "Sangre completa"), que agregan todos sus estudios de una vez
+  const [grupos, setGrupos] = useState([]);
   const [busquedaEstudio, setBusquedaEstudio] = useState('');
 
   const [errores, setErrores] = useState({});
   const [guardando, setGuardando] = useState(false);
   const esParticular = obraSocial === PARTICULAR;
 
-  // El catálogo se pide una sola vez al abrir la ventana
+  // El catálogo y los grupos se piden una sola vez al abrir la ventana
   useEffect(() => {
     let vigente = true;
     leerCatalogoActivo()
       .then((datos) => vigente && setCatalogo(datos))
       .catch((errorPeticion) => console.error('No se pudo cargar el catálogo:', errorPeticion));
+    listarGrupos({ soloActivos: true })
+      .then((datos) => vigente && setGrupos(datos))
+      .catch((errorPeticion) => console.error('No se pudieron cargar los grupos:', errorPeticion));
     return () => {
       vigente = false;
     };
@@ -174,8 +182,28 @@ function ModalOrden({ orden, sucursal, pacienteInicial = null, onCerrar, onGuard
   function agregarEstudio(analisis) {
     setEstudios((previos) => [
       ...previos,
-      { analisis_id: analisis.id, codigo: analisis.codigo, nombre: analisis.nombre, cubierto: true },
+      { analisis_id: analisis.id, codigo: analisis.codigo, nombre: analisis.nombre, cubierto: true, grupo_id: null, grupo: null },
     ]);
+    setBusquedaEstudio('');
+    limpiarError('estudios');
+  }
+
+  // Agrega los estudios activos del grupo que todavía no están en la orden (un estudio no se repite)
+  function agregarGrupo(grupo) {
+    setEstudios((previos) => {
+      const yaEstan = new Set(previos.map((estudio) => estudio.analisis_id));
+      const nuevos = grupo.estudios
+        .filter((analisis) => analisis.activo && !yaEstan.has(analisis.id))
+        .map((analisis) => ({
+          analisis_id: analisis.id,
+          codigo: analisis.codigo,
+          nombre: analisis.nombre,
+          cubierto: true,
+          grupo_id: grupo.id,
+          grupo: grupo.nombre,
+        }));
+      return [...previos, ...nuevos];
+    });
     setBusquedaEstudio('');
     limpiarError('estudios');
   }
@@ -219,7 +247,11 @@ function ModalOrden({ orden, sucursal, pacienteInicial = null, onCerrar, onGuard
 
     const datos = {
       medicoId: medico.id,
-      estudios: estudios.map(({ analisis_id: analisisId, cubierto }) => ({ analisis_id: analisisId, cubierto })),
+      estudios: estudios.map(({ analisis_id: analisisId, cubierto, grupo_id: grupoId }) => ({
+        analisis_id: analisisId,
+        cubierto,
+        grupo_id: grupoId,
+      })),
       fechaOrden,
       obraSocialId,
       observaciones,
@@ -258,6 +290,10 @@ function ModalOrden({ orden, sucursal, pacienteInicial = null, onCerrar, onGuard
         .filter((analisis) => !elegidos.has(analisis.id))
         .filter((analisis) => analisis.nombre.toLowerCase().includes(textoEstudio) || analisis.codigo.toLowerCase().includes(textoEstudio))
         .slice(0, 8)
+    : [];
+  // Grupos que coinciden: se muestran primero, porque agregan varios estudios de una vez
+  const gruposSugeridos = textoEstudio
+    ? grupos.filter((grupo) => `${grupo.codigo} ${grupo.nombre}`.toLowerCase().includes(textoEstudio)).slice(0, 4)
     : [];
   // Si la obra social de la orden se desactivó, igual se muestra para no perderla
   const obraFueraDeLista =
@@ -550,27 +586,40 @@ function ModalOrden({ orden, sucursal, pacienteInicial = null, onCerrar, onGuard
               Estudios <span className="text-danger">*</span>
             </legend>
             <label htmlFor="orden-estudio" className="visually-hidden">
-              Agregar estudio por nombre o código
+              Agregar estudio o grupo por nombre o código
             </label>
             <input
               type="search"
               id="orden-estudio"
               className={`form-control ${errores.estudios ? 'is-invalid' : ''}`}
-              placeholder="Agregar estudio por nombre o código"
+              placeholder="Agregar estudio o grupo por nombre o código"
               autoComplete="off"
               value={busquedaEstudio}
               onChange={(evento) => setBusquedaEstudio(evento.target.value)}
               onKeyDown={(evento) => {
-                // Enter agrega la primera sugerencia
+                // Enter agrega la primera sugerencia (primero los grupos)
                 if (evento.key === 'Enter') {
                   evento.preventDefault();
-                  if (sugerencias[0]) agregarEstudio(sugerencias[0]);
+                  if (gruposSugeridos[0]) agregarGrupo(gruposSugeridos[0]);
+                  else if (sugerencias[0]) agregarEstudio(sugerencias[0]);
                 }
               }}
             />
             {textoEstudio && (
               <ul className="lims-orden-sugerencias">
-                {sugerencias.length === 0 && <li className="lims-orden-sugerencia-vacia">No hay estudios que coincidan.</li>}
+                {gruposSugeridos.length === 0 && sugerencias.length === 0 && (
+                  <li className="lims-orden-sugerencia-vacia">No hay estudios ni grupos que coincidan.</li>
+                )}
+                {gruposSugeridos.map((grupo) => (
+                  <li key={`grupo-${grupo.id}`}>
+                    <button type="button" onClick={() => agregarGrupo(grupo)}>
+                      <Stack className="lims-icono" aria-hidden="true" />
+                      <span className="lims-codigo">{grupo.codigo}</span>
+                      <span className="fw-semibold">{grupo.nombre}</span>
+                      <span className="lims-celda-identidad ms-auto">Grupo · {grupo.estudios.length} estudios</span>
+                    </button>
+                  </li>
+                ))}
                 {sugerencias.map((analisis) => (
                   <li key={analisis.id}>
                     <button type="button" onClick={() => agregarEstudio(analisis)}>
@@ -590,7 +639,10 @@ function ModalOrden({ orden, sucursal, pacienteInicial = null, onCerrar, onGuard
                 {estudios.map((estudio) => (
                   <li key={estudio.analisis_id}>
                     <span className="lims-codigo">{estudio.codigo}</span>
-                    <span className="lims-orden-estudio-nombre">{estudio.nombre}</span>
+                    <span className="lims-orden-estudio-nombre">
+                      {estudio.nombre}
+                      {estudio.grupo && <span className="lims-celda-identidad">De {estudio.grupo}</span>}
+                    </span>
                     {/* Los estudios que la obra social no cubre se cobran como particulares */}
                     <div className="form-check form-switch mb-0">
                       <input
