@@ -4,6 +4,7 @@ import { List, MagnifyingGlass, PencilSimple, SquaresFour, UserPlus } from '@pho
 import Swal from 'sweetalert2';
 import ROLES from '../data/roles.js';
 import { supabase } from '../lib/supabase.js';
+import { useSucursales } from '../lib/sucursal.js';
 import ModalEditarPerfil from './ModalEditarPerfil.jsx';
 import ModalNuevoPerfil from './ModalNuevoPerfil.jsx';
 import './ListaPerfiles.css';
@@ -45,6 +46,8 @@ function ListaPerfiles({ idActual }) {
   // creando: true mientras está abierta la ventana de perfil nuevo
   const [editando, setEditando] = useState(null);
   const [creando, setCreando] = useState(false);
+  // Sucursales, para mostrar en la lista dónde trabaja cada persona del personal
+  const { sucursales } = useSucursales();
 
   // useEffect: la petición se hace al aparecer el componente y de nuevo solo si cambia intento
   useEffect(() => {
@@ -65,7 +68,7 @@ function ListaPerfiles({ idActual }) {
         const response = await axios.get(`${API_URL}/perfiles`, {
           headers: { apikey: API_KEY, Authorization: `Bearer ${token}` },
           params: {
-            select: 'id,nombre,apellido,rol,telefono,activo,created_at,pacientes(dni,fecha_nacimiento,sexo,domicilio,obra_social_id,nro_afiliado),personal(usuario,cargo,matricula)',
+            select: 'id,nombre,apellido,rol,telefono,activo,created_at,pacientes(dni,fecha_nacimiento,sexo,domicilio,obra_social_id,nro_afiliado),personal(usuario,cargo,matricula,sucursal_id)',
             order: 'apellido.asc,nombre.asc',
           },
         });
@@ -144,6 +147,11 @@ function ListaPerfiles({ idActual }) {
       .filter(([clave]) => cantidadPorRol[clave])
       .map(([clave, rol]) => ({ clave, nombre: rol.nombre, cantidad: cantidadPorRol[clave] })),
   ];
+
+  // Nombre de la sucursal donde trabaja la persona (null mientras no llegó la lista de sucursales)
+  function nombreDeSucursal(id) {
+    return sucursales.find((sucursal) => sucursal.id === id)?.nombre ?? null;
+  }
 
   return (
     <section className="lims-lista" aria-labelledby="usuarios-titulo">
@@ -251,7 +259,21 @@ function ListaPerfiles({ idActual }) {
                     </span>
                   </td>
                   <td data-label="Rol">
-                    <span className={`lims-rol lims-rol--${perfil.rol}`}>{ROLES[perfil.rol]?.nombre ?? perfil.rol}</span>
+                    <span className="lims-celda-rol">
+                      <span className={`lims-rol lims-rol--${perfil.rol}`}>{ROLES[perfil.rol]?.nombre ?? perfil.rol}</span>
+                      {/* La sucursal solo la tiene el personal; si falta, se marca para que el admin la asigne */}
+                      {perfil.personal && (
+                        <span
+                          className={`lims-celda-sucursal${
+                            perfil.personal.sucursal_id ? '' : ' lims-celda-sucursal--falta'
+                          }`}
+                        >
+                          {perfil.personal.sucursal_id
+                            ? (nombreDeSucursal(perfil.personal.sucursal_id) ?? '—')
+                            : 'Sin sucursal'}
+                        </span>
+                      )}
+                    </span>
                   </td>
                   <td data-label="Cargo">{perfil.personal?.cargo ?? '—'}</td>
                   <td data-label="Teléfono">{perfil.telefono ?? '—'}</td>

@@ -6,6 +6,7 @@ import ROLES from '../data/roles.js';
 import { API_URL, FUNCIONES_URL, encabezados, mensajeDeErrorApi } from '../lib/api.js';
 import { ROLES_PERSONAL } from '../lib/auth.js';
 import { datosObraSocial, erroresObraSocial } from '../lib/obrasSociales.js';
+import { useSucursales } from '../lib/sucursal.js';
 import CamposObraSocial from './CamposObraSocial.jsx';
 
 // Valores con los que arranca el formulario (los dos tipos de perfil comparten estos campos)
@@ -23,6 +24,7 @@ const DATOS_INICIALES = {
   rol: 'tecnico',
   cargo: '',
   matricula: '',
+  sucursal: '',
 };
 
 // Escapa los caracteres especiales antes de armar el HTML de la ventana de SweetAlert2
@@ -42,6 +44,8 @@ function ModalNuevoPerfil({ onCerrar, onCreado, soloPacientes = false }) {
   const [datos, setDatos] = useState(DATOS_INICIALES);
   const [errores, setErrores] = useState({});
   const [guardando, setGuardando] = useState(false);
+  // Sucursales para asignarle al personal. Recepción solo da de alta pacientes: no las necesita
+  const { sucursales, error: errorSucursales } = useSucursales(!soloPacientes);
 
   // Devuelve una función que actualiza un solo campo de datos (y le quita el error marcado)
   function cambiar(campo) {
@@ -72,6 +76,9 @@ function ModalNuevoPerfil({ onCerrar, onCreado, soloPacientes = false }) {
         : {
             usuario: !/^[a-z0-9._-]{3,32}$/.test(usuario),
             matricula: datos.rol === 'bioquimico' && datos.matricula.trim() === '',
+            // El admin ve todas las sucursales: solo se exige para el resto del personal.
+            // Si la lista no llegó, no se bloquea el alta: la sucursal se puede asignar después.
+            sucursal: datos.rol !== 'admin' && sucursales.length > 0 && datos.sucursal === '',
           }),
     };
     setErrores(nuevosErrores);
@@ -144,6 +151,27 @@ function ModalNuevoPerfil({ onCerrar, onCreado, soloPacientes = false }) {
         }
       }
 
+      // La función crear-personal todavía no recibe la sucursal: se completa en la fila recién creada.
+      // Cuando la función la acepte, este PATCH se puede quitar.
+      let avisoSucursal = false;
+      if (tipo === 'personal' && datos.sucursal) {
+        try {
+          // return=representation: si la política de seguridad no deja modificar, la API responde sin filas
+          const { data } = await axios.patch(
+            `${API_URL}/personal`,
+            { sucursal_id: Number(datos.sucursal) },
+            {
+              headers: { ...(await encabezados()), Prefer: 'return=representation' },
+              params: { usuario: `eq.${usuario}` },
+            },
+          );
+          if (!Array.isArray(data) || data.length !== 1) throw new Error('No se modificó ninguna fila');
+        } catch (errorSucursal) {
+          console.error('No se pudo asignar la sucursal:', errorSucursal);
+          avisoSucursal = true;
+        }
+      }
+
       // La contraseña provisoria se muestra UNA sola vez: el admin tiene que entregársela a la persona
       const acceso = response.data.dni ?? response.data.usuario;
       await Swal.fire({
@@ -164,6 +192,15 @@ function ModalNuevoPerfil({ onCerrar, onCreado, soloPacientes = false }) {
           icon: 'warning',
           title: 'Falta el domicilio',
           text: 'El paciente se creó, pero no se pudo guardar el domicilio. Edítelo desde la lista de pacientes.',
+          confirmButtonText: 'Entendido',
+          confirmButtonColor: '#1c4e80',
+        });
+      }
+      if (avisoSucursal) {
+        await Swal.fire({
+          icon: 'warning',
+          title: 'Falta la sucursal',
+          text: 'La persona se creó, pero no se pudo asignar la sucursal. Asígnela desde Administración de perfiles.',
           confirmButtonText: 'Entendido',
           confirmButtonColor: '#1c4e80',
         });
@@ -359,6 +396,35 @@ function ModalNuevoPerfil({ onCerrar, onCreado, soloPacientes = false }) {
                       </option>
                     ))}
                   </select>
+                </div>
+                <div className="col-sm-6">
+                  <label htmlFor="nuevo-sucursal" className="form-label fw-semibold small">
+                    Sucursal {datos.rol !== 'admin' && <span className="text-danger">*</span>}
+                  </label>
+                  <select
+                    id="nuevo-sucursal"
+                    className={`form-select ${errores.sucursal ? 'is-invalid' : ''}`}
+                    value={datos.sucursal}
+                    onChange={cambiar('sucursal')}
+                  >
+                    <option value="">Sin asignar</option>
+                    {/* map(): una opción por cada sucursal; se aclara cuál está desactivada */}
+                    {sucursales.map((sucursal) => (
+                      <option key={sucursal.id} value={sucursal.id}>
+                        {sucursal.nombre}
+                        {sucursal.localidad ? ` (${sucursal.localidad})` : ''}
+                        {sucursal.activa ? '' : ' — inactiva'}
+                      </option>
+                    ))}
+                  </select>
+                  {errores.sucursal && <div className="invalid-feedback">Elija la sucursal donde va a trabajar.</div>}
+                  <div className="form-text">
+                    {errorSucursales
+                      ? 'No se pudieron cargar las sucursales: se puede asignar después desde Administración de perfiles.'
+                      : datos.rol === 'admin'
+                        ? 'El administrador ve todas las sucursales.'
+                        : 'Solo verá las órdenes, muestras y resultados de esta sucursal.'}
+                  </div>
                 </div>
                 <div className="col-sm-6">
                   <label htmlFor="nuevo-cargo" className="form-label fw-semibold small">
