@@ -48,12 +48,15 @@ function Panel() {
   const navigate = useNavigate();
   const { cargando, perfil, fecha } = useSesion(ROLES_PERSONAL);
   const sesionValida = Boolean(perfil && !perfil.debe_cambiar_password);
-  // Sucursal en la que trabaja hoy: se elige al entrar (ver ElegirSucursal)
+  // El admin elige la sucursal al entrar; el resto trabaja siempre en la que tiene asignada
+  const esAdmin = perfil?.rol === 'admin';
   const { sucursales, cargando: cargandoSucursales, error: errorSucursales, recargar: recargarSucursales } =
     useSucursales(sesionValida);
   const [idSucursal, setIdSucursal] = useState(sucursalElegida);
-  // Si la sucursal elegida se desactivó (o todavía no se eligió), sucursal queda vacía y se vuelve a preguntar
-  const sucursal = sucursales.find((opcion) => opcion.id === idSucursal && opcion.activa) ?? null;
+  const sucursalAsignada = perfil?.personal?.sucursal_id ?? null;
+  // Si la sucursal no existe o está desactivada, sucursal queda vacía y se muestra el aviso
+  const idSucursalActual = esAdmin ? idSucursal : sucursalAsignada;
+  const sucursal = sucursales.find((opcion) => opcion.id === idSucursalActual && opcion.activa) ?? null;
   const sucursalesActivas = sucursales.filter((opcion) => opcion.activa);
   const esMovil = useSyncExternalStore(suscribirAncho, esMovilAhora);
   // En la PC el menú arranca como se dejó la última vez; en el celular arranca escondido
@@ -127,20 +130,54 @@ function Panel() {
   // Si todavía tiene la contraseña provisoria, el login le pide elegir una propia antes de entrar.
   if (!sesionValida) return <Navigate to="/login-personal" replace />;
 
-  // Todavía sin sucursal: antes de usar el panel se elige en cuál trabaja hoy
+  // Sin sucursal: el admin elige en cuál trabaja; al resto solo le queda esperar que se la asignen
   if (!sucursal) {
     return (
       <>
         <Navbar perfil={perfil} fecha={fecha} onCerrarSesion={handleCerrarSesion} />
         <main id="contenido" className="lims-panel-verificando">
-          <ElegirSucursal
-            perfil={perfil}
-            sucursales={sucursalesActivas}
-            cargando={cargandoSucursales}
-            error={errorSucursales}
-            onReintentar={recargarSucursales}
-            onElegir={elegirSucursal}
-          />
+          {esAdmin ? (
+            <ElegirSucursal
+              perfil={perfil}
+              sucursales={sucursalesActivas}
+              cargando={cargandoSucursales}
+              error={errorSucursales}
+              onReintentar={recargarSucursales}
+              onElegir={elegirSucursal}
+            />
+          ) : (
+            <section className="lims-elegir-sucursal" aria-labelledby="sucursal-asignada-titulo">
+              <p className="lims-panel-etiqueta">Hola, {perfil.nombre}</p>
+              <h1 id="sucursal-asignada-titulo" className="lims-panel-titulo">
+                {cargandoSucursales ? 'Cargando su sucursal…' : 'Sucursal no disponible'}
+              </h1>
+              {cargandoSucursales && (
+                <p className="lims-panel-texto" role="status">
+                  <span className="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+                  Un momento…
+                </p>
+              )}
+              {!cargandoSucursales && errorSucursales && (
+                <div className="lims-elegir-sucursal-aviso" role="alert">
+                  No se pudieron cargar las sucursales.{' '}
+                  <button
+                    type="button"
+                    className="btn lims-btn-pill lims-btn-secundario lims-btn-chico"
+                    onClick={recargarSucursales}
+                  >
+                    Reintentar
+                  </button>
+                </div>
+              )}
+              {!cargandoSucursales && !errorSucursales && (
+                <p className="lims-panel-texto">
+                  {sucursalAsignada
+                    ? 'La sucursal asignada a su cuenta está desactivada. Pídale al administrador que le asigne otra.'
+                    : 'Su cuenta todavía no tiene una sucursal asignada. Pídale al administrador que se la asigne desde Administración de perfiles.'}
+                </p>
+              )}
+            </section>
+          )}
         </main>
       </>
     );
@@ -148,11 +185,12 @@ function Panel() {
 
   return (
     <>
+      {/* Solo el admin puede cambiar de sucursal: el personal queda fijo en la suya */}
       <Navbar
         perfil={perfil}
         fecha={fecha}
         sucursal={sucursal}
-        onCambiarSucursal={cambiarSucursal}
+        onCambiarSucursal={esAdmin ? cambiarSucursal : undefined}
         menuAbierto={menuAbierto}
         onAlternarMenu={alternarMenu}
         onCerrarSesion={handleCerrarSesion}

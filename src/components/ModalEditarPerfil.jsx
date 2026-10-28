@@ -6,6 +6,7 @@ import ROLES from '../data/roles.js';
 import { API_URL, encabezados, mensajeDeErrorApi } from '../lib/api.js';
 import { ROLES_PERSONAL } from '../lib/auth.js';
 import { datosObraSocial, erroresObraSocial, PARTICULAR } from '../lib/obrasSociales.js';
+import { useSucursales } from '../lib/sucursal.js';
 import CamposObraSocial from './CamposObraSocial.jsx';
 import { hoyTucuman } from '../lib/hora.js';
 
@@ -45,6 +46,10 @@ function ModalEditarPerfil({ perfil, idActual, pacienteId, soloDatos = false, on
   const [rol, setRol] = useState(perfil.rol);
   const [cargo, setCargo] = useState(perfil.personal?.cargo ?? '');
   const [matricula, setMatricula] = useState(perfil.personal?.matricula ?? '');
+  // Sucursal donde trabaja: vacío = sin asignar (no ve datos de ninguna sucursal)
+  const [sucursal, setSucursal] = useState(
+    perfil.personal?.sucursal_id ? String(perfil.personal.sucursal_id) : '',
+  );
   // Datos de la ficha del paciente (perfil.pacientes viene de la consulta a la API)
   const [fechaNacimiento, setFechaNacimiento] = useState(perfil.pacientes?.fecha_nacimiento ?? '');
   const [sexo, setSexo] = useState(perfil.pacientes?.sexo ?? '');
@@ -56,6 +61,8 @@ function ModalEditarPerfil({ perfil, idActual, pacienteId, soloDatos = false, on
   const [nroAfiliado, setNroAfiliado] = useState(perfil.pacientes?.nro_afiliado ?? '');
   const [errores, setErrores] = useState({});
   const [guardando, setGuardando] = useState(false);
+  // Sucursales para elegir dónde trabaja la persona (solo si el perfil es de personal)
+  const { sucursales } = useSucursales(esPersonal);
 
   async function handleSubmit(evento) {
     // Evita que el navegador recargue la página al enviar el formulario
@@ -93,6 +100,8 @@ function ModalEditarPerfil({ perfil, idActual, pacienteId, soloDatos = false, on
       if ((matricula.trim() || null) !== (perfil.personal?.matricula ?? null)) {
         cambiosPersonal.matricula = matricula.trim() || null;
       }
+      const sucursalId = sucursal ? Number(sucursal) : null;
+      if (sucursalId !== (perfil.personal?.sucursal_id ?? null)) cambiosPersonal.sucursal_id = sucursalId;
     }
     // Ficha del paciente: nombre, apellido y teléfono se guardan también en pacientes,
     // y se suman los datos propios de la ficha (nacimiento, sexo, domicilio y obra social)
@@ -353,6 +362,34 @@ function ModalEditarPerfil({ perfil, idActual, pacienteId, soloDatos = false, on
                   </select>
                 </div>
                 <div className="col-sm-6">
+                  <label htmlFor="editar-sucursal" className="form-label fw-semibold small">
+                    Sucursal
+                  </label>
+                  <select
+                    id="editar-sucursal"
+                    className="form-select"
+                    value={sucursal}
+                    onChange={(evento) => setSucursal(evento.target.value)}
+                  >
+                    <option value="">Sin asignar</option>
+                    {/* map(): una opción por cada sucursal; se aclara cuál está desactivada */}
+                    {sucursales.map((opcion) => (
+                      <option key={opcion.id} value={opcion.id}>
+                        {opcion.nombre}
+                        {opcion.localidad ? ` (${opcion.localidad})` : ''}
+                        {opcion.activa ? '' : ' — inactiva'}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="form-text">
+                    {rol === 'admin'
+                      ? 'El administrador ve todas las sucursales.'
+                      : sucursal
+                        ? 'Solo verá las órdenes, muestras y resultados de esta sucursal.'
+                        : 'Sin sucursal no verá datos de ninguna sucursal.'}
+                  </div>
+                </div>
+                <div className="col-sm-6">
                   <label htmlFor="editar-cargo" className="form-label fw-semibold small">
                     Cargo
                   </label>
@@ -365,7 +402,7 @@ function ModalEditarPerfil({ perfil, idActual, pacienteId, soloDatos = false, on
                     onChange={(evento) => setCargo(evento.target.value)}
                   />
                 </div>
-                <div className="col-12">
+                <div className="col-sm-6">
                   <label htmlFor="editar-matricula" className="form-label fw-semibold small">
                     Matrícula {rol === 'bioquimico' && <span className="text-danger">*</span>}
                   </label>
