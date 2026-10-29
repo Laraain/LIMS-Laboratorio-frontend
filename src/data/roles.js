@@ -13,5 +13,7 @@ export const ROLES_RECEPCION = ['recepcion', 'admin'];
 export const ROLES_EXTRACCION = ['tecnico', 'bioquimico', 'admin'];
 // Gestión de pacientes: la hace recepción y también el admin
 export const ROLES_PACIENTES = ['recepcion', 'admin'];
+// Órdenes médicas: las cargan, corrigen y anulan recepción y el admin
+export const ROLES_ORDENES = ['recepcion', 'admin'];
 
 export default ROLES;

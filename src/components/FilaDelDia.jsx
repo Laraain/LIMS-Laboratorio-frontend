@@ -1,4 +1,4 @@
-import { SignOut } from '@phosphor-icons/react';
+import { FileText, SignOut } from '@phosphor-icons/react';
 import { ESTADOS_TURNO, TIPOS_EXTRACCION } from '../lib/fila.js';
 import { horaDe } from '../lib/hora.js';
 import './Fila.css';
@@ -6,7 +6,8 @@ import './Fila.css';
 // Fila de atención de hoy, en el orden en que se atiende.
 // Arriba los que esperan y los llamados; abajo, plegados, los que ya terminaron.
 // Props: fila (turnos de hoy) · cargando · error · onRetirar (opcional: muestra "Se retiró" en los que esperan)
-function FilaDelDia({ fila, cargando, error, onRetirar }) {
+// onCargarOrden (opcional: muestra "Orden" para cargar la orden médica del paciente)
+function FilaDelDia({ fila, cargando, error, onRetirar, onCargarOrden }) {
   const activos = fila.filter((turno) => turno.estado === 'en_espera' || turno.estado === 'llamado');
   const terminados = fila.filter((turno) => turno.estado === 'atendido' || turno.estado === 'se_retiro');
   const enEspera = activos.filter((turno) => turno.estado === 'en_espera').length;
@@ -41,7 +42,7 @@ function FilaDelDia({ fila, cargando, error, onRetirar }) {
       {activos.length > 0 && (
         <ol className="lims-fila-lista">
           {activos.map((turno) => (
-            <ItemFila key={turno.id} turno={turno} onRetirar={onRetirar} />
+            <ItemFila key={turno.id} turno={turno} onRetirar={onRetirar} onCargarOrden={onCargarOrden} />
           ))}
         </ol>
       )}
@@ -53,7 +54,7 @@ function FilaDelDia({ fila, cargando, error, onRetirar }) {
           </summary>
           <ol className="lims-fila-lista">
             {terminados.map((turno) => (
-              <ItemFila key={turno.id} turno={turno} />
+              <ItemFila key={turno.id} turno={turno} onCargarOrden={onCargarOrden} />
             ))}
           </ol>
         </details>
@@ -63,7 +64,7 @@ function FilaDelDia({ fila, cargando, error, onRetirar }) {
 }
 
 // Un paciente de la fila: número, nombre, DNI, tipo, hora de llegada y estado
-function ItemFila({ turno, onRetirar }) {
+function ItemFila({ turno, onRetirar, onCargarOrden }) {
   const paciente = turno.pacientes;
   return (
     <li className={`lims-fila-item lims-fila-item--${turno.estado}`}>
@@ -94,6 +95,18 @@ function ItemFila({ turno, onRetirar }) {
         >
           <SignOut className="lims-icono me-1" aria-hidden="true" />
           Se retiró
+        </button>
+      )}
+      {/* Puede traer más de una orden: el botón queda disponible mientras no se haya retirado */}
+      {onCargarOrden && turno.estado !== 'se_retiro' && (
+        <button
+          type="button"
+          className="btn lims-btn-pill lims-btn-secundario lims-btn-chico"
+          aria-label={`Cargar una orden de ${paciente.apellido}, ${paciente.nombre}`}
+          onClick={() => onCargarOrden(turno)}
+        >
+          <FileText className="lims-icono me-1" aria-hidden="true" />
+          Orden
         </button>
       )}
     </li>
