@@ -20,14 +20,14 @@ const CAMPOS_ORDEN =
   'id,nro_orden,estado,fecha_orden,fecha_recepcion,observaciones,motivo_anulacion,turno_id,obra_social_id,' +
   'paciente_id,medico_id,pacientes(dni,nombre,apellido,obra_social_id,nro_afiliado),' +
   'medicos(nombre,apellido,matricula),obras_sociales(nombre),' +
-  'orden_analisis(analisis_id,cubierto,analisis(codigo,nombre))';
+  'orden_analisis(analisis_id,cubierto,grupo_id,analisis(codigo,nombre),grupos_analisis(nombre))';
 
 async function rpc(nombre, parametros) {
   const response = await axios.post(`${API_URL}/rpc/${nombre}`, parametros, { headers: await encabezados() });
   return response.data;
 }
 
-// estudios: [{ analisis_id, cubierto }] · obraSocialId null = particular
+// estudios: [{ analisis_id, cubierto, grupo_id }] · obraSocialId null = particular
 export function crearOrden({ pacienteId, medicoId, estudios, fechaOrden, obraSocialId, turnoId, sucursalId, observaciones }) {
   return rpc('crear_orden', {
     p_paciente_id: pacienteId,
