@@ -1,0 +1,70 @@
+/* Ventana de carga de resultados: una fila por estudio de la orden */
+.lims-resultados {
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+}
+
+.lims-resultados li {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(8rem, 1fr) minmax(0, 1fr);
+  gap: 8px 16px;
+  align-items: center;
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--lims-border);
+  border-radius: 8px;
+}
+
+.lims-resultado-estudio {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+}
+
+.lims-resultado-referencia {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Fuera de rango: la fila se marca para que el bioquímico la mire primero */
+.lims-resultado--fuera {
+  background: #fff4e5;
+}
+
+.lims-resultado-alerta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #b54708;
+  font-weight: 600;
+}
+
+.lims-resultado-estado {
+  font-size: 0.8125rem;
+  color: var(--lims-muted);
+}
+
+.lims-resultado-estado--validado {
+  color: var(--bs-success);
+  font-weight: 600;
+}
+
+.lims-resultado-estado--rechazado {
+  color: var(--bs-danger);
+  font-weight: 600;
+}
+
+/* En pantallas chicas cada estudio ocupa dos renglones */
+@media (max-width: 575.98px) {
+  .lims-resultados li {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .lims-resultado-estudio {
+    grid-column: 1 / -1;
+  }
+}

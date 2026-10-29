@@ -13,6 +13,7 @@ import Analisis from './pages/Analisis.jsx';
 import Pacientes from './pages/Pacientes.jsx';
 import Recepcion from './pages/Recepcion.jsx';
 import Ordenes from './pages/Ordenes.jsx';
+import Resultados from './pages/Resultados.jsx';
 import Extraccion from './pages/Extraccion.jsx';
 import Sucursales from './pages/Sucursales.jsx';
 import ObrasSociales from './pages/ObrasSociales.jsx';
@@ -82,6 +83,8 @@ function App() {
           <Route path="recepcion" element={<Recepcion />} />
           {/* Órdenes médicas: recepción y el admin; la propia página redirige si el rol no corresponde */}
           <Route path="ordenes" element={<Ordenes />} />
+          {/* Carga de resultados: recepción, bioquímico y admin; la propia página redirige si el rol no corresponde */}
+          <Route path="resultados" element={<Resultados />} />
           {/* Gestión de pacientes: la ven recepción y el admin; la propia página redirige si el rol no corresponde */}
           <Route path="pacientes" element={<Pacientes />} />
           <Route path="extraccion" element={<Extraccion />} />
