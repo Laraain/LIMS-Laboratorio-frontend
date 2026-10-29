@@ -51,7 +51,7 @@ function ModalResultados({ ordenId, onCerrar, onGuardado }) {
   const [rangos, setRangos] = useState({});
   // valores: lo que está escrito en cada campo, por id del estudio en la orden
   const [valores, setValores] = useState({});
-  // cerrados: estudios con componentes que se plegaron (arrancan abiertos)
+  // cerrados: estudios con componentes plegados (arrancan abiertos si les falta algún valor)
   const [cerrados, setCerrados] = useState({});
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(false);
@@ -78,6 +78,17 @@ function ModalResultados({ ordenId, onCerrar, onGuardado }) {
                 : '';
               return [estudio.id, valor];
             }),
+          ),
+        );
+        // Un estudio con componentes arranca plegado solo si ya tiene todos sus valores cargados
+        const pendientes = new Set(
+          datosOrden.orden_analisis.filter((estudio) => estudio.padre_id && !resultadoDe(estudio)).map((estudio) => estudio.padre_id),
+        );
+        setCerrados(
+          Object.fromEntries(
+            datosOrden.orden_analisis
+              .filter((estudio) => estudio.padre_id)
+              .map((estudio) => [estudio.padre_id, !pendientes.has(estudio.padre_id)]),
           ),
         );
       } catch (errorPeticion) {
@@ -261,40 +272,55 @@ function ModalResultados({ ordenId, onCerrar, onGuardado }) {
     );
   }
 
-  // Un estudio con componentes: encabezado que se despliega y, debajo, una fila por componente
+  // Un estudio con componentes: misma fila de 3 columnas que los demás (estudio · botón en lugar del campo ·
+  // avance en lugar de la referencia) y, debajo, una fila por componente.
+  // Mientras falte algún valor no se puede plegar, para que no quede escondido lo que hay que cargar.
   function filaConComponentes(estudio) {
     const componentes = componentesDe[estudio.id];
     const abierto = !cerrados[estudio.id];
     const cargados = componentes.filter((componente) => (valores[componente.id] ?? '').trim() !== '').length;
+    const completo = cargados === componentes.length;
     const fuera = componentes.filter(estaFuera).length;
     const idLista = `componentes-${estudio.id}`;
     return (
-      <li key={estudio.id} className="lims-resultado-grupo">
-        <button
-          type="button"
-          className="lims-resultado-desplegar"
-          aria-expanded={abierto}
-          aria-controls={idLista}
-          onClick={() => setCerrados((previos) => ({ ...previos, [estudio.id]: abierto }))}
-        >
-          {abierto ? <CaretDown aria-hidden="true" /> : <CaretRight aria-hidden="true" />}
-          <span className="lims-codigo">{estudio.analisis.codigo}</span>
-          <span className="text-start">
-            <span className="fw-semibold">{estudio.analisis.nombre}</span>
-            <span className="lims-celda-identidad">
-              {estudio.analisis.tipos_muestra?.nombre}
-              {estudio.grupos_analisis ? ` · ${estudio.grupos_analisis.nombre}` : ''}
+      <li key={estudio.id} className={`lims-resultado-grupo${fuera > 0 ? ' lims-resultado--fuera' : ''}`}>
+        <div className="lims-resultado-fila">
+          <div className="lims-resultado-estudio">
+            <span className="lims-codigo">{estudio.analisis.codigo}</span>
+            <span>
+              <span className="fw-semibold">{estudio.analisis.nombre}</span>
+              <span className="lims-celda-identidad">
+                {estudio.analisis.tipos_muestra?.nombre}
+                {estudio.grupos_analisis ? ` · ${estudio.grupos_analisis.nombre}` : ''}
+              </span>
             </span>
-          </span>
-          <span className="lims-resultado-avance">
-            {cargados} de {componentes.length} cargados
+          </div>
+          <div className="lims-resultado-valor">
+            <button
+              type="button"
+              className="lims-resultado-desplegar"
+              aria-expanded={abierto}
+              aria-controls={idLista}
+              disabled={abierto && !completo}
+              title={abierto && !completo ? 'Se puede ocultar cuando estén los valores cargados' : undefined}
+              onClick={() => setCerrados((previos) => ({ ...previos, [estudio.id]: abierto }))}
+            >
+              <span>{abierto ? 'Ocultar los valores' : `Ver los ${componentes.length} valores`}</span>
+              {abierto ? <CaretDown aria-hidden="true" /> : <CaretRight aria-hidden="true" />}
+            </button>
+          </div>
+          <div className="lims-resultado-referencia">
+            <span className="lims-celda-identidad">Valores</span>
+            <span>
+              {cargados} de {componentes.length} cargados
+            </span>
             {fuera > 0 && (
               <span className="lims-resultado-alerta">
                 <WarningCircle aria-hidden="true" /> {fuera} fuera de rango
               </span>
             )}
-          </span>
-        </button>
+          </div>
+        </div>
         {abierto && (
           <ul id={idLista} className="lims-resultados lims-resultados--componentes">
             {componentes.map((componente) => filaEstudio(componente, true))}
