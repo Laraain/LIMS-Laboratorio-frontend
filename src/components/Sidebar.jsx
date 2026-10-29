@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { Buildings, ClipboardText, Flask, House, IdentificationCard, Syringe, UserCircle, UsersThree, X } from '@phosphor-icons/react';
+import { Buildings, ClipboardText, FirstAidKit, Flask, House, IdentificationCard, Syringe, UserCircle, UsersThree, X } from '@phosphor-icons/react';
 import ROLES, { ROLES_EXTRACCION, ROLES_PACIENTES, ROLES_RECEPCION } from '../data/roles.js';
 import './Sidebar.css';
 
@@ -14,6 +14,7 @@ const OPCIONES = [
   { ruta: '/panel/analisis', texto: 'Catálogo de análisis', icono: Flask },
   { ruta: '/panel/usuarios', texto: 'Administración de perfiles', icono: UsersThree, roles: ['admin'] },
   { ruta: '/panel/sucursales', texto: 'Sucursales', icono: Buildings, roles: ['admin'] },
+  { ruta: '/panel/obras-sociales', texto: 'Obras sociales', icono: FirstAidKit, roles: ['admin'] },
 ];
 
 // Menú lateral del panel del personal: muestra solo las opciones habilitadas para el rol de quien ingresó.

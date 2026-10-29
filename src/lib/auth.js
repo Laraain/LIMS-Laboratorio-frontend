@@ -38,7 +38,8 @@ export function mensajeDeError(error) {
 async function leerPerfil(userId) {
   const { data, error } = await supabase
     .from('perfiles')
-    .select('id, rol, nombre, apellido, activo, debe_cambiar_password')
+    // personal(sucursal_id): la sucursal que el administrador le asignó al empleado
+    .select('id, rol, nombre, apellido, activo, debe_cambiar_password, personal(sucursal_id)')
     .eq('id', userId)
     .maybeSingle();
   if (error) throw error;

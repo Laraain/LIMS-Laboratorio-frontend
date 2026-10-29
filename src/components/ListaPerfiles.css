@@ -249,6 +249,25 @@
   color: var(--lims-muted);
 }
 
+/* Rol y, debajo, la sucursal donde trabaja la persona */
+.lims-celda-rol {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.lims-celda-sucursal {
+  font-size: 0.8125rem;
+  color: var(--lims-muted);
+}
+
+/* Sin sucursal asignada: no ve datos de ninguna sucursal, se marca para que el admin lo resuelva */
+.lims-celda-sucursal--falta {
+  color: var(--bs-danger);
+  font-weight: 600;
+}
+
 /* Rol: etiqueta de fondo suave, con un color por rol */
 .lims-rol {
   display: inline-block;

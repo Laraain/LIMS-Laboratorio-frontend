@@ -2,7 +2,8 @@ import { Buildings, MapPin } from '@phosphor-icons/react';
 import { ultimaSucursal } from '../lib/sucursal.js';
 import './ElegirSucursal.css';
 
-// Pantalla que aparece al entrar al panel: la persona elige en qué sucursal trabaja hoy.
+// Pantalla que aparece al entrar al panel del administrador: elige con qué sucursal trabajar.
+// El personal no la ve: trabaja siempre en la sucursal que le asignaron.
 // La última sucursal que usó en esta computadora aparece marcada como sugerencia.
 // Props: perfil (quién ingresó) · sucursales (las activas) · cargando · error · onReintentar · onElegir (recibe el id)
 function ElegirSucursal({ perfil, sucursales, cargando, error, onReintentar, onElegir }) {
@@ -15,8 +16,8 @@ function ElegirSucursal({ perfil, sucursales, cargando, error, onReintentar, onE
         ¿En qué sucursal trabaja hoy?
       </h1>
       <p className="lims-panel-texto">
-        La fila de atención, los boxes y las órdenes que ve son los de la sucursal elegida. La puede cambiar después desde
-        la barra de arriba.
+        Elija la sucursal con la que quiere trabajar. La fila de atención, los boxes y la numeración son los de esa
+        sucursal; como administrador, igual puede ver la información de todas.
       </p>
 
       {cargando && (

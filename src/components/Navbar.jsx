@@ -45,20 +45,28 @@ function Navbar({ perfil, fecha, sucursal, onCambiarSucursal, menuAbierto, onAlt
           </Nav>
 
           <div className="lims-navbar-sesion">
-            {sucursal && (
-              <button
-                type="button"
-                className="lims-navbar-sucursal"
-                onClick={onCambiarSucursal}
-                title="Cambiar de sucursal"
-                aria-label={`Trabajando en ${sucursal.nombre}${sucursal.localidad ? ` (${sucursal.localidad})` : ''}. Cambiar de sucursal`}
-              >
-                <Buildings aria-hidden="true" />
-                <span className="lims-navbar-sucursal-nombre">{sucursal.nombre}</span>
-                {/* Localidad en letra chica al lado del nombre: se ve de un vistazo dónde se está trabajando */}
-                {sucursal.localidad && <span className="lims-navbar-localidad">{sucursal.localidad}</span>}
-              </button>
-            )}
+            {/* El admin la puede cambiar; para el resto es la sucursal que le asignaron (no es un botón) */}
+            {sucursal &&
+              (onCambiarSucursal ? (
+                <button
+                  type="button"
+                  className="lims-navbar-sucursal"
+                  onClick={onCambiarSucursal}
+                  title="Cambiar de sucursal"
+                  aria-label={`Trabajando en ${sucursal.nombre}${sucursal.localidad ? ` (${sucursal.localidad})` : ''}. Cambiar de sucursal`}
+                >
+                  <Buildings aria-hidden="true" />
+                  <span className="lims-navbar-sucursal-nombre">{sucursal.nombre}</span>
+                  {/* Localidad en letra chica al lado del nombre: se ve de un vistazo dónde se está trabajando */}
+                  {sucursal.localidad && <span className="lims-navbar-localidad">{sucursal.localidad}</span>}
+                </button>
+              ) : (
+                <span className="lims-navbar-sucursal lims-navbar-sucursal--fija" title="Sucursal asignada">
+                  <Buildings aria-hidden="true" />
+                  <span className="lims-navbar-sucursal-nombre">{sucursal.nombre}</span>
+                  {sucursal.localidad && <span className="lims-navbar-localidad">{sucursal.localidad}</span>}
+                </span>
+              ))}
             <span className="lims-navbar-usuario">
               <UserCircle aria-hidden="true" />
               {perfil.nombre} {perfil.apellido}
