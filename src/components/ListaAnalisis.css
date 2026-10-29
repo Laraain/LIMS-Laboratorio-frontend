@@ -17,6 +17,11 @@
   letter-spacing: 0.02em;
 }
 
+/* Componente de otro estudio (ej: Neutrófilos de la Fórmula leucocitaria): con sangría debajo de su estudio */
+.lims-tabla-perfiles .lims-fila-componente .lims-celda-nombre {
+  padding-left: 2.5rem;
+}
+
 /* Números alineados en columna (todas las cifras ocupan el mismo ancho) y sin cortarse en dos renglones */
 .lims-celda-numero {
   font-variant-numeric: tabular-nums;
