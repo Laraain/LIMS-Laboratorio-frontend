@@ -206,7 +206,9 @@ function Ordenes() {
               </thead>
               <tbody>
                 {visibles.map((orden) => {
-                  const particulares = orden.orden_analisis.filter((estudio) => !estudio.cubierto).length;
+                  // Los componentes (ej: los 5 valores de la fórmula leucocitaria) no cuentan como estudios aparte
+                  const pedidos = orden.orden_analisis.filter((estudio) => !estudio.padre_id);
+                  const particulares = pedidos.filter((estudio) => !estudio.cubierto).length;
                   return (
                     <tr key={orden.id}>
                       <td className="lims-celda-nombre">
@@ -229,7 +231,7 @@ function Ordenes() {
                       </td>
                       <td data-label="Obra social">{orden.obras_sociales?.nombre ?? 'Particular'}</td>
                       <td data-label="Estudios">
-                        {orden.orden_analisis.length}
+                        {pedidos.length}
                         {orden.obra_social_id && particulares > 0 && (
                           <span className="lims-celda-identidad">
                             {particulares} particular{particulares === 1 ? '' : 'es'}

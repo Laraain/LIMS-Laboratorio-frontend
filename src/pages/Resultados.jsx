@@ -20,11 +20,14 @@ const FILTROS = [
   { clave: 'todas', nombre: 'Todas' },
 ];
 
-// Cuántos estudios de la orden tienen resultado y cuántos quedaron fuera de rango
+// Cuántos estudios de la orden tienen resultado y cuántos quedaron fuera de rango.
+// Un estudio con componentes (ej: fórmula leucocitaria) se completa con sus componentes: no se cuenta aparte.
 function avance(orden) {
-  const resultados = orden.orden_analisis.map(resultadoDe).filter(Boolean);
+  const conComponentes = new Set(orden.orden_analisis.map((estudio) => estudio.padre_id).filter(Boolean));
+  const cargables = orden.orden_analisis.filter((estudio) => !conComponentes.has(estudio.id));
+  const resultados = cargables.map(resultadoDe).filter(Boolean);
   return {
-    total: orden.orden_analisis.length,
+    total: cargables.length,
     cargados: resultados.length,
     fuera: resultados.filter((resultado) => resultado.fuera_de_rango).length,
   };
@@ -180,7 +183,7 @@ function Resultados() {
                         <span>
                           <span className="lims-codigo">{orden.nro_orden}</span>
                           <span className="lims-celda-identidad">
-                            {total} {total === 1 ? 'estudio' : 'estudios'}
+                            {total} {total === 1 ? 'valor' : 'valores'}
                           </span>
                         </span>
                       </td>

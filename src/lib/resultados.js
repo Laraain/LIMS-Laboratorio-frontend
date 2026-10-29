@@ -23,8 +23,10 @@ export async function leerOrdenConResultados(ordenId) {
     params: {
       select:
         'id,nro_orden,estado,fecha_orden,pacientes(dni,nombre,apellido,sexo,fecha_nacimiento),' +
-        'orden_analisis(id,analisis(codigo,nombre,unidad,tipos_muestra(nombre)),grupos_analisis(nombre),' +
-        'resultados(id,valor_numerico,valor_texto,fuera_de_rango,estado,cargado_en,' +
+        // padre_id y absoluto_*: estudios con componentes (ej: fórmula leucocitaria, en % y absoluto)
+        'orden_analisis(id,padre_id,analisis(id,codigo,nombre,unidad,absoluto_de,absoluto_min,absoluto_max,absoluto_unidad,' +
+        'tipos_muestra(nombre)),grupos_analisis(nombre),' +
+        'resultados(id,valor_numerico,valor_texto,valor_absoluto,fuera_de_rango,estado,cargado_en,' +
         'cargador:perfiles!resultados_cargado_por_fkey(nombre,apellido)))',
       id: `eq.${ordenId}`,
     },

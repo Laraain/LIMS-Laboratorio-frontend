@@ -4,6 +4,7 @@ import Swal from 'sweetalert2';
 import Modal from 'react-bootstrap/Modal';
 import { MagnifyingGlass, Plus, Stack, Trash, UserPlus, X } from '@phosphor-icons/react';
 import { API_URL, encabezados, mensajeDeErrorApi } from '../lib/api.js';
+import { TIPOS_EXTRACCION, registrarLlegada } from '../lib/fila.js';
 import { hoyTucuman } from '../lib/hora.js';
 import { listarGrupos } from '../lib/grupos.js';
 import { PARTICULAR, useObrasSociales } from '../lib/obrasSociales.js';
@@ -44,6 +45,9 @@ function ModalOrden({ orden, sucursal, pacienteInicial = null, onCerrar, onGuard
   const [buscandoPaciente, setBuscandoPaciente] = useState(false);
   // turno: la visita de hoy del paciente en esta sucursal, si vino hoy
   const [turno, setTurno] = useState(null);
+  // Si no está en la fila de hoy, al guardar la orden se registra su llegada (así el box lo puede llamar)
+  const [registrarHoy, setRegistrarHoy] = useState(true);
+  const [tipoLlegada, setTipoLlegada] = useState('ambulatoria');
 
   const [medico, setMedico] = useState(esNueva ? null : { id: orden.medico_id, ...orden.medicos });
   const [busquedaMedico, setBusquedaMedico] = useState('');
@@ -62,7 +66,9 @@ function ModalOrden({ orden, sucursal, pacienteInicial = null, onCerrar, onGuard
   const [estudios, setEstudios] = useState(
     esNueva
       ? []
-      : orden.orden_analisis.map((estudio) => ({
+      : orden.orden_analisis
+          .filter((estudio) => !estudio.padre_id)
+          .map((estudio) => ({
           analisis_id: estudio.analisis_id,
           codigo: estudio.analisis.codigo,
           nombre: estudio.analisis.nombre,
@@ -258,8 +264,19 @@ function ModalOrden({ orden, sucursal, pacienteInicial = null, onCerrar, onGuard
     };
     setGuardando(true);
     try {
+      let turnoId = turno?.id ?? null;
+      if (esNueva && !turnoId && registrarHoy) {
+        const { turno: llegada } = await registrarLlegada(paciente.id, tipoLlegada, sucursal.id);
+        // Un paciente está una sola vez por día en la fila: si está en la otra sucursal, no se une
+        if (llegada.sucursal_id !== sucursal.id) {
+          throw Object.assign(new Error('El paciente está en la fila de otra sucursal'), {
+            mensajeUsuario: 'El paciente ya está hoy en la fila de otra sucursal. Desmarque "Registrar su llegada" para cargar la orden igual.',
+          });
+        }
+        turnoId = llegada.id;
+      }
       const guardada = esNueva
-        ? await crearOrden({ ...datos, pacienteId: paciente.id, turnoId: turno?.id ?? null, sucursalId: sucursal.id })
+        ? await crearOrden({ ...datos, pacienteId: paciente.id, turnoId, sucursalId: sucursal.id })
         : await modificarOrden(orden.id, datos);
       await Swal.fire({
         icon: 'success',
@@ -374,6 +391,41 @@ function ModalOrden({ orden, sucursal, pacienteInicial = null, onCerrar, onGuard
               </div>
             )}
             {errores.paciente && <div className="text-danger small mt-1">{errores.paciente}</div>}
+            {esNueva && paciente && !turno && (
+              <div className="lims-orden-llegada">
+                <div className="form-check mb-0">
+                  <input
+                    type="checkbox"
+                    id="orden-registrar-llegada"
+                    className="form-check-input"
+                    checked={registrarHoy}
+                    onChange={(evento) => setRegistrarHoy(evento.target.checked)}
+                  />
+                  <label htmlFor="orden-registrar-llegada" className="form-check-label">
+                    Registrar su llegada en la fila de hoy
+                  </label>
+                </div>
+                {registrarHoy && (
+                  <select
+                    className="form-select form-select-sm w-auto"
+                    aria-label="Tipo de extracción"
+                    value={tipoLlegada}
+                    onChange={(evento) => setTipoLlegada(evento.target.value)}
+                  >
+                    {Object.entries(TIPOS_EXTRACCION).map(([clave, nombre]) => (
+                      <option key={clave} value={clave}>
+                        {nombre}
+                      </option>
+                    ))}
+                  </select>
+                )}
+                <p className="form-text mb-0 w-100">
+                  {registrarHoy
+                    ? 'Al guardar la orden, el paciente entra a la fila y el box de extracción lo puede llamar.'
+                    : 'La orden queda sin turno: el paciente no aparece en extracción hasta que se registre su llegada.'}
+                </p>
+              </div>
+            )}
           </fieldset>
 
           {/* Médico */}

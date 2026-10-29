@@ -20,7 +20,7 @@ const CAMPOS_ORDEN =
   'id,nro_orden,estado,fecha_orden,fecha_recepcion,observaciones,motivo_anulacion,turno_id,obra_social_id,' +
   'paciente_id,medico_id,pacientes(dni,nombre,apellido,obra_social_id,nro_afiliado),' +
   'medicos(nombre,apellido,matricula),obras_sociales(nombre),' +
-  'orden_analisis(analisis_id,cubierto,grupo_id,analisis(codigo,nombre),grupos_analisis(nombre),resultados(estado,fuera_de_rango))';
+  'orden_analisis(id,analisis_id,padre_id,cubierto,grupo_id,analisis(codigo,nombre),grupos_analisis(nombre),resultados(estado,fuera_de_rango))';
 
 async function rpc(nombre, parametros) {
   const response = await axios.post(`${API_URL}/rpc/${nombre}`, parametros, { headers: await encabezados() });
@@ -95,11 +95,12 @@ export async function crearMedico(datos) {
   return response.data[0];
 }
 
-// Análisis activos del catálogo, para elegir los estudios de la orden
+// Análisis activos del catálogo, para elegir los estudios de la orden.
+// Los componentes (ej: Neutrófilos de la Fórmula leucocitaria) no se eligen sueltos: los agrega la base.
 export async function leerCatalogoActivo() {
   const response = await axios.get(`${API_URL}/analisis`, {
     headers: await encabezados(),
-    params: { select: 'id,codigo,nombre,tipos_muestra(nombre)', activo: 'eq.true', order: 'nombre.asc' },
+    params: { select: 'id,codigo,nombre,tipos_muestra(nombre)', activo: 'eq.true', padre_id: 'is.null', order: 'nombre.asc' },
   });
   return response.data;
 }

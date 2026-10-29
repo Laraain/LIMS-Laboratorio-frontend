@@ -58,6 +58,52 @@
   font-weight: 600;
 }
 
+/* Estudio con componentes (ej: fórmula leucocitaria): encabezado que se despliega */
+.lims-resultados li.lims-resultado-grupo {
+  display: block;
+  padding: 0;
+}
+
+.lims-resultado-desplegar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 8px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--lims-text);
+}
+
+.lims-resultado-desplegar:hover,
+.lims-resultado-desplegar:focus-visible {
+  background: #eef3f9;
+}
+
+.lims-resultado-avance {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  margin-left: auto;
+  font-size: 0.875rem;
+  color: var(--lims-muted);
+}
+
+/* Los componentes, con sangría debajo de su estudio */
+.lims-resultados--componentes {
+  margin: 0 0 8px 28px;
+  border-left: 3px solid #eef3f9;
+}
+
+.lims-resultado-absoluto {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.8125rem;
+  color: var(--lims-muted);
+  font-variant-numeric: tabular-nums;
+}
+
 /* En pantallas chicas cada estudio ocupa dos renglones */
 @media (max-width: 575.98px) {
   .lims-resultados li {
