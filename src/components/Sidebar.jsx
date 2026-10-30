@@ -1,12 +1,13 @@
 import { NavLink } from 'react-router-dom';
 import { Buildings, ClipboardText, FileText, FirstAidKit, Flask, House, IdentificationCard, Syringe, UserCircle, UsersThree, X } from '@phosphor-icons/react';
-import ROLES, { ROLES_EXTRACCION, ROLES_ORDENES, ROLES_PACIENTES, ROLES_RECEPCION } from '../data/roles.js';
+import ROLES, { ROLES_BANDEJA, ROLES_EXTRACCION, ROLES_ORDENES, ROLES_PACIENTES, ROLES_RECEPCION } from '../data/roles.js';
 import './Sidebar.css';
 
 // Opciones del menú lateral. roles: quiénes la ven (si no se indica, la ven todos los roles del personal).
-// end: "Inicio" solo se marca activo en /panel exacto, y no en todas las páginas del panel.
+// end: la primera opción (Inicio o Bandeja de trabajo) solo se marca activa en /panel exacto, y no en todas las páginas del panel.
 const OPCIONES = [
-  { ruta: '/panel', texto: 'Inicio', icono: House, end: true },
+  // textoBandeja: el bioquímico y el técnico arrancan en su bandeja de trabajo, no en una bienvenida
+  { ruta: '/panel', texto: 'Inicio', textoBandeja: 'Bandeja de trabajo', icono: House, end: true },
   { ruta: '/panel/perfil', texto: 'Mi perfil', icono: UserCircle },
   { ruta: '/panel/recepcion', texto: 'Recepción', icono: ClipboardText, roles: ROLES_RECEPCION },
   { ruta: '/panel/ordenes', texto: 'Órdenes', icono: FileText, roles: ROLES_ORDENES },
@@ -47,14 +48,17 @@ function Sidebar({ perfil, abierto, onCerrar, onNavegar }) {
           <nav>
             <ul className="lims-sidebar-lista">
               {/* map(): por cada opción habilitada arma un enlace con su ícono */}
-              {opciones.map(({ ruta, texto, icono: Icono, end }) => (
-                <li key={ruta}>
-                  <NavLink to={ruta} end={end} className="lims-sidebar-enlace" onClick={onNavegar}>
-                    <Icono aria-hidden="true" />
-                    <span>{texto}</span>
-                  </NavLink>
-                </li>
-              ))}
+              {opciones.map(({ ruta, texto, textoBandeja, icono: Icono, end }) => {
+                const nombre = textoBandeja && ROLES_BANDEJA.includes(perfil.rol) ? textoBandeja : texto;
+                return (
+                  <li key={ruta}>
+                    <NavLink to={ruta} end={end} className="lims-sidebar-enlace" onClick={onNavegar}>
+                      <Icono aria-hidden="true" />
+                      <span>{nombre}</span>
+                    </NavLink>
+                  </li>
+                );
+              })}
             </ul>
           </nav>
         </div>
