@@ -17,5 +17,7 @@ export const ROLES_PACIENTES = ['recepcion', 'admin'];
 export const ROLES_ORDENES = ['recepcion', 'admin'];
 // Carga de resultados: la hace recepción; el bioquímico también puede por alguna eventualidad
 export const ROLES_RESULTADOS = ['recepcion', 'bioquimico', 'admin'];
+// Validación final: solo el bioquímico cierra la orden y crea el informe en borrador
+export const ROLES_VALIDACION = ['bioquimico'];
 
 export default ROLES;

@@ -11,6 +11,9 @@ export const ESTADOS_RESULTADO = {
   rechazado: 'Rechazado',
 };
 
+// Una orden en estos estados ya fue validada por el bioquímico: se muestra en modo lectura
+export const ESTADOS_ORDEN_CERRADA = ['completa', 'informada', 'anulada'];
+
 async function rpc(nombre, parametros) {
   const response = await axios.post(`${API_URL}/rpc/${nombre}`, parametros, { headers: await encabezados() });
   return response.data;
@@ -42,8 +45,9 @@ export async function leerOrdenConResultados(ordenId) {
         // padre_id y absoluto_*: estudios con componentes (ej: fórmula leucocitaria, en % y absoluto)
         'orden_analisis(id,padre_id,grupo_id,analisis(id,codigo,nombre,unidad,absoluto_de,absoluto_min,absoluto_max,absoluto_unidad,' +
         'tipos_muestra(nombre)),grupos_analisis(nombre),' +
-        'resultados(id,valor_numerico,valor_texto,valor_absoluto,fuera_de_rango,estado,cargado_en,' +
-        'cargador:perfiles!resultados_cargado_por_fkey(nombre,apellido)))',
+        'resultados(id,valor_numerico,valor_texto,valor_absoluto,fuera_de_rango,estado,cargado_en,validado_en,' +
+        'cargador:perfiles!resultados_cargado_por_fkey(nombre,apellido),' +
+        'validador:perfiles!resultados_validado_por_fkey(nombre,apellido)))',
       id: `eq.${ordenId}`,
     },
   });
@@ -73,6 +77,14 @@ export async function rangosDeOrden(ordenId) {
 // Un estudio sin valor no se guarda (si tenía un resultado sin validar, se borra).
 export function guardarResultados(ordenId, items) {
   return rpc('guardar_resultados', { p_orden_id: ordenId, p_resultados: items });
+}
+
+// Valida todos los resultados de la orden y la cierra. La base guarda los valores que
+// estén en pantalla, marca cada resultado como validado (con quién y cuándo), pasa la
+// orden a "completa" y crea el informe en borrador. Todo o nada: si falta un valor,
+// no se guarda nada.
+export function validarOrden(ordenId, items) {
+  return rpc('validar_orden', { p_orden_id: ordenId, p_resultados: items });
 }
 
 // PostgREST devuelve el resultado como objeto (un estudio tiene un solo resultado); por las dudas acepta lista

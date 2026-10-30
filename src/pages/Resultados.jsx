@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Navigate, useOutletContext } from 'react-router-dom';
-import { MagnifyingGlass, NotePencil, WarningCircle } from '@phosphor-icons/react';
+import { Eye, MagnifyingGlass, NotePencil, WarningCircle } from '@phosphor-icons/react';
 import ModalResultados from '../components/ModalResultados.jsx';
 import { ROLES_RESULTADOS } from '../data/roles.js';
 import useMetadatos from '../hooks/useMetadatos.js';
@@ -80,7 +80,7 @@ function Resultados() {
           <h1 className="lims-panel-titulo">Carga de resultados</h1>
           <p className="lims-panel-texto mb-0">
             Pase al sistema los resultados de cada orden. El sistema marca los que quedan fuera del valor de referencia
-            según el sexo y la edad del paciente; después los valida el bioquímico.
+            según el sexo y la edad del paciente; después el bioquímico los valida y cierra la orden.
           </p>
         </div>
       </header>
@@ -177,6 +177,7 @@ function Resultados() {
               <tbody>
                 {visibles.map((orden) => {
                   const { total, cargados, fuera } = avance(orden);
+                  const cerrada = orden.estado === 'completa' || orden.estado === 'informada';
                   return (
                     <tr key={orden.id}>
                       <td className="lims-celda-nombre">
@@ -194,9 +195,7 @@ function Resultados() {
                         <span className="lims-celda-identidad">DNI {orden.pacientes.dni}</span>
                       </td>
                       <td data-label="Resultados">
-                        <span className="fw-semibold">
-                          {cargados} de {total}
-                        </span>
+                        <span className="fw-semibold">{cerrada ? 'Validada' : `${cargados} de ${total}`}</span>
                         {fuera > 0 && (
                           <span className="lims-celda-identidad text-warning-emphasis">
                             <WarningCircle className="me-1" aria-hidden="true" />
@@ -208,11 +207,15 @@ function Resultados() {
                         <button
                           type="button"
                           className="btn lims-btn-pill lims-btn-primario lims-btn-chico"
-                          aria-label={`Cargar resultados de la orden ${orden.nro_orden}`}
+                          aria-label={`${cerrada ? 'Ver' : 'Cargar'} resultados de la orden ${orden.nro_orden}`}
                           onClick={() => setAbierta(orden.id)}
                         >
-                          <NotePencil className="lims-icono me-1" aria-hidden="true" />
-                          {cargados === 0 ? 'Cargar' : 'Ver y corregir'}
+                          {cerrada ? (
+                            <Eye className="lims-icono me-1" aria-hidden="true" />
+                          ) : (
+                            <NotePencil className="lims-icono me-1" aria-hidden="true" />
+                          )}
+                          {cerrada ? 'Ver' : cargados === 0 ? 'Cargar' : 'Ver y corregir'}
                         </button>
                       </td>
                     </tr>
@@ -228,6 +231,7 @@ function Resultados() {
         <ModalResultados
           key={abierta}
           ordenId={abierta}
+          perfil={perfil}
           onCerrar={() => setAbierta(null)}
           onGuardado={() => {
             setAbierta(null);
