@@ -20,7 +20,13 @@ const CAMPOS_ORDEN =
   'id,nro_orden,estado,fecha_orden,fecha_recepcion,observaciones,motivo_anulacion,turno_id,obra_social_id,' +
   'paciente_id,medico_id,pacientes(dni,nombre,apellido,obra_social_id,nro_afiliado),' +
   'medicos(nombre,apellido,matricula),obras_sociales(nombre),' +
-  'orden_analisis(analisis_id,cubierto,grupo_id,analisis(codigo,nombre),grupos_analisis(nombre))';
+  'orden_analisis(id,analisis_id,padre_id,cubierto,grupo_id,analisis(codigo,nombre),grupos_analisis(nombre),resultados(estado,fuera_de_rango))';
+
+// Lo que se pide de cada orden para la bandeja de trabajo: el paciente y, por cada estudio,
+// el estado de su resultado (si ya se cargó).
+const CAMPOS_BANDEJA =
+  'id,nro_orden,estado,fecha_orden,fecha_recepcion,pacientes(dni,nombre,apellido),' +
+  'orden_analisis(id,padre_id,resultados(estado))';
 
 async function rpc(nombre, parametros) {
   const response = await axios.post(`${API_URL}/rpc/${nombre}`, parametros, { headers: await encabezados() });
@@ -95,11 +101,12 @@ export async function crearMedico(datos) {
   return response.data[0];
 }
 
-// Análisis activos del catálogo, para elegir los estudios de la orden
+// Análisis activos del catálogo, para elegir los estudios de la orden.
+// Los componentes (ej: Neutrófilos de la Fórmula leucocitaria) no se eligen sueltos: los agrega la base.
 export async function leerCatalogoActivo() {
   const response = await axios.get(`${API_URL}/analisis`, {
     headers: await encabezados(),
-    params: { select: 'id,codigo,nombre,tipos_muestra(nombre)', activo: 'eq.true', order: 'nombre.asc' },
+    params: { select: 'id,codigo,nombre,tipos_muestra(nombre)', activo: 'eq.true', padre_id: 'is.null', order: 'nombre.asc' },
   });
   return response.data;
 }
@@ -127,6 +134,55 @@ export function useOrdenes(sucursalId, fecha) {
       setEstado((previo) => ({ ...previo, cargando: false, error: true }));
     }
   }, [sucursalId, fecha]);
+
+  useEffect(() => {
+    // Se difiere un instante para no actualizar estados durante el primer dibujo
+    const id = setTimeout(recargar, 0);
+    return () => clearTimeout(id);
+  }, [recargar]);
+
+  return { ...estado, recargar };
+}
+
+// Cuántos estudios de la orden ya tienen resultado y cuántos son en total.
+// Un resultado rechazado no cuenta: hay que volver a cargarlo.
+// Un estudio con componentes (ej: fórmula leucocitaria) no se carga: cuentan sus componentes.
+export function avanceDeOrden(orden) {
+  const conComponentes = new Set((orden.orden_analisis ?? []).map((estudio) => estudio.padre_id).filter(Boolean));
+  const estudios = (orden.orden_analisis ?? []).filter((estudio) => !conComponentes.has(estudio.id));
+  const total = estudios.length;
+  const conResultado = estudios.filter((estudio) => {
+    // PostgREST devuelve el resultado como objeto (un estudio tiene uno solo); por las dudas acepta lista
+    const resultado = Array.isArray(estudio.resultados) ? estudio.resultados[0] : estudio.resultados;
+    return Boolean(resultado) && resultado.estado !== 'rechazado';
+  }).length;
+  return { total, conResultado };
+}
+
+// Órdenes pendientes de la sucursal: las que todavía tienen análisis por procesar (abiertas o en proceso),
+// de la más vieja a la más nueva (primero lo que más espera).
+// La sucursal NO se filtra acá: la base solo devuelve las de la sucursal del empleado (políticas RLS).
+export function useOrdenesPendientes() {
+  const [estado, setEstado] = useState({ ordenes: [], cargando: true, error: false });
+
+  const recargar = useCallback(async () => {
+    // Se muestra el aviso de carga también al tocar "Actualizar" o "Reintentar"
+    setEstado((previo) => ({ ...previo, cargando: true, error: false }));
+    try {
+      const response = await axios.get(`${API_URL}/ordenes`, {
+        headers: await encabezados(),
+        params: {
+          select: CAMPOS_BANDEJA,
+          estado: 'in.(abierta,en_proceso)',
+          order: 'fecha_recepcion.asc',
+        },
+      });
+      setEstado({ ordenes: response.data, cargando: false, error: false });
+    } catch (errorPeticion) {
+      console.error('No se pudieron cargar las órdenes pendientes:', errorPeticion);
+      setEstado((previo) => ({ ...previo, cargando: false, error: true }));
+    }
+  }, []);
 
   useEffect(() => {
     // Se difiere un instante para no actualizar estados durante el primer dibujo
