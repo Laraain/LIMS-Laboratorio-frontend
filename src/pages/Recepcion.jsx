@@ -1,4 +1,4 @@
-import { Navigate, useOutletContext } from 'react-router-dom';
+import { Navigate, useNavigate, useOutletContext } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import AvisoCierre from '../components/AvisoCierre.jsx';
 import FilaDelDia from '../components/FilaDelDia.jsx';
@@ -21,6 +21,7 @@ function Recepcion() {
 
   const { perfil, sucursal, sucursales } = useOutletContext();
   const { fila, cargando, error, recargar } = useFilaDelDia(sucursal.id);
+  const navigate = useNavigate();
 
   if (!ROLES_RECEPCION.includes(perfil.rol)) return <Navigate to="/panel" replace />;
 
@@ -53,6 +54,11 @@ function Recepcion() {
     recargar();
   }
 
+  // Abre la carga de la orden con el paciente de la fila ya elegido
+  function cargarOrden(turno) {
+    navigate('/panel/ordenes', { state: { paciente: { id: turno.paciente_id, ...turno.pacientes } } });
+  }
+
   return (
     <div className="container px-3 px-lg-4">
       <header className="lims-panel-cabecera">
@@ -72,7 +78,7 @@ function Recepcion() {
           <RegistroLlegada fila={fila} sucursal={sucursal} sucursales={sucursales} onRegistrado={recargar} />
         </div>
         <div className="col-xl-6">
-          <FilaDelDia fila={fila} cargando={cargando} error={error} onRetirar={retirar} />
+          <FilaDelDia fila={fila} cargando={cargando} error={error} onRetirar={retirar} onCargarOrden={cargarOrden} />
         </div>
       </div>
     </div>

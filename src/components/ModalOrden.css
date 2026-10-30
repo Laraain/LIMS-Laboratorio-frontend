@@ -1,0 +1,108 @@
+/* Ventana de carga de órdenes */
+.lims-orden-bloque {
+  margin: 0 0 20px;
+  padding: 0;
+  border: 0;
+}
+
+.lims-orden-subtitulo {
+  margin-bottom: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--lims-text);
+}
+
+/* Paciente o médico ya elegido */
+.lims-orden-elegido {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 1px solid var(--lims-border);
+  border-radius: 12px;
+  background: #f7f9fc;
+}
+
+.lims-orden-busqueda {
+  display: flex;
+  gap: 8px;
+}
+
+/* Resultados de búsqueda (médicos y estudios) */
+.lims-orden-sugerencias {
+  margin: 6px 0 0;
+  padding: 4px;
+  max-height: 16rem;
+  overflow-y: auto;
+  border: 1px solid var(--lims-border);
+  border-radius: 12px;
+  background: #ffffff;
+  list-style: none;
+}
+
+.lims-orden-sugerencias button {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--lims-text);
+  text-align: left;
+}
+
+.lims-orden-sugerencias button:hover,
+.lims-orden-sugerencias button:focus-visible {
+  background: #eef3f9;
+}
+
+.lims-orden-sugerencia-nueva {
+  color: var(--bs-primary) !important;
+  font-weight: 600;
+}
+
+.lims-orden-sugerencia-vacia {
+  padding: 8px 10px;
+  color: var(--lims-muted);
+  font-size: 0.875rem;
+}
+
+/* Estudios agregados a la orden */
+.lims-orden-estudios {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lims-orden-estudios li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--lims-border);
+}
+
+.lims-orden-estudio-nombre {
+  flex: 1 1 10rem;
+  font-weight: 600;
+}
+
+.lims-orden-quitar {
+  display: inline-flex;
+  padding: 6px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--lims-muted);
+}
+
+.lims-orden-quitar:hover,
+.lims-orden-quitar:focus-visible {
+  background: #fdecec;
+  color: var(--bs-danger);
+}
