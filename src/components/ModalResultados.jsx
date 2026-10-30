@@ -59,8 +59,8 @@ function fueraDeRango(valor, rango, numerico, absoluto, analisis) {
 // Un estudio con componentes (ej: fórmula leucocitaria) se despliega para cargar sus valores de seguido;
 // los que van en % muestran el absoluto, calculado con los glóbulos blancos de la misma orden.
 // Los resultados validados por el bioquímico se ven pero no se pueden cambiar.
-// Props: ordenId · perfil · onCerrar · onGuardado
-function ModalResultados({ ordenId, perfil, onCerrar, onGuardado }) {
+// Props: ordenId · perfil · onCerrar · onGuardado · lectura (solo ver, sin cargar: ej. el técnico desde su bandeja)
+function ModalResultados({ ordenId, perfil, onCerrar, onGuardado, lectura = false }) {
   const [orden, setOrden] = useState(null);
   const [rangos, setRangos] = useState({});
   // valores: lo que está escrito en cada campo, por id del estudio en la orden
@@ -147,8 +147,9 @@ function ModalResultados({ ordenId, perfil, onCerrar, onGuardado }) {
 
   const paciente = orden?.pacientes;
   const estadoOrden = orden?.estado;
-  // Una orden validada (o anulada) se muestra en modo lectura
-  const soloLectura = ESTADOS_ORDEN_CERRADA.includes(estadoOrden);
+  // Una orden validada (o anulada) se muestra en modo lectura; también si quien la abre solo puede mirar
+  const cerrada = ESTADOS_ORDEN_CERRADA.includes(estadoOrden);
+  const soloLectura = cerrada || lectura;
   const puedeValidar = ROLES_VALIDACION.includes(perfil?.rol) && !soloLectura;
   // Un valor está cargado si tiene algo escrito y, en los estudios numéricos, es un número válido
   function valorCargado(estudio) {
@@ -504,7 +505,7 @@ function ModalResultados({ ordenId, perfil, onCerrar, onGuardado }) {
               </div>
             </div>
 
-            {soloLectura && (
+            {cerrada && (
               <div className="lims-resultado-cerrada" role="status">
                 <SealCheck aria-hidden="true" />
                 <span>
@@ -522,9 +523,11 @@ function ModalResultados({ ordenId, perfil, onCerrar, onGuardado }) {
               {pedidos.map((estudio) => (componentesDe[estudio.id] ? filaConComponentes(estudio) : filaEstudio(estudio)))}
             </ul>
             <p className="form-text mb-0">
-              {soloLectura
+              {cerrada
                 ? 'La orden está cerrada: los resultados no se pueden modificar.'
-                : 'Los estudios sin valor quedan sin cargar. Los resultados se pueden corregir hasta que los valide el bioquímico.'}
+                : lectura
+                  ? 'Los resultados los carga recepción y los valida el bioquímico.'
+                  : 'Los estudios sin valor quedan sin cargar. Los resultados se pueden corregir hasta que los valide el bioquímico.'}
             </p>
           </form>
         )}

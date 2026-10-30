@@ -35,6 +35,11 @@ export function horaDe(fechaIso) {
   );
 }
 
+// Día de una fecha de la base en Tucumán, como "AAAA-MM-DD" (sirve para comparar con un <input type="date">)
+export function diaDe(fechaIso) {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: ZONA }).format(new Date(fechaIso));
+}
+
 // Fecha de una fecha de la base en Tucumán, como se lee acá: "22/10/2026"
 export function fechaDe(fechaIso) {
   return new Intl.DateTimeFormat('es-AR', { timeZone: ZONA }).format(new Date(fechaIso));
