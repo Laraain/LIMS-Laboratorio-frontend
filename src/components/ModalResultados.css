@@ -115,6 +115,47 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Orden ya validada: se muestra en modo lectura */
+.lims-resultado-cerrada {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  border: 1px solid #badbcc;
+  border-radius: 8px;
+  background: #d1e7dd;
+  color: #0f5132;
+  font-size: 0.9375rem;
+}
+
+.lims-resultado-cerrada svg {
+  flex: none;
+  margin-top: 1px;
+  font-size: 1.1rem;
+}
+
+/* Resumen de la validación en la ventana de SweetAlert2 */
+.lims-validacion-resumen {
+  text-align: left;
+  font-size: 0.9375rem;
+}
+
+.lims-validacion-resumen .lims-validacion-fuera {
+  color: #b54708;
+  font-weight: 600;
+}
+
+.lims-validacion-resumen .lims-validacion-lista {
+  margin: 4px 0 8px;
+  padding-left: 20px;
+}
+
+.lims-validacion-resumen .lims-validacion-ref {
+  color: var(--lims-muted);
+  font-size: 0.875rem;
+}
+
 /* Las filas se acomodan según el ancho de la ventana (no de la pantalla): la ventana mide 500px en tablets */
 .lims-resultados {
   container-type: inline-size;

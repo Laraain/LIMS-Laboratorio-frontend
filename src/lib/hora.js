@@ -35,6 +35,11 @@ export function horaDe(fechaIso) {
   );
 }
 
+// Fecha de una fecha de la base en Tucumán, como se lee acá: "22/10/2026"
+export function fechaDe(fechaIso) {
+  return new Intl.DateTimeFormat('es-AR', { timeZone: ZONA }).format(new Date(fechaIso));
+}
+
 // Edad en años cumplidos a partir de la fecha de nacimiento ("AAAA-MM-DD")
 export function edadDesde(fechaNacimiento) {
   const [anio, mes, dia] = fechaNacimiento.split('-').map(Number);

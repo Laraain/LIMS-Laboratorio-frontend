@@ -1,15 +1,29 @@
 import { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
 import Modal from 'react-bootstrap/Modal';
-import { CaretDown, CaretRight, WarningCircle } from '@phosphor-icons/react';
+import { CaretDown, CaretRight, SealCheck, WarningCircle } from '@phosphor-icons/react';
 import { mensajeDeErrorApi } from '../lib/api.js';
 import { formatearNumero, leerNumero, numeroParaCampo, textoReferencia } from '../lib/analisis.js';
-import { edadDesde } from '../lib/hora.js';
-import { ESTADOS_RESULTADO, guardarResultados, leerOrdenConResultados, rangosDeOrden, resultadoDe } from '../lib/resultados.js';
+import { ROLES_VALIDACION } from '../data/roles.js';
+import { edadDesde, fechaDe, horaDe } from '../lib/hora.js';
+import {
+  ESTADOS_ORDEN_CERRADA,
+  ESTADOS_RESULTADO,
+  guardarResultados,
+  leerOrdenConResultados,
+  rangosDeOrden,
+  resultadoDe,
+  validarOrden,
+} from '../lib/resultados.js';
 import './ModalOrden.css';
 import './ModalResultados.css';
 
 const SEXOS = { F: 'Femenino', M: 'Masculino', X: 'X' };
+
+// Escapa los caracteres especiales antes de armar el HTML de una ventana de SweetAlert2
+function escapar(texto) {
+  return String(texto).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+}
 
 // ¿El estudio se informa con un número? Sí, si su rango de referencia tiene mínimo o máximo
 function esNumerico(rango) {
@@ -45,8 +59,8 @@ function fueraDeRango(valor, rango, numerico, absoluto, analisis) {
 // Un estudio con componentes (ej: fórmula leucocitaria) se despliega para cargar sus valores de seguido;
 // los que van en % muestran el absoluto, calculado con los glóbulos blancos de la misma orden.
 // Los resultados validados por el bioquímico se ven pero no se pueden cambiar.
-// Props: ordenId · onCerrar · onGuardado
-function ModalResultados({ ordenId, onCerrar, onGuardado }) {
+// Props: ordenId · perfil · onCerrar · onGuardado
+function ModalResultados({ ordenId, perfil, onCerrar, onGuardado }) {
   const [orden, setOrden] = useState(null);
   const [rangos, setRangos] = useState({});
   // valores: lo que está escrito en cada campo, por id del estudio en la orden
@@ -57,6 +71,7 @@ function ModalResultados({ ordenId, onCerrar, onGuardado }) {
   const [error, setError] = useState(false);
   const [errores, setErrores] = useState({});
   const [guardando, setGuardando] = useState(false);
+  const [validando, setValidando] = useState(false);
 
   useEffect(() => {
     let vigente = true;
@@ -130,8 +145,35 @@ function ModalResultados({ ordenId, onCerrar, onGuardado }) {
     return fueraDeRango(valores[estudio.id] ?? '', rango, esNumerico(rango), absolutoDe(estudio), estudio.analisis);
   }
 
+  const paciente = orden?.pacientes;
+  const estadoOrden = orden?.estado;
+  // Una orden validada (o anulada) se muestra en modo lectura
+  const soloLectura = ESTADOS_ORDEN_CERRADA.includes(estadoOrden);
+  const puedeValidar = ROLES_VALIDACION.includes(perfil?.rol) && !soloLectura;
+  // Un valor está cargado si tiene algo escrito y, en los estudios numéricos, es un número válido
+  function valorCargado(estudio) {
+    const texto = (valores[estudio.id] ?? '').trim();
+    if (texto === '') return false;
+    if (esNumerico(rangos[estudio.id])) {
+      const numero = leerNumero(texto);
+      return numero !== null && !Number.isNaN(numero) && numero >= 0;
+    }
+    return true;
+  }
+  const todosCargados = cargables.length > 0 && cargables.every(valorCargado);
+  const fueraDeRangoDeLaOrden = cargables.filter(estaFuera);
+  // Quién y cuándo validó: lo guarda la base en cada resultado al cerrar la orden
+  const primerValidado = cargables.map(resultadoDe).find((resultado) => resultado?.estado === 'validado');
+  const validador = primerValidado?.validador
+    ? `${primerValidado.validador.nombre} ${primerValidado.validador.apellido}`
+    : null;
+  const validadoEn = primerValidado?.validado_en
+    ? `el ${fechaDe(primerValidado.validado_en)} a las ${horaDe(primerValidado.validado_en)}`
+    : null;
+
   async function handleSubmit(evento) {
     evento.preventDefault();
+    if (soloLectura) return;
     const nuevosErrores = {};
     const items = [];
     cargables.forEach((estudio) => {
@@ -192,6 +234,92 @@ function ModalResultados({ ordenId, onCerrar, onGuardado }) {
     }
   }
 
+  // Validar la orden: la base guarda estos valores, valida todo, cierra la orden y crea el informe
+  async function handleValidar() {
+    if (!puedeValidar || !todosCargados) return;
+
+    const items = cargables
+      .filter((estudio) => resultadoDe(estudio)?.estado !== 'validado')
+      .map((estudio) => {
+        const texto = valores[estudio.id] ?? '';
+        if (esNumerico(rangos[estudio.id])) {
+          return { orden_analisis_id: estudio.id, valor_numerico: leerNumero(texto), valor_texto: null };
+        }
+        return { orden_analisis_id: estudio.id, valor_numerico: null, valor_texto: texto.trim() || null };
+      });
+
+    // Resumen: los valores fuera de rango van primero, para que el bioquímico los mire antes de firmar
+    const filasFuera = fueraDeRangoDeLaOrden
+      .map((estudio) => {
+        const rango = rangos[estudio.id];
+        const analisis = estudio.analisis;
+        const unidad = analisis.unidad ? ` ${analisis.unidad}` : '';
+        const referencia = textoReferencia({
+          valor_ref_min: rango.valor_min,
+          valor_ref_max: rango.valor_max,
+          valor_ref_texto: rango.valor_texto,
+        });
+        const absoluto = absolutoDe(estudio);
+        const detalleAbsoluto =
+          analisis.absoluto_de && absoluto !== null
+            ? ` · absoluto ${formatearNumero(absoluto)} ${analisis.absoluto_unidad ?? ''}`
+            : '';
+        return (
+          `<li><strong>${escapar(analisis.nombre)}</strong>: ${escapar(valores[estudio.id] ?? '')}${escapar(unidad)}` +
+          ` <span class="lims-validacion-ref">(referencia ${escapar(referencia)}${escapar(unidad)})</span>${escapar(detalleAbsoluto)}</li>`
+        );
+      })
+      .join('');
+
+    const resumen = fueraDeRangoDeLaOrden.length
+      ? `<p class="lims-validacion-fuera mb-1">${fueraDeRangoDeLaOrden.length} ` +
+        `${fueraDeRangoDeLaOrden.length === 1 ? 'valor queda' : 'valores quedan'} fuera de rango:</p>` +
+        `<ul class="lims-validacion-lista">${filasFuera}</ul>`
+      : '<p class="text-success fw-semibold mb-1">Todos los valores están dentro del rango de referencia.</p>';
+
+    const { isConfirmed } = await Swal.fire({
+      icon: fueraDeRangoDeLaOrden.length > 0 ? 'warning' : 'question',
+      title: `¿Validar la orden ${orden.nro_orden}?`,
+      html:
+        `<p class="mb-1">${escapar(paciente.apellido)}, ${escapar(paciente.nombre)} · ` +
+        `${cargables.length} ${cargables.length === 1 ? 'valor' : 'valores'}</p>` +
+        resumen +
+        '<p class="mb-0 mt-2">Al validar, la orden queda cerrada y no se puede modificar. Se crea el informe del paciente en borrador.</p>',
+      showCancelButton: true,
+      confirmButtonText: 'Validar y cerrar',
+      cancelButtonText: 'Revisar',
+      confirmButtonColor: '#1c4e80',
+      customClass: { htmlContainer: 'lims-validacion-resumen' },
+    });
+    if (!isConfirmed) return;
+
+    setValidando(true);
+    try {
+      const cierre = await validarOrden(ordenId, items);
+      await Swal.fire({
+        icon: 'success',
+        title: 'Orden validada',
+        html:
+          `<p class="mb-1">${cierre.validados} ${cierre.validados === 1 ? 'resultado validado' : 'resultados validados'}` +
+          (cierre.fuera_de_rango > 0 ? ` · ${cierre.fuera_de_rango} fuera de rango` : '') +
+          '.</p><p class="mb-0">La orden quedó cerrada y el informe se creó en borrador.</p>',
+        confirmButtonText: 'Listo',
+        confirmButtonColor: '#1c4e80',
+      });
+      onGuardado();
+    } catch (errorPeticion) {
+      console.error('No se pudo validar la orden:', errorPeticion);
+      await Swal.fire({
+        icon: 'error',
+        title: 'No pudimos validar la orden',
+        text: mensajeDeErrorApi(errorPeticion),
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#1c4e80',
+      });
+      setValidando(false);
+    }
+  }
+
   // Una fila para cargar el valor de un estudio (o de un componente)
   function filaEstudio(estudio, componente = false) {
     const rango = rangos[estudio.id];
@@ -227,7 +355,7 @@ function ModalResultados({ ordenId, onCerrar, onGuardado }) {
               autoComplete="off"
               maxLength={numerico ? 20 : 200}
               placeholder={numerico ? 'Valor' : 'Escriba el resultado'}
-              disabled={validado || guardando}
+              disabled={soloLectura || validado || guardando || validando}
               value={valor}
               onChange={(evento) => cambiar(estudio.id, evento.target.value)}
             />
@@ -264,7 +392,11 @@ function ModalResultados({ ordenId, onCerrar, onGuardado }) {
           {resultado && (
             <span className={`lims-resultado-estado lims-resultado-estado--${resultado.estado}`}>
               {ESTADOS_RESULTADO[resultado.estado]}
-              {resultado.cargador ? ` · ${resultado.cargador.nombre} ${resultado.cargador.apellido}` : ''}
+              {resultado.estado === 'validado' && resultado.validador
+                ? ` · ${resultado.validador.nombre} ${resultado.validador.apellido}`
+                : resultado.cargador
+                  ? ` · ${resultado.cargador.nombre} ${resultado.cargador.apellido}`
+                  : ''}
             </span>
           )}
         </div>
@@ -330,12 +462,19 @@ function ModalResultados({ ordenId, onCerrar, onGuardado }) {
     );
   }
 
-  const paciente = orden?.pacientes;
-
   return (
     // enforceFocus={false}: deja que la ventana de SweetAlert2 reciba el foco encima de este modal
-    <Modal show onHide={guardando ? undefined : onCerrar} backdrop="static" enforceFocus={false} centered scrollable size="lg" contentClassName="lims-modal">
-      <Modal.Header closeButton={!guardando}>
+    <Modal
+      show
+      onHide={guardando || validando ? undefined : onCerrar}
+      backdrop="static"
+      enforceFocus={false}
+      centered
+      scrollable
+      size="lg"
+      contentClassName="lims-modal"
+    >
+      <Modal.Header closeButton={!guardando && !validando}>
         <Modal.Title as="h2" className="h5 fw-bold mb-0">
           Resultados {orden ? `· Orden ${orden.nro_orden}` : ''}
         </Modal.Title>
@@ -365,28 +504,63 @@ function ModalResultados({ ordenId, onCerrar, onGuardado }) {
               </div>
             </div>
 
+            {soloLectura && (
+              <div className="lims-resultado-cerrada" role="status">
+                <SealCheck aria-hidden="true" />
+                <span>
+                  <strong>
+                    {estadoOrden === 'anulada'
+                      ? 'Orden anulada.'
+                      : `Orden validada${validador ? ` por ${validador}` : ''}.`}
+                  </strong>{' '}
+                  {validadoEn && `Se validó ${validadoEn}. `}No se puede modificar.
+                </span>
+              </div>
+            )}
+
             <ul className="lims-resultados">
               {pedidos.map((estudio) => (componentesDe[estudio.id] ? filaConComponentes(estudio) : filaEstudio(estudio)))}
             </ul>
             <p className="form-text mb-0">
-              Los estudios sin valor quedan sin cargar. Los resultados se pueden corregir hasta que los valide el bioquímico.
+              {soloLectura
+                ? 'La orden está cerrada: los resultados no se pueden modificar.'
+                : 'Los estudios sin valor quedan sin cargar. Los resultados se pueden corregir hasta que los valide el bioquímico.'}
             </p>
           </form>
         )}
       </Modal.Body>
 
       <Modal.Footer>
-        <button type="button" className="btn lims-btn-pill lims-btn-secundario" onClick={onCerrar} disabled={guardando}>
-          Cancelar
-        </button>
         <button
-          type="submit"
-          form="form-resultados"
-          className="btn lims-btn-pill lims-btn-primario"
-          disabled={guardando || cargando || error}
+          type="button"
+          className="btn lims-btn-pill lims-btn-secundario"
+          onClick={onCerrar}
+          disabled={guardando || validando}
         >
-          {guardando ? 'Guardando…' : 'Guardar resultados'}
+          {soloLectura ? 'Cerrar' : 'Cancelar'}
         </button>
+        {!soloLectura && (
+          <button
+            type="submit"
+            form="form-resultados"
+            className={`btn lims-btn-pill ${puedeValidar ? 'lims-btn-secundario' : 'lims-btn-primario'}`}
+            disabled={guardando || validando || cargando || error}
+          >
+            {guardando ? 'Guardando…' : 'Guardar resultados'}
+          </button>
+        )}
+        {puedeValidar && (
+          <button
+            type="button"
+            className="btn lims-btn-pill lims-btn-primario"
+            onClick={handleValidar}
+            disabled={!todosCargados || guardando || validando || cargando || error}
+            title={!todosCargados ? 'Cargue todos los valores para poder validar la orden' : undefined}
+          >
+            <SealCheck className="lims-icono me-1" aria-hidden="true" />
+            {validando ? 'Validando…' : 'Validar orden'}
+          </button>
+        )}
       </Modal.Footer>
     </Modal>
   );
