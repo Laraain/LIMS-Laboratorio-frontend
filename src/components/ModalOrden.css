@@ -29,6 +29,18 @@
   gap: 8px;
 }
 
+/* Registrar la llegada desde la orden, cuando el paciente no está en la fila de hoy */
+.lims-orden-llegada {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  margin-top: 10px;
+  padding: 10px 14px;
+  border: 1px dashed var(--lims-border);
+  border-radius: 12px;
+}
+
 /* Resultados de búsqueda (médicos y estudios) */
 .lims-orden-sugerencias {
   margin: 6px 0 0;
