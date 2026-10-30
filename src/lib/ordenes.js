@@ -20,13 +20,13 @@ const CAMPOS_ORDEN =
   'id,nro_orden,estado,fecha_orden,fecha_recepcion,observaciones,motivo_anulacion,turno_id,obra_social_id,' +
   'paciente_id,medico_id,pacientes(dni,nombre,apellido,obra_social_id,nro_afiliado),' +
   'medicos(nombre,apellido,matricula),obras_sociales(nombre),' +
-  'orden_analisis(analisis_id,cubierto,grupo_id,analisis(codigo,nombre),grupos_analisis(nombre))';
+  'orden_analisis(id,analisis_id,padre_id,cubierto,grupo_id,analisis(codigo,nombre),grupos_analisis(nombre),resultados(estado,fuera_de_rango))';
 
 // Lo que se pide de cada orden para la bandeja de trabajo: el paciente y, por cada estudio,
 // el estado de su resultado (si ya se cargó).
 const CAMPOS_BANDEJA =
   'id,nro_orden,estado,fecha_orden,fecha_recepcion,pacientes(dni,nombre,apellido),' +
-  'orden_analisis(id,resultados(estado))';
+  'orden_analisis(id,padre_id,resultados(estado))';
 
 async function rpc(nombre, parametros) {
   const response = await axios.post(`${API_URL}/rpc/${nombre}`, parametros, { headers: await encabezados() });
@@ -101,11 +101,12 @@ export async function crearMedico(datos) {
   return response.data[0];
 }
 
-// Análisis activos del catálogo, para elegir los estudios de la orden
+// Análisis activos del catálogo, para elegir los estudios de la orden.
+// Los componentes (ej: Neutrófilos de la Fórmula leucocitaria) no se eligen sueltos: los agrega la base.
 export async function leerCatalogoActivo() {
   const response = await axios.get(`${API_URL}/analisis`, {
     headers: await encabezados(),
-    params: { select: 'id,codigo,nombre,tipos_muestra(nombre)', activo: 'eq.true', order: 'nombre.asc' },
+    params: { select: 'id,codigo,nombre,tipos_muestra(nombre)', activo: 'eq.true', padre_id: 'is.null', order: 'nombre.asc' },
   });
   return response.data;
 }
@@ -145,10 +146,10 @@ export function useOrdenes(sucursalId, fecha) {
 
 // Cuántos estudios de la orden ya tienen resultado y cuántos son en total.
 // Un resultado rechazado no cuenta: hay que volver a cargarlo.
-// Cuando se integren los estudios con componentes (LIMS-12/13), sumar padre_id al select
-// y no contar los componentes como análisis aparte.
+// Un estudio con componentes (ej: fórmula leucocitaria) no se carga: cuentan sus componentes.
 export function avanceDeOrden(orden) {
-  const estudios = orden.orden_analisis ?? [];
+  const conComponentes = new Set((orden.orden_analisis ?? []).map((estudio) => estudio.padre_id).filter(Boolean));
+  const estudios = (orden.orden_analisis ?? []).filter((estudio) => !conComponentes.has(estudio.id));
   const total = estudios.length;
   const conResultado = estudios.filter((estudio) => {
     // PostgREST devuelve el resultado como objeto (un estudio tiene uno solo); por las dudas acepta lista

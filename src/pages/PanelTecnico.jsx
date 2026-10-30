@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Navigate, useNavigate, useOutletContext } from 'react-router-dom';
+import { Navigate, useOutletContext } from 'react-router-dom';
 import { ArrowClockwise, ArrowRight, MagnifyingGlass } from '@phosphor-icons/react';
-import { ROLES_BANDEJA } from '../data/roles.js';
+import ModalResultados from '../components/ModalResultados.jsx';
+import { ROLES_BANDEJA, ROLES_RESULTADOS } from '../data/roles.js';
 import useMetadatos from '../hooks/useMetadatos.js';
 import { diaDe, fechaDe, horaDe, hoyTucuman } from '../lib/hora.js';
 import { ESTADOS_ORDEN, avanceDeOrden, useOrdenesPendientes } from '../lib/ordenes.js';
@@ -36,7 +37,8 @@ function esperaDe(fechaIso) {
 }
 
 // Bandeja de trabajo del bioquímico y del técnico: las órdenes de su sucursal que todavía tienen
-// análisis por procesar, de la más vieja a la más nueva. Al tocar una orden se va a la carga de resultados.
+// análisis por procesar, de la más vieja a la más nueva. Al tocar una orden se abren sus resultados ahí mismo:
+// el bioquímico los carga y valida; el técnico solo los mira.
 function PanelTecnico() {
   useMetadatos({
     titulo: 'Bandeja de trabajo — LIMS Laboratorio',
@@ -46,22 +48,19 @@ function PanelTecnico() {
   });
 
   const { perfil, sucursal } = useOutletContext();
-  const navigate = useNavigate();
   const [filtro, setFiltro] = useState('todas');
   // Sin fecha se ven todas las pendientes; con fecha, solo las recibidas ese día
   const [fecha, setFecha] = useState('');
   const [busqueda, setBusqueda] = useState('');
   const [tarjetas] = useState(enTarjetas);
+  // Orden cuyos resultados están abiertos en la ventana
+  const [abierta, setAbierta] = useState(null);
   const { ordenes, cargando, error, recargar } = useOrdenesPendientes();
 
   if (!ROLES_BANDEJA.includes(perfil.rol)) return <Navigate to="/panel" replace />;
 
   function abrir(orden) {
-    // La pantalla de resultados todavía no está integrada (LIMS-12/13): la ruta muestra un aviso
-    // y los datos de la orden. Se le pasa también la fecha para que, cuando esté, abra ese día.
-    navigate('/panel/resultados', {
-      state: { ordenId: orden.id, fecha: diaDe(orden.fecha_recepcion), orden },
-    });
+    setAbierta(orden.id);
   }
 
   // Filtros sobre la lista que ya llegó: estado, día de recepción y búsqueda por número, DNI o paciente
@@ -272,6 +271,21 @@ function PanelTecnico() {
           </div>
         )}
       </section>
+
+      {abierta && (
+        <ModalResultados
+          key={abierta}
+          ordenId={abierta}
+          perfil={perfil}
+          lectura={!ROLES_RESULTADOS.includes(perfil.rol)}
+          onCerrar={() => setAbierta(null)}
+          onGuardado={() => {
+            // Al guardar o validar, la orden puede cambiar de estado o salir de la bandeja
+            setAbierta(null);
+            recargar();
+          }}
+        />
+      )}
     </div>
   );
 }

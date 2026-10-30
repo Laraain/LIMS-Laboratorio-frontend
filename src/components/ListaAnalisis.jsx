@@ -47,7 +47,9 @@ function ListaAnalisis({ puedeEditar }) {
           axios.get(`${API_URL}/analisis`, {
             headers,
             params: {
-              select: 'id,codigo,nombre,tipo_muestra_id,unidad,valor_ref_min,valor_ref_max,valor_ref_texto,dias_demora,activo,tipos_muestra(nombre,tubo)',
+              select:
+                'id,codigo,nombre,tipo_muestra_id,unidad,valor_ref_min,valor_ref_max,valor_ref_texto,dias_demora,activo,' +
+                'padre_id,absoluto_min,absoluto_max,absoluto_unidad,tipos_muestra(nombre,tubo)',
               order: 'nombre.asc',
             },
           }),
@@ -121,11 +123,23 @@ function ListaAnalisis({ puedeEditar }) {
 
   // Filtro por tipo de muestra y búsqueda por código o nombre, sobre la lista que ya llegó
   const texto = busqueda.trim().toLowerCase();
-  const visibles = disponibles.filter((item) => {
+  const filtrados = disponibles.filter((item) => {
     if (filtroTipo !== 'todos' && item.tipo_muestra_id !== filtroTipo) return false;
     if (!texto) return true;
     return `${item.codigo} ${item.nombre}`.toLowerCase().includes(texto);
   });
+  // Los componentes (ej: Neutrófilos) van debajo de su estudio (Fórmula leucocitaria), en el orden del catálogo.
+  // Si el estudio no quedó en la lista (por el filtro o la búsqueda), el componente se muestra igual.
+  const nombrePorId = Object.fromEntries(analisis.map((item) => [item.id, item.nombre]));
+  const enLista = new Set(filtrados.map((item) => item.id));
+  const componentesDe = {};
+  filtrados.forEach((item) => {
+    if (item.padre_id && enLista.has(item.padre_id)) (componentesDe[item.padre_id] ??= []).push(item);
+  });
+  const visibles = filtrados
+    .filter((item) => !item.padre_id || !enLista.has(item.padre_id))
+    .flatMap((item) => [item, ...(componentesDe[item.id] ?? []).sort((a, b) => a.id - b.id)]);
+  const tieneComponentes = new Set(analisis.filter((item) => item.padre_id).map((item) => item.padre_id));
 
   // Botones del filtro: "Todos" más un botón por cada tipo de muestra que tenga al menos un análisis
   const opcionesFiltro = [
@@ -230,10 +244,15 @@ function ListaAnalisis({ puedeEditar }) {
             </thead>
             <tbody>
               {visibles.map((item) => (
-                <tr key={item.id}>
+                <tr key={item.id} className={item.padre_id ? 'lims-fila-componente' : undefined}>
                   <td className="lims-celda-nombre">
                     <span className="lims-codigo">{item.codigo}</span>
-                    <span className="lims-celda-nombre-texto">{item.nombre}</span>
+                    <span>
+                      <span className="lims-celda-nombre-texto">{item.nombre}</span>
+                      {item.padre_id && (
+                        <span className="lims-celda-identidad">Parte de {nombrePorId[item.padre_id] ?? 'otro estudio'}</span>
+                      )}
+                    </span>
                   </td>
                   <td data-label="Muestra">
                     {/* Un solo bloque: en la vista de tarjetas la celda reparte sus hijos a los costados */}
@@ -245,7 +264,20 @@ function ListaAnalisis({ puedeEditar }) {
                     </span>
                   </td>
                   <td data-label="Valor de referencia" className="lims-celda-numero">
-                    {textoReferencia(item)}
+                    {tieneComponentes.has(item.id) ? (
+                      <span className="lims-celda-identidad">Se informa con sus componentes</span>
+                    ) : (
+                      <span>
+                        <span className="d-block">{textoReferencia(item)}</span>
+                        {/* Los componentes en % muestran también el rango del valor absoluto */}
+                        {(item.absoluto_min !== null || item.absoluto_max !== null) && (
+                          <span className="lims-celda-identidad">
+                            Absoluto {textoReferencia({ valor_ref_min: item.absoluto_min, valor_ref_max: item.absoluto_max })}{' '}
+                            {item.absoluto_unidad}
+                          </span>
+                        )}
+                      </span>
+                    )}
                   </td>
                   <td data-label="Unidad">{item.unidad ?? '—'}</td>
                   <td data-label="Demora" className="lims-celda-numero">
