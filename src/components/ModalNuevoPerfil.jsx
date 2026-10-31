@@ -127,6 +127,8 @@ function ModalNuevoPerfil({ onCerrar, onCreado, soloPacientes = false }) {
             telefono: datos.telefono.trim(),
             matricula: datos.matricula.trim(),
             cargo: datos.cargo.trim(),
+            // La sucursal va en el alta; vacía si no se eligió (el admin ve todas, o se asigna después)
+            sucursal_id: datos.sucursal ? Number(datos.sucursal) : null,
           };
 
     setGuardando(true);
@@ -151,27 +153,6 @@ function ModalNuevoPerfil({ onCerrar, onCreado, soloPacientes = false }) {
         }
       }
 
-      // La función crear-personal todavía no recibe la sucursal: se completa en la fila recién creada.
-      // Cuando la función la acepte, este PATCH se puede quitar.
-      let avisoSucursal = false;
-      if (tipo === 'personal' && datos.sucursal) {
-        try {
-          // return=representation: si la política de seguridad no deja modificar, la API responde sin filas
-          const { data } = await axios.patch(
-            `${API_URL}/personal`,
-            { sucursal_id: Number(datos.sucursal) },
-            {
-              headers: { ...(await encabezados()), Prefer: 'return=representation' },
-              params: { usuario: `eq.${usuario}` },
-            },
-          );
-          if (!Array.isArray(data) || data.length !== 1) throw new Error('No se modificó ninguna fila');
-        } catch (errorSucursal) {
-          console.error('No se pudo asignar la sucursal:', errorSucursal);
-          avisoSucursal = true;
-        }
-      }
-
       // La contraseña provisoria se muestra UNA sola vez: el admin tiene que entregársela a la persona
       const acceso = response.data.dni ?? response.data.usuario;
       await Swal.fire({
@@ -192,15 +173,6 @@ function ModalNuevoPerfil({ onCerrar, onCreado, soloPacientes = false }) {
           icon: 'warning',
           title: 'Falta el domicilio',
           text: 'El paciente se creó, pero no se pudo guardar el domicilio. Edítelo desde la lista de pacientes.',
-          confirmButtonText: 'Entendido',
-          confirmButtonColor: '#1c4e80',
-        });
-      }
-      if (avisoSucursal) {
-        await Swal.fire({
-          icon: 'warning',
-          title: 'Falta la sucursal',
-          text: 'La persona se creó, pero no se pudo asignar la sucursal. Asígnela desde Administración de perfiles.',
           confirmButtonText: 'Entendido',
           confirmButtonColor: '#1c4e80',
         });
