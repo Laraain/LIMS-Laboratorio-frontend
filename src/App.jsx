@@ -18,6 +18,7 @@ import Resultados from './pages/Resultados.jsx';
 import Extraccion from './pages/Extraccion.jsx';
 import Sucursales from './pages/Sucursales.jsx';
 import ObrasSociales from './pages/ObrasSociales.jsx';
+import Aranceles from './pages/Aranceles.jsx';
 import { ROLES_BANDEJA } from './data/roles.js';
 
 // Primera página del panel: el bioquímico y el técnico arrancan en su bandeja de trabajo;
@@ -100,6 +101,8 @@ function App() {
           <Route path="sucursales" element={<Sucursales />} />
           {/* Solo para administradores: la propia página redirige al inicio del panel si el rol no es admin */}
           <Route path="obras-sociales" element={<ObrasSociales />} />
+          {/* Valor de la UB por obra social: solo administradores (la página redirige si el rol no es admin) */}
+          <Route path="aranceles" element={<Aranceles />} />
           {/* "Configuración" pasó a llamarse "Sucursales": la ruta vieja redirige */}
           <Route path="configuracion" element={<Navigate to="/panel/sucursales" replace />} />
           {/* Solo para administradores: la propia página redirige al inicio del panel si el rol no es admin */}
