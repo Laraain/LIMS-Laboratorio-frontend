@@ -8,6 +8,8 @@ import { leerNumero, numeroParaCampo } from '../lib/analisis.js';
 // Mismas reglas que la base de datos (migración 20261021_01_catalogo_analisis.sql)
 const FORMATO_CODIGO = /^[A-Z0-9_-]{2,20}$/;
 const DEMORA_MAXIMA = 60;
+// La columna analisis.ub admite hasta 9999,99 (migración 20261031_01_aranceles.sql)
+const UB_MAXIMA = 9999;
 
 // Ventana para cargar un análisis nuevo o modificar uno existente.
 // Props: analisis (null para uno nuevo) · tipos (los tipos de muestra para elegir)
@@ -25,6 +27,9 @@ function ModalAnalisis({ analisis, tipos, onCerrar, onGuardado }) {
   const [maximo, setMaximo] = useState(numeroParaCampo(analisis?.valor_ref_max));
   const [referenciaTexto, setReferenciaTexto] = useState(analisis?.valor_ref_texto ?? '');
   const [demora, setDemora] = useState(analisis?.dias_demora ?? '');
+  // Arancel según el Nomenclador Bioquímico Único: cuántas unidades bioquímicas (UB) vale el estudio
+  const [ub, setUb] = useState(numeroParaCampo(analisis?.ub));
+  const [codigoNbu, setCodigoNbu] = useState(analisis?.codigo_nbu ?? '');
   const [activo, setActivo] = useState(analisis?.activo ?? true);
   // errores: un mensaje por campo con problemas (si el campo no está, está bien)
   const [errores, setErrores] = useState({});
@@ -60,6 +65,9 @@ function ModalAnalisis({ analisis, tipos, onCerrar, onGuardado }) {
     ) {
       nuevos.demora = `Ingrese una cantidad de días entera, de 0 a ${DEMORA_MAXIMA}.`;
     }
+    if (Number.isNaN(datos.ub) || (datos.ub !== null && (datos.ub < 0 || datos.ub > UB_MAXIMA))) {
+      nuevos.ub = `Ingrese las unidades bioquímicas, de 0 a ${UB_MAXIMA} (por ejemplo 1,5).`;
+    }
     return nuevos;
   }
 
@@ -76,6 +84,8 @@ function ModalAnalisis({ analisis, tipos, onCerrar, onGuardado }) {
       valor_ref_max: leerNumero(maximo),
       valor_ref_texto: referenciaTexto.trim() || null,
       dias_demora: String(demora).trim() === '' ? null : Number(demora),
+      ub: leerNumero(ub),
+      codigo_nbu: codigoNbu.trim() || null,
       activo,
     };
 
@@ -312,6 +322,45 @@ function ModalAnalisis({ analisis, tipos, onCerrar, onGuardado }) {
                   0 = el resultado sale en el día.
                 </div>
               )}
+            </div>
+            <div className="col-6 col-sm-3">
+              <label htmlFor="analisis-ub" className="form-label fw-semibold small">
+                Unidades (UB)
+              </label>
+              <input
+                type="text"
+                inputMode="decimal"
+                id="analisis-ub"
+                className={clase('form-control', 'ub')}
+                placeholder="1,5"
+                value={ub}
+                aria-describedby="analisis-ub-ayuda"
+                onChange={(evento) => {
+                  setUb(evento.target.value);
+                  limpiarError('ub');
+                }}
+              />
+              {errores.ub && <div className="invalid-feedback">{errores.ub}</div>}
+            </div>
+            <div className="col-6 col-sm-3">
+              <label htmlFor="analisis-nbu" className="form-label fw-semibold small">
+                Código NBU
+              </label>
+              <input
+                type="text"
+                id="analisis-nbu"
+                className="form-control"
+                maxLength={10}
+                autoComplete="off"
+                value={codigoNbu}
+                onChange={(evento) => setCodigoNbu(evento.target.value)}
+              />
+            </div>
+            <div className="col-12 mt-1">
+              <div className="form-text" id="analisis-ub-ayuda">
+                Arancel según el Nomenclador Bioquímico Único: el precio es las UB por el valor de la UB de cada obra
+                social (ver Aranceles). Sin UB, el estudio no tiene precio.
+              </div>
             </div>
 
             {!esNuevo && (

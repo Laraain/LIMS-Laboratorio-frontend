@@ -6,6 +6,7 @@ import ModalOrden from '../components/ModalOrden.jsx';
 import { ROLES_ORDENES } from '../data/roles.js';
 import useMetadatos from '../hooks/useMetadatos.js';
 import { mensajeDeErrorApi } from '../lib/api.js';
+import { formatearPesos, totalesDeOrden } from '../lib/aranceles.js';
 import { hoyTucuman } from '../lib/hora.js';
 import { ESTADOS_ORDEN, anularOrden, useOrdenes } from '../lib/ordenes.js';
 import '../components/ListaPerfiles.css';
@@ -198,6 +199,7 @@ function Ordenes() {
                   <th scope="col">Médico</th>
                   <th scope="col">Obra social</th>
                   <th scope="col">Estudios</th>
+                  <th scope="col">Importe</th>
                   <th scope="col">Estado</th>
                   <th scope="col">
                     <span className="visually-hidden">Acciones</span>
@@ -209,6 +211,7 @@ function Ordenes() {
                   // Los componentes (ej: los 5 valores de la fórmula leucocitaria) no cuentan como estudios aparte
                   const pedidos = orden.orden_analisis.filter((estudio) => !estudio.padre_id);
                   const particulares = pedidos.filter((estudio) => !estudio.cubierto).length;
+                  const importes = totalesDeOrden(orden);
                   return (
                     <tr key={orden.id}>
                       <td className="lims-celda-nombre">
@@ -235,6 +238,18 @@ function Ordenes() {
                         {orden.obra_social_id && particulares > 0 && (
                           <span className="lims-celda-identidad">
                             {particulares} particular{particulares === 1 ? '' : 'es'}
+                          </span>
+                        )}
+                      </td>
+                      {/* Lo calcula la base al cargar la orden, con los aranceles vigentes ese día */}
+                      <td data-label="Importe" className="lims-celda-numero">
+                        <span className="d-block">Paciente {formatearPesos(importes.paciente)}</span>
+                        {orden.obra_social_id && (
+                          <span className="lims-celda-identidad">Obra social {formatearPesos(importes.obraSocial)}</span>
+                        )}
+                        {importes.sinArancel > 0 && (
+                          <span className="lims-celda-identidad text-warning-emphasis">
+                            {importes.sinArancel} sin arancel
                           </span>
                         )}
                       </td>
