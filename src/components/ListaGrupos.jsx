@@ -35,7 +35,7 @@ function ListaGrupos({ puedeEditar }) {
           puedeEditar
             ? axios.get(`${API_URL}/analisis`, {
                 headers: await encabezados(),
-                params: { select: 'id,codigo,nombre,activo', order: 'nombre.asc' },
+                params: { select: 'id,codigo,nombre,activo', padre_id: 'is.null', order: 'nombre.asc' },
               })
             : Promise.resolve({ data: [] }),
         ]);

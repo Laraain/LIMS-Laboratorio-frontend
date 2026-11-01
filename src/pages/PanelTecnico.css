@@ -1,0 +1,111 @@
+/* Bandeja de trabajo: reutiliza la tabla y las tarjetas de ListaPerfiles.css y agrega lo propio */
+
+/* La fila entera abre la orden */
+.lims-fila-clicable {
+  cursor: pointer;
+}
+
+.lims-fila-clicable:focus-within {
+  background: var(--lims-surface-2);
+}
+
+/* Avance de resultados: "3 de 5 con resultado" con una barra fina debajo */
+.lims-avance {
+  display: block;
+  min-width: 9rem;
+}
+
+.lims-avance-texto {
+  display: block;
+  font-weight: 600;
+  color: var(--lims-ink);
+  white-space: nowrap;
+}
+
+.lims-avance-barra {
+  display: block;
+  width: 100%;
+  height: 6px;
+  margin-top: 6px;
+  border-radius: 999px;
+  background: var(--lims-surface);
+  overflow: hidden;
+}
+
+.lims-avance-barra > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--bs-primary);
+  transition: width 0.3s ease;
+}
+
+/* Estado de la orden: etiqueta de color según abierta o en proceso */
+.lims-estado-orden {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.lims-estado-orden--abierta {
+  background: #e3ecf6;
+  color: #1c4e80;
+}
+
+.lims-estado-orden--en_proceso {
+  background: #fbf0dc;
+  color: #8a5a0b;
+}
+
+/* En la vista de tarjetas el avance ocupa el ancho del dato */
+.lims-tabla-contenedor--tarjetas .lims-avance {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Resumen de la orden en la pantalla provisoria de resultados */
+.lims-resumen-orden {
+  padding: 4px 0;
+}
+
+.lims-resumen-dato {
+  padding: 16px;
+}
+
+.lims-resumen-dato dt {
+  margin-bottom: 2px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--lims-muted);
+}
+
+.lims-resumen-dato dd {
+  margin: 0;
+  font-weight: 600;
+  color: var(--lims-ink);
+}
+
+/* Aviso de la pantalla provisoria de resultados */
+.lims-aviso-pendiente {
+  align-items: flex-start;
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.lims-aviso-pendiente-icono {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  background: rgba(var(--bs-primary-rgb), 0.08);
+  color: var(--bs-primary);
+  font-size: 1.5rem;
+}

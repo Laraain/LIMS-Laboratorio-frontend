@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation, useNavigate, useOutletContext } from 'react-router-dom';
 import Navbar from './components/Navbar.jsx';
 import Footer from './components/Footer.jsx';
 import Home from './pages/Home.jsx';
@@ -7,15 +7,26 @@ import LoginPaciente from './pages/LoginPaciente.jsx';
 import LoginPersonal from './pages/LoginPersonal.jsx';
 import Panel from './pages/Panel.jsx';
 import PanelInicio from './pages/PanelInicio.jsx';
+import PanelTecnico from './pages/PanelTecnico.jsx';
 import MiPerfil from './pages/MiPerfil.jsx';
 import Usuarios from './pages/Usuarios.jsx';
 import Analisis from './pages/Analisis.jsx';
 import Pacientes from './pages/Pacientes.jsx';
 import Recepcion from './pages/Recepcion.jsx';
 import Ordenes from './pages/Ordenes.jsx';
+import Resultados from './pages/Resultados.jsx';
 import Extraccion from './pages/Extraccion.jsx';
 import Sucursales from './pages/Sucursales.jsx';
 import ObrasSociales from './pages/ObrasSociales.jsx';
+import Aranceles from './pages/Aranceles.jsx';
+import { ROLES_BANDEJA } from './data/roles.js';
+
+// Primera página del panel: el bioquímico y el técnico arrancan en su bandeja de trabajo;
+// el resto (recepción y admin) ve la bienvenida de siempre.
+function InicioPanel() {
+  const { perfil } = useOutletContext();
+  return ROLES_BANDEJA.includes(perfil.rol) ? <PanelTecnico /> : <PanelInicio />;
+}
 
 // Componente principal: arma la estructura común (menú, página actual y pie) y define las rutas
 function App() {
@@ -74,7 +85,7 @@ function App() {
         <Route path="/login-personal" element={<LoginPersonal />} />
         {/* Panel del personal: Panel verifica la sesión y muestra el menú lateral; las rutas de adentro se dibujan en su <Outlet /> */}
         <Route path="/panel" element={<Panel />}>
-          <Route index element={<PanelInicio />} />
+          <Route index element={<InicioPanel />} />
           <Route path="perfil" element={<MiPerfil />} />
           {/* La ve todo el personal; solo el administrador puede modificar el catálogo */}
           <Route path="analisis" element={<Analisis />} />
@@ -82,12 +93,16 @@ function App() {
           <Route path="recepcion" element={<Recepcion />} />
           {/* Órdenes médicas: recepción y el admin; la propia página redirige si el rol no corresponde */}
           <Route path="ordenes" element={<Ordenes />} />
+          {/* Carga de resultados: recepción, bioquímico y admin; la propia página redirige si el rol no corresponde */}
+          <Route path="resultados" element={<Resultados />} />
           {/* Gestión de pacientes: la ven recepción y el admin; la propia página redirige si el rol no corresponde */}
           <Route path="pacientes" element={<Pacientes />} />
           <Route path="extraccion" element={<Extraccion />} />
           <Route path="sucursales" element={<Sucursales />} />
           {/* Solo para administradores: la propia página redirige al inicio del panel si el rol no es admin */}
           <Route path="obras-sociales" element={<ObrasSociales />} />
+          {/* Valor de la UB por obra social: solo administradores (la página redirige si el rol no es admin) */}
+          <Route path="aranceles" element={<Aranceles />} />
           {/* "Configuración" pasó a llamarse "Sucursales": la ruta vieja redirige */}
           <Route path="configuracion" element={<Navigate to="/panel/sucursales" replace />} />
           {/* Solo para administradores: la propia página redirige al inicio del panel si el rol no es admin */}

@@ -1,0 +1,178 @@
+/* Ventana de carga de resultados: una fila por estudio de la orden */
+.lims-resultados {
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+}
+
+.lims-resultados li {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(8rem, 1fr) minmax(0, 1fr);
+  gap: 8px 16px;
+  align-items: center;
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--lims-border);
+  border-radius: 8px;
+}
+
+.lims-resultado-estudio {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+}
+
+.lims-resultado-referencia {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Fuera de rango: la fila se marca para que el bioquímico la mire primero */
+.lims-resultado--fuera {
+  background: #fff4e5;
+}
+
+.lims-resultado-alerta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #b54708;
+  font-weight: 600;
+}
+
+.lims-resultado-estado {
+  font-size: 0.8125rem;
+  color: var(--lims-muted);
+}
+
+.lims-resultado-estado--validado {
+  color: var(--bs-success);
+  font-weight: 600;
+}
+
+.lims-resultado-estado--rechazado {
+  color: var(--bs-danger);
+  font-weight: 600;
+}
+
+/* Estudio con componentes (ej: fórmula leucocitaria): encabezado que se despliega */
+.lims-resultados li.lims-resultado-grupo {
+  display: block;
+  padding: 0;
+}
+
+/* La fila del estudio usa las mismas 3 columnas que los demás estudios */
+.lims-resultado-fila {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(8rem, 1fr) minmax(0, 1fr);
+  gap: 8px 16px;
+  align-items: center;
+  padding: 10px 8px;
+}
+
+/* Botón en el lugar del campo: mismo alto y ancho que los campos de valor */
+.lims-resultado-desplegar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 4px 10px;
+  border: 1px solid var(--lims-border);
+  border-radius: 0.375rem;
+  background: #eef3f9;
+  color: var(--bs-primary);
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.lims-resultado-desplegar:hover:not(:disabled),
+.lims-resultado-desplegar:focus-visible {
+  border-color: var(--bs-primary);
+}
+
+/* Desplegado y con valores por cargar: no se puede ocultar */
+.lims-resultado-desplegar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Los componentes, con sangría debajo de su estudio */
+.lims-resultados--componentes {
+  margin: 0 0 8px 28px;
+  border-left: 3px solid #eef3f9;
+}
+
+.lims-resultado-absoluto {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.8125rem;
+  color: var(--lims-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Orden ya validada: se muestra en modo lectura */
+.lims-resultado-cerrada {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  border: 1px solid #badbcc;
+  border-radius: 8px;
+  background: #d1e7dd;
+  color: #0f5132;
+  font-size: 0.9375rem;
+}
+
+.lims-resultado-cerrada svg {
+  flex: none;
+  margin-top: 1px;
+  font-size: 1.1rem;
+}
+
+/* Resumen de la validación en la ventana de SweetAlert2 */
+.lims-validacion-resumen {
+  text-align: left;
+  font-size: 0.9375rem;
+}
+
+.lims-validacion-resumen .lims-validacion-fuera {
+  color: #b54708;
+  font-weight: 600;
+}
+
+.lims-validacion-resumen .lims-validacion-lista {
+  margin: 4px 0 8px;
+  padding-left: 20px;
+}
+
+.lims-validacion-resumen .lims-validacion-ref {
+  color: var(--lims-muted);
+  font-size: 0.875rem;
+}
+
+/* Las filas se acomodan según el ancho de la ventana (no de la pantalla): la ventana mide 500px en tablets */
+.lims-resultados {
+  container-type: inline-size;
+}
+
+/* Ventana angosta: cada estudio ocupa dos renglones (nombre arriba, valor y referencia abajo) */
+@container (max-width: 620px) {
+  .lims-resultados li {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .lims-resultados li,
+  .lims-resultado-fila {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .lims-resultado-estudio {
+    grid-column: 1 / -1;
+  }
+}
