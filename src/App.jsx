@@ -19,6 +19,7 @@ import Extraccion from './pages/Extraccion.jsx';
 import Sucursales from './pages/Sucursales.jsx';
 import ObrasSociales from './pages/ObrasSociales.jsx';
 import Aranceles from './pages/Aranceles.jsx';
+import PortalPaciente from './pages/PortalPaciente.jsx';
 import { ROLES_BANDEJA } from './data/roles.js';
 
 // Primera página del panel: el bioquímico y el técnico arrancan en su bandeja de trabajo;
@@ -82,6 +83,8 @@ function App() {
         {/* Los servicios ahora son una sección de la home; la ruta vieja redirige ahí */}
         <Route path="/servicios" element={<Navigate to={{ pathname: '/', hash: '#servicios' }} replace />} />
         <Route path="/login-paciente" element={<LoginPaciente />} />
+        {/* Portal del paciente: sus estudios y la descarga de los informes publicados */}
+        <Route path="/mis-estudios" element={<PortalPaciente />} />
         <Route path="/login-personal" element={<LoginPersonal />} />
         {/* Panel del personal: Panel verifica la sesión y muestra el menú lateral; las rutas de adentro se dibujan en su <Outlet /> */}
         <Route path="/panel" element={<Panel />}>
