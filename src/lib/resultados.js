@@ -1,5 +1,6 @@
 import axios from 'axios';
-import { API_URL, encabezados } from './api.js';
+import { API_URL, FUNCIONES_URL, encabezados } from './api.js';
+import { supabase } from './supabase.js';
 
 // Resultados de los estudios de una orden. Los carga recepción (y el bioquímico si hace falta);
 // solo el bioquímico los valida. La base compara cada valor con el rango de referencia que corresponde
@@ -47,7 +48,9 @@ export async function leerOrdenConResultados(ordenId) {
         'tipos_muestra(nombre)),grupos_analisis(nombre),' +
         'resultados(id,valor_numerico,valor_texto,valor_absoluto,fuera_de_rango,estado,cargado_en,validado_en,' +
         'cargador:perfiles!resultados_cargado_por_fkey(nombre,apellido),' +
-        'validador:perfiles!resultados_validado_por_fkey(nombre,apellido)))',
+        'validador:perfiles!resultados_validado_por_fkey(nombre,apellido))),' +
+        // El informe en PDF: se crea en borrador al validar y se publica al firmarlo
+        'informes(estado,pdf_path,firmado_en,publicado_en)',
       id: `eq.${ordenId}`,
     },
   });
@@ -85,6 +88,30 @@ export function guardarResultados(ordenId, items) {
 // no se guarda nada.
 export function validarOrden(ordenId, items) {
   return rpc('validar_orden', { p_orden_id: ordenId, p_resultados: items });
+}
+
+// Firma el informe de una orden validada: la función de servidor arma el PDF, lo guarda y lo publica.
+// Devuelve { informe_id, pdf_path, publicado_en, url } (url: link para abrir el PDF, vence en minutos)
+export async function firmarInforme(ordenId) {
+  const response = await axios.post(
+    `${FUNCIONES_URL}/generar-informe`,
+    { orden_id: ordenId },
+    { headers: await encabezados() },
+  );
+  return response.data;
+}
+
+// Link para abrir el PDF de un informe. El archivo está en un lugar privado: el link vence a los 2 minutos
+export async function linkDelInforme(pdfPath) {
+  const { data, error } = await supabase.storage.from('informes').createSignedUrl(pdfPath, 120);
+  if (error) throw Object.assign(error, { mensajeUsuario: 'No se pudo abrir el PDF del informe.' });
+  return data.signedUrl;
+}
+
+// El informe de la orden (PostgREST lo devuelve como objeto: hay uno por orden)
+export function informeDe(orden) {
+  const informe = orden?.informes;
+  return Array.isArray(informe) ? (informe[0] ?? null) : (informe ?? null);
 }
 
 // PostgREST devuelve el resultado como objeto (un estudio tiene un solo resultado); por las dudas acepta lista
