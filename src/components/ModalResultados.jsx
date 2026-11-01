@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
 import Modal from 'react-bootstrap/Modal';
-import { CaretDown, CaretRight, SealCheck, WarningCircle } from '@phosphor-icons/react';
+import { CaretDown, CaretRight, FilePdf, SealCheck, Signature, WarningCircle } from '@phosphor-icons/react';
 import { mensajeDeErrorApi } from '../lib/api.js';
 import { formatearNumero, leerNumero, numeroParaCampo, textoReferencia } from '../lib/analisis.js';
 import { ROLES_VALIDACION } from '../data/roles.js';
@@ -9,8 +9,11 @@ import { edadDesde, fechaDe, horaDe } from '../lib/hora.js';
 import {
   ESTADOS_ORDEN_CERRADA,
   ESTADOS_RESULTADO,
+  firmarInforme,
   guardarResultados,
+  informeDe,
   leerOrdenConResultados,
+  linkDelInforme,
   rangosDeOrden,
   resultadoDe,
   validarOrden,
@@ -72,6 +75,8 @@ function ModalResultados({ ordenId, perfil, onCerrar, onGuardado, lectura = fals
   const [errores, setErrores] = useState({});
   const [guardando, setGuardando] = useState(false);
   const [validando, setValidando] = useState(false);
+  const [firmando, setFirmando] = useState(false);
+  const [abriendo, setAbriendo] = useState(false);
 
   useEffect(() => {
     let vigente = true;
@@ -151,6 +156,11 @@ function ModalResultados({ ordenId, perfil, onCerrar, onGuardado, lectura = fals
   const cerrada = ESTADOS_ORDEN_CERRADA.includes(estadoOrden);
   const soloLectura = cerrada || lectura;
   const puedeValidar = ROLES_VALIDACION.includes(perfil?.rol) && !soloLectura;
+  // Validada y sin firmar: el bioquímico firma el informe y se publica el PDF
+  const puedeFirmar = ROLES_VALIDACION.includes(perfil?.rol) && estadoOrden === 'completa' && !lectura;
+  const informe = informeDe(orden);
+  const informePublicado = informe?.estado === 'publicado' && Boolean(informe.pdf_path);
+  const ocupado = guardando || validando || firmando;
   // Un valor está cargado si tiene algo escrito y, en los estudios numéricos, es un número válido
   function valorCargado(estudio) {
     const texto = (valores[estudio.id] ?? '').trim();
@@ -321,6 +331,74 @@ function ModalResultados({ ordenId, perfil, onCerrar, onGuardado, lectura = fals
     }
   }
 
+  // Firmar el informe: se arma el PDF con el nombre y la matrícula del bioquímico y queda publicado
+  async function handleFirmar() {
+    const { isConfirmed } = await Swal.fire({
+      icon: 'question',
+      title: `¿Firmar el informe de la orden ${orden.nro_orden}?`,
+      html:
+        `<p class="mb-1">${escapar(paciente.apellido)}, ${escapar(paciente.nombre)}</p>` +
+        '<p class="mb-0">Se genera el PDF con su nombre y matrícula, y el paciente lo puede ver en el portal. ' +
+        'Una vez firmado no se puede modificar.</p>',
+      showCancelButton: true,
+      confirmButtonText: 'Firmar y publicar',
+      cancelButtonText: 'Volver',
+      confirmButtonColor: '#1c4e80',
+    });
+    if (!isConfirmed) return;
+
+    setFirmando(true);
+    try {
+      const publicado = await firmarInforme(ordenId);
+      await Swal.fire({
+        icon: 'success',
+        title: 'Informe publicado',
+        html:
+          '<p class="mb-2">El informe quedó firmado y el paciente ya lo puede ver.</p>' +
+          (publicado.url
+            ? `<a class="btn lims-btn-pill lims-btn-secundario" href="${escapar(publicado.url)}" target="_blank" rel="noopener">Abrir el PDF</a>`
+            : ''),
+        confirmButtonText: 'Listo',
+        confirmButtonColor: '#1c4e80',
+      });
+      onGuardado();
+    } catch (errorPeticion) {
+      console.error('No se pudo firmar el informe:', errorPeticion);
+      await Swal.fire({
+        icon: 'error',
+        title: 'No pudimos firmar el informe',
+        text: mensajeDeErrorApi(errorPeticion),
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#1c4e80',
+      });
+      setFirmando(false);
+    }
+  }
+
+  // Abre el PDF publicado en otra pestaña. La pestaña se abre antes de pedir el link
+  // para que el navegador no la bloquee como ventana emergente.
+  async function handleVerInforme() {
+    const pestania = window.open('', '_blank');
+    setAbriendo(true);
+    try {
+      const link = await linkDelInforme(informe.pdf_path);
+      if (pestania) pestania.location.href = link;
+      else window.location.assign(link);
+    } catch (errorPeticion) {
+      pestania?.close();
+      console.error('No se pudo abrir el informe:', errorPeticion);
+      Swal.fire({
+        icon: 'error',
+        title: 'No pudimos abrir el informe',
+        text: mensajeDeErrorApi(errorPeticion),
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#1c4e80',
+      });
+    } finally {
+      setAbriendo(false);
+    }
+  }
+
   // Una fila para cargar el valor de un estudio (o de un componente)
   function filaEstudio(estudio, componente = false) {
     const rango = rangos[estudio.id];
@@ -467,7 +545,7 @@ function ModalResultados({ ordenId, perfil, onCerrar, onGuardado, lectura = fals
     // enforceFocus={false}: deja que la ventana de SweetAlert2 reciba el foco encima de este modal
     <Modal
       show
-      onHide={guardando || validando ? undefined : onCerrar}
+      onHide={ocupado ? undefined : onCerrar}
       backdrop="static"
       enforceFocus={false}
       centered
@@ -475,7 +553,7 @@ function ModalResultados({ ordenId, perfil, onCerrar, onGuardado, lectura = fals
       size="lg"
       contentClassName="lims-modal"
     >
-      <Modal.Header closeButton={!guardando && !validando}>
+      <Modal.Header closeButton={!ocupado}>
         <Modal.Title as="h2" className="h5 fw-bold mb-0">
           Resultados {orden ? `· Orden ${orden.nro_orden}` : ''}
         </Modal.Title>
@@ -514,7 +592,13 @@ function ModalResultados({ ordenId, perfil, onCerrar, onGuardado, lectura = fals
                       ? 'Orden anulada.'
                       : `Orden validada${validador ? ` por ${validador}` : ''}.`}
                   </strong>{' '}
-                  {validadoEn && `Se validó ${validadoEn}. `}No se puede modificar.
+                  {validadoEn && `Se validó ${validadoEn}. `}
+                  {estadoOrden === 'informada' && informe?.publicado_en
+                    ? `Informe firmado y publicado el ${fechaDe(informe.publicado_en)} a las ${horaDe(informe.publicado_en)}. `
+                    : estadoOrden === 'completa'
+                      ? 'El informe todavía no está firmado. '
+                      : ''}
+                  No se puede modificar.
                 </span>
               </div>
             )}
@@ -538,7 +622,7 @@ function ModalResultados({ ordenId, perfil, onCerrar, onGuardado, lectura = fals
           type="button"
           className="btn lims-btn-pill lims-btn-secundario"
           onClick={onCerrar}
-          disabled={guardando || validando}
+          disabled={ocupado}
         >
           {soloLectura ? 'Cerrar' : 'Cancelar'}
         </button>
@@ -547,7 +631,7 @@ function ModalResultados({ ordenId, perfil, onCerrar, onGuardado, lectura = fals
             type="submit"
             form="form-resultados"
             className={`btn lims-btn-pill ${puedeValidar ? 'lims-btn-secundario' : 'lims-btn-primario'}`}
-            disabled={guardando || validando || cargando || error}
+            disabled={ocupado || cargando || error}
           >
             {guardando ? 'Guardando…' : 'Guardar resultados'}
           </button>
@@ -557,11 +641,33 @@ function ModalResultados({ ordenId, perfil, onCerrar, onGuardado, lectura = fals
             type="button"
             className="btn lims-btn-pill lims-btn-primario"
             onClick={handleValidar}
-            disabled={!todosCargados || guardando || validando || cargando || error}
+            disabled={!todosCargados || ocupado || cargando || error}
             title={!todosCargados ? 'Cargue todos los valores para poder validar la orden' : undefined}
           >
             <SealCheck className="lims-icono me-1" aria-hidden="true" />
             {validando ? 'Validando…' : 'Validar orden'}
+          </button>
+        )}
+        {informePublicado && (
+          <button
+            type="button"
+            className="btn lims-btn-pill lims-btn-primario"
+            onClick={handleVerInforme}
+            disabled={abriendo}
+          >
+            <FilePdf className="lims-icono me-1" aria-hidden="true" />
+            {abriendo ? 'Abriendo…' : 'Ver informe PDF'}
+          </button>
+        )}
+        {puedeFirmar && (
+          <button
+            type="button"
+            className="btn lims-btn-pill lims-btn-primario"
+            onClick={handleFirmar}
+            disabled={ocupado || cargando || error}
+          >
+            <Signature className="lims-icono me-1" aria-hidden="true" />
+            {firmando ? 'Firmando…' : 'Firmar y publicar'}
           </button>
         )}
       </Modal.Footer>

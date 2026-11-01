@@ -195,7 +195,9 @@ function Resultados() {
                         <span className="lims-celda-identidad">DNI {orden.pacientes.dni}</span>
                       </td>
                       <td data-label="Resultados">
-                        <span className="fw-semibold">{cerrada ? 'Validada' : `${cargados} de ${total}`}</span>
+                        <span className="fw-semibold">
+                          {orden.estado === 'informada' ? 'Informada' : cerrada ? 'Validada' : `${cargados} de ${total}`}
+                        </span>
                         {fuera > 0 && (
                           <span className="lims-celda-identidad text-warning-emphasis">
                             <WarningCircle className="me-1" aria-hidden="true" />

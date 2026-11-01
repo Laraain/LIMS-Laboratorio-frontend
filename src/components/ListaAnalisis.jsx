@@ -3,7 +3,7 @@ import axios from 'axios';
 import { GenderIntersex, MagnifyingGlass, PencilSimple, Plus } from '@phosphor-icons/react';
 import Swal from 'sweetalert2';
 import { API_URL, encabezados } from '../lib/api.js';
-import { textoReferencia } from '../lib/analisis.js';
+import { formatearNumero, textoReferencia } from '../lib/analisis.js';
 import ModalAnalisis from './ModalAnalisis.jsx';
 import ModalRangos from './ModalRangos.jsx';
 import './ListaPerfiles.css';
@@ -52,7 +52,7 @@ function ListaAnalisis({ puedeEditar }) {
             params: {
               select:
                 'id,codigo,nombre,tipo_muestra_id,unidad,valor_ref_min,valor_ref_max,valor_ref_texto,dias_demora,activo,' +
-                'padre_id,absoluto_min,absoluto_max,absoluto_unidad,tipos_muestra(nombre,tubo),' +
+                'padre_id,absoluto_min,absoluto_max,absoluto_unidad,ub,codigo_nbu,tipos_muestra(nombre,tubo),' +
                 // Solo los ids de sus rangos por sexo y edad, para contarlos
                 'analisis_rangos(id)',
               order: 'nombre.asc',
@@ -244,6 +244,7 @@ function ListaAnalisis({ puedeEditar }) {
                 <th scope="col">Valor de referencia</th>
                 <th scope="col">Unidad</th>
                 <th scope="col">Demora</th>
+                <th scope="col">Arancel</th>
                 <th scope="col">Estado</th>
                 <th scope="col">
                   <span className="visually-hidden">Acciones</span>
@@ -301,6 +302,19 @@ function ListaAnalisis({ puedeEditar }) {
                       : item.dias_demora === 0
                         ? 'En el día'
                         : `${item.dias_demora} ${item.dias_demora === 1 ? 'día' : 'días'}`}
+                  </td>
+                  {/* Unidades bioquímicas (NBU). Los componentes se cobran con su estudio */}
+                  <td data-label="Arancel" className="lims-celda-numero">
+                    {item.padre_id ? (
+                      <span className="lims-celda-identidad">Con su estudio</span>
+                    ) : item.ub === null ? (
+                      '—'
+                    ) : (
+                      <span>
+                        <span className="d-block">{formatearNumero(item.ub)} UB</span>
+                        {item.codigo_nbu && <span className="lims-celda-identidad">NBU {item.codigo_nbu}</span>}
+                      </span>
+                    )}
                   </td>
                   <td data-label="Estado">
                     <span className={`lims-cuenta${item.activo ? '' : ' lims-cuenta--inactiva'}`}>
