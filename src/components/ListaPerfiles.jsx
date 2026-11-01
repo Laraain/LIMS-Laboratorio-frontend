@@ -38,6 +38,8 @@ function ListaPerfiles({ idActual }) {
   const [error, setError] = useState(false);
   const [intento, setIntento] = useState(0);
   const [filtroRol, setFiltroRol] = useState('todos');
+  // filtroSucursal: 'todas', el id de una sucursal o 'sin' (personal sin sucursal asignada)
+  const [filtroSucursal, setFiltroSucursal] = useState('todas');
   // busqueda: texto del buscador (filtra por nombre, apellido, DNI o usuario)
   const [busqueda, setBusqueda] = useState('');
   // vista: 'lista' muestra la tabla y 'tarjetas' una tarjeta por perfil
@@ -135,6 +137,12 @@ function ListaPerfiles({ idActual }) {
   const texto = busqueda.trim().toLowerCase();
   const visibles = perfiles.filter((perfil) => {
     if (filtroRol !== 'todos' && perfil.rol !== filtroRol) return false;
+    // Con una sucursal elegida solo queda el personal de esa sucursal (los pacientes no tienen sucursal)
+    if (filtroSucursal !== 'todas') {
+      if (!perfil.personal) return false;
+      const sucursalId = perfil.personal.sucursal_id;
+      if (filtroSucursal === 'sin' ? sucursalId !== null : String(sucursalId) !== filtroSucursal) return false;
+    }
     if (!texto) return true;
     const identidad = perfil.pacientes?.dni ?? perfil.personal?.usuario ?? '';
     return `${perfil.nombre} ${perfil.apellido} ${identidad}`.toLowerCase().includes(texto);
@@ -191,6 +199,25 @@ function ListaPerfiles({ idActual }) {
           ))}
         </div>
         <div className="lims-lista-herramientas">
+          <label htmlFor="filtro-sucursal" className="visually-hidden">
+            Filtrar por sucursal
+          </label>
+          <select
+            id="filtro-sucursal"
+            className="form-select w-auto"
+            value={filtroSucursal}
+            onChange={(evento) => setFiltroSucursal(evento.target.value)}
+          >
+            <option value="todas">Todas las sucursales</option>
+            {/* map(): una opción por sucursal; "Sin sucursal" junta al personal que todavía no tiene una */}
+            {sucursales.map((sucursal) => (
+              <option key={sucursal.id} value={String(sucursal.id)}>
+                {sucursal.nombre}
+                {sucursal.localidad ? ` (${sucursal.localidad})` : ''}
+              </option>
+            ))}
+            <option value="sin">Sin sucursal</option>
+          </select>
           <div className="lims-lista-vista" role="group" aria-label="Forma de ver los perfiles">
             {VISTAS.map(({ clave, nombre, icono: Icono }) => (
               <button
@@ -222,7 +249,7 @@ function ListaPerfiles({ idActual }) {
       </div>
 
       {visibles.length === 0 ? (
-        <div className="lims-lista-aviso">No hay perfiles que coincidan con la búsqueda.</div>
+        <div className="lims-lista-aviso">No hay perfiles que coincidan con los filtros o la búsqueda.</div>
       ) : (
         <div className={`lims-tabla-contenedor${vista === 'tarjetas' ? ' lims-tabla-contenedor--tarjetas' : ''}`}>
           {/* En la vista de tarjetas, cada fila se muestra como tarjeta (ver ListaPerfiles.css): data-label es el texto de cada dato */}
