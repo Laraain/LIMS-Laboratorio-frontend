@@ -21,7 +21,8 @@ const CAMPOS_ORDEN =
   'paciente_id,medico_id,pacientes(dni,nombre,apellido,obra_social_id,nro_afiliado),' +
   'medicos(nombre,apellido,matricula),obras_sociales(nombre),' +
   'orden_analisis(id,analisis_id,padre_id,cubierto,grupo_id,importe_paciente,importe_obra_social,' +
-  'analisis(codigo,nombre),grupos_analisis(nombre),resultados(estado,fuera_de_rango))';
+  'analisis(codigo,nombre),grupos_analisis(nombre),resultados(estado,fuera_de_rango)),' +
+  'cobros(id,monto,medio_pago,observaciones,cobrado_en,motivo_anulacion,anulado_en)';
 
 // Lo que se pide de cada orden para la bandeja de trabajo: el paciente y, por cada estudio,
 // el estado de su resultado (si ya se cargó).
