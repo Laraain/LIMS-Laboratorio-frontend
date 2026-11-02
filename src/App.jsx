@@ -10,6 +10,7 @@ import PanelInicio from './pages/PanelInicio.jsx';
 import PanelTecnico from './pages/PanelTecnico.jsx';
 import MiPerfil from './pages/MiPerfil.jsx';
 import Usuarios from './pages/Usuarios.jsx';
+import Dashboard from './pages/Dashboard.jsx';
 import Analisis from './pages/Analisis.jsx';
 import Pacientes from './pages/Pacientes.jsx';
 import Recepcion from './pages/Recepcion.jsx';
@@ -112,6 +113,7 @@ function App() {
           <Route path="configuracion" element={<Navigate to="/panel/sucursales" replace />} />
           {/* Solo para administradores: la propia página redirige al inicio del panel si el rol no es admin */}
           <Route path="usuarios" element={<Usuarios />} />
+          <Route path="metricas" element={<Dashboard />} />
         </Route>
         {/* La administración de perfiles ahora vive dentro del panel; la ruta vieja redirige ahí */}
         <Route path="/usuarios" element={<Navigate to="/panel/usuarios" replace />} />

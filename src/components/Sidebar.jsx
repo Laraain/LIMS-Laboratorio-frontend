@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { Buildings, CashRegister, ClipboardText, CurrencyDollar, FileText, FirstAidKit, Flask, House, IdentificationCard, Syringe, TestTube, UserCircle, UsersThree, X } from '@phosphor-icons/react';
+import { Buildings, ChartBar, CashRegister, ClipboardText, CurrencyDollar, FileText, FirstAidKit, Flask, House, IdentificationCard, Syringe, TestTube, UserCircle, UsersThree, X } from '@phosphor-icons/react';
 import ROLES, { ROLES_BANDEJA, ROLES_CAJA, ROLES_EXTRACCION, ROLES_ORDENES, ROLES_PACIENTES, ROLES_RECEPCION, ROLES_RESULTADOS } from '../data/roles.js';
 import './Sidebar.css';
 
@@ -16,6 +16,7 @@ const OPCIONES = [
   { ruta: '/panel/pacientes', texto: 'Pacientes', icono: IdentificationCard, roles: ROLES_PACIENTES },
   { ruta: '/panel/extraccion', texto: 'Extracción', icono: Syringe, roles: ROLES_EXTRACCION },
   { ruta: '/panel/analisis', texto: 'Catálogo de análisis', icono: Flask },
+  { ruta: '/panel/metricas', texto: 'Métricas', icono: ChartBar, roles: ['admin'] },
   { ruta: '/panel/usuarios', texto: 'Administración de perfiles', icono: UsersThree, roles: ['admin'] },
   { ruta: '/panel/sucursales', texto: 'Sucursales', icono: Buildings, roles: ['admin'] },
   { ruta: '/panel/obras-sociales', texto: 'Obras sociales', icono: FirstAidKit, roles: ['admin'] },

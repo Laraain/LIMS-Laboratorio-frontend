@@ -1,0 +1,210 @@
+/* Filtros: sucursal, rango de fechas y atajos */
+.lims-filtros {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+  margin-bottom: 24px;
+  padding: 16px;
+  border: 1px solid var(--lims-border-soft);
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.lims-filtros-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 160px;
+}
+
+.lims-filtros-campo label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--lims-ink);
+}
+
+.lims-filtros-atajos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-left: auto;
+}
+
+/* Mientras llegan los números nuevos se atenúa lo anterior en lugar de vaciar la pantalla */
+.lims-dashboard {
+  transition: opacity 0.15s ease;
+}
+
+.lims-dashboard--cargando {
+  opacity: 0.55;
+}
+
+/* Tarjetas de totales */
+.lims-metricas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.lims-metrica {
+  position: relative;
+  padding: 20px;
+  border: 1px solid var(--lims-border-soft);
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.lims-metrica-icono {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(var(--bs-primary-rgb), 0.08);
+  font-size: 1.25rem;
+  color: var(--bs-primary);
+}
+
+.lims-metrica-titulo {
+  margin: 0 56px 4px 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--lims-muted);
+}
+
+.lims-metrica-valor {
+  margin: 0 0 4px;
+  font-size: clamp(1.5rem, 2.6vw, 2rem);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--lims-ink);
+}
+
+.lims-metrica-detalle {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--lims-muted);
+}
+
+/* Gráficos y listas */
+.lims-graficos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.lims-grafico {
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid var(--lims-border-soft);
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.lims-grafico-titulo {
+  margin: 0 0 4px;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--lims-ink);
+}
+
+.lims-grafico-subtitulo {
+  margin: 24px 0 12px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--lims-ink);
+}
+
+.lims-grafico-descripcion {
+  margin: 0 0 16px;
+  font-size: 0.9375rem;
+  color: var(--lims-muted);
+}
+
+.lims-grafico-vacio {
+  margin: 0;
+  padding: 32px 0;
+  text-align: center;
+  color: var(--lims-muted);
+}
+
+/* Órdenes por estado */
+.lims-estados,
+.lims-medios {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lims-estados {
+  display: grid;
+  gap: 8px;
+}
+
+.lims-estado {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-left: 4px solid var(--lims-border);
+  border-radius: 8px;
+  background: var(--lims-surface-2);
+}
+
+.lims-estado--abierta { border-left-color: #b7791f; }
+.lims-estado--en_proceso { border-left-color: var(--bs-primary); }
+.lims-estado--completa { border-left-color: var(--lims-accent); }
+.lims-estado--informada { border-left-color: var(--bs-success); }
+.lims-estado--anulada { border-left-color: #c0392b; }
+
+/* Cobrado por medio de pago */
+.lims-medios {
+  display: grid;
+  gap: 12px;
+}
+
+.lims-medios-linea {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.lims-medios-barra {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--lims-surface);
+}
+
+.lims-medios-barra span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--bs-primary);
+}
+
+.lims-tabla-sucursales .table {
+  --bs-table-bg: transparent;
+}
+
+.lims-tabla-sucursales th {
+  white-space: nowrap;
+}
+
+@media (max-width: 575.98px) {
+  .lims-filtros-campo {
+    flex: 1 1 100%;
+  }
+
+  .lims-filtros-atajos {
+    margin-left: 0;
+  }
+}
