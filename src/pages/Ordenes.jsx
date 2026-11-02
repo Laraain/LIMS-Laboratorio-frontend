@@ -229,8 +229,15 @@ function Ordenes() {
                         <span className="lims-celda-identidad">DNI {orden.pacientes.dni}</span>
                       </td>
                       <td data-label="Médico">
-                        {orden.medicos.apellido}, {orden.medicos.nombre}
-                        <span className="lims-celda-identidad">MP {orden.medicos.matricula}</span>
+                        {/* Sin médico: el paciente vino por su cuenta (LIMS-33) */}
+                        {orden.medicos ? (
+                          <>
+                            {orden.medicos.apellido}, {orden.medicos.nombre}
+                            <span className="lims-celda-identidad">MP {orden.medicos.matricula}</span>
+                          </>
+                        ) : (
+                          <span className="text-muted">Sin pedido médico</span>
+                        )}
                       </td>
                       <td data-label="Obra social">{orden.obras_sociales?.nombre ?? 'Particular'}</td>
                       <td data-label="Estudios">
