@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
+import { Eye, EyeSlash } from '@phosphor-icons/react';
 import LoginLayout from '../components/LoginLayout.jsx';
 import PrimerIngreso from '../components/PrimerIngreso.jsx';
 import useMetadatos from '../hooks/useMetadatos.js';
@@ -22,6 +23,8 @@ function LoginPersonal() {
   const [error, setError] = useState('');
   const [usuarioInvalido, setUsuarioInvalido] = useState(false);
   const [passwordInvalido, setPasswordInvalido] = useState(false);
+  // mostrarPassword: si la contraseña se ve o queda oculta con puntos (igual que en el login del paciente)
+  const [mostrarPassword, setMostrarPassword] = useState(false);
   // enviando: true mientras se espera la respuesta del servidor (deshabilita el botón)
   const [enviando, setEnviando] = useState(false);
   // useSesion (src/lib/auth.js) devuelve la sesión activa: cargando (se está verificando), perfil (quién ingresó)
@@ -144,7 +147,7 @@ function LoginPersonal() {
             </label>
             <div className={`lims-campo${passwordInvalido ? ' is-invalid' : ''}`}>
               <input
-                type="password"
+                type={mostrarPassword ? 'text' : 'password'}
                 id="password"
                 placeholder="Su contraseña"
                 required
@@ -158,6 +161,14 @@ function LoginPersonal() {
                   setPasswordInvalido(false);
                 }}
               />
+              <button
+                type="button"
+                className="lims-campo-boton"
+                aria-label={mostrarPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                onClick={() => setMostrarPassword((valor) => !valor)}
+              >
+                {mostrarPassword ? <EyeSlash aria-hidden="true" /> : <Eye aria-hidden="true" />}
+              </button>
             </div>
             {passwordInvalido && (
               <div className="invalid-feedback d-block" id="passwordError">
