@@ -9,7 +9,7 @@ import { informeDe } from './resultados.js';
 
 // Lo que se pide de cada orden para el listado del portal
 const CAMPOS_ORDEN =
-  'id,nro_orden,estado,fecha_orden,medicos(nombre,apellido),informes(estado,pdf_path,publicado_en)';
+  'id,nro_orden,estado,fecha_orden,medico_id,medicos(nombre,apellido),informes(estado,pdf_path,publicado_en)';
 
 // ¿Ya se puede descargar? Solo cuando el bioquímico firmó y publicó el informe
 // (informeDe, de resultados.js, saca el informe de la orden)

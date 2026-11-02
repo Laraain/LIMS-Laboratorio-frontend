@@ -33,7 +33,12 @@ export function mensajeDeErrorApi(error) {
     if (/obras_sociales_codigo/i.test(detalle)) return 'Ya hay otra obra social con ese código.';
     return 'Ya existe otro registro con ese dato.';
   }
-  if (respuesta?.code === '23514') return 'Alguno de los datos no tiene un formato válido.';
+  if (respuesta?.code === '23514') {
+    if (/ordenes_sin_medico_es_particular/i.test(respuesta.message ?? '')) {
+      return 'Una orden sin pedido médico es particular: no puede tener obra social.';
+    }
+    return 'Alguno de los datos no tiene un formato válido.';
+  }
   // Errores que lanzan las funciones de la fila de atención, con el mensaje en español
   if (respuesta?.code === '42501') {
     return /row-level security/i.test(respuesta.message ?? '')
