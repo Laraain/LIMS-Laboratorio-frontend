@@ -237,6 +237,74 @@
   color: var(--lims-ink);
 }
 
+/* Muestras del paciente llamado (LIMS-28) */
+.lims-muestras {
+  margin-bottom: 16px;
+  padding: 16px;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.lims-muestras-cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.lims-muestras-titulo {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--lims-ink);
+}
+
+/* Lo que se escribe en el tubo: tiene que leerse de lejos */
+.lims-muestra-rotulo {
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--bs-primary);
+  color: #fff;
+  font-size: 1.125rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.lims-muestras-lista {
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+}
+
+.lims-muestras-lista li {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--bs-border-color);
+}
+
+.lims-muestras-lista li:last-child {
+  border-bottom: 0;
+}
+
+.lims-muestra-fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.lims-muestra-rechazada .fw-semibold {
+  text-decoration: line-through;
+  color: var(--lims-muted);
+}
+
+.lims-muestras-aviso {
+  display: flex;
+  align-items: center;
+  color: #8a5300;
+}
+
 .lims-llamado-vacio {
   color: var(--lims-text);
 }

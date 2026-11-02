@@ -51,7 +51,7 @@ async function leerFilaDeHoy(sucursalId) {
     headers: await encabezados(),
     params: {
       select:
-        'id,numero,estado,tipo,box,created_at,llamado_at,finalizado_at,observaciones,paciente_id,' +
+        'id,numero,numero_muestra,fecha,estado,tipo,box,created_at,llamado_at,finalizado_at,observaciones,paciente_id,' +
         'pacientes(dni,nombre,apellido,fecha_nacimiento,obra_social_id)',
       sucursal_id: `eq.${sucursalId}`,
       fecha: `eq.${hoyTucuman()}`,
