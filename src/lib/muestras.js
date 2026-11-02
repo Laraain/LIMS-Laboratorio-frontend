@@ -30,7 +30,8 @@ export function rechazarMuestra(muestraId, motivo) {
 
 // Estudios de las órdenes del turno y tubos ya rotulados.
 // Devuelve { tubos: [{ tipoId, tipo, tubo, estudios: [{ codigo, nombre, orden }], muestra }], sinOrden, faltaRotular }
-// (muestra: el tubo rotulado de ese tipo, o null si todavía no se rotuló)
+// (muestra: el tubo rotulado de ese tipo, o null si todavía no se rotuló. Si se rechazó y se volvió a
+// extraer, es el tubo nuevo; si el último se rechazó, es ese)
 export async function leerTubosDelTurno(turnoId) {
   const opciones = { headers: await encabezados() };
   const [ordenes, muestras] = await Promise.all([
@@ -50,16 +51,20 @@ export async function leerTubosDelTurno(turnoId) {
       params: {
         select: 'id,codigo_barras,tipo_muestra_id,estado,motivo_rechazo',
         turno_id: `eq.${turnoId}`,
+        order: 'fecha_extraccion.asc',
       },
     }),
   ]);
+
+  // Un estudio cuyo tubo se rechazó vuelve a necesitar tubo: rotular saca uno nuevo
+  const rechazadas = new Set(muestras.data.filter((muestra) => muestra.estado === 'rechazada').map((muestra) => muestra.id));
 
   // Se agrupa por tipo de muestra: es lo que el técnico tiene que sacar (un tubo por tipo)
   const porTipo = new Map();
   let sinTubo = 0;
   for (const orden of ordenes.data) {
     for (const estudio of orden.orden_analisis) {
-      if (!estudio.muestra_id) sinTubo += 1;
+      if (!estudio.muestra_id || rechazadas.has(estudio.muestra_id)) sinTubo += 1;
       // Los componentes (ej: Neutrófilos) van en el tubo de su estudio: no se listan aparte
       if (estudio.padre_id) continue;
       const { analisis } = estudio;
@@ -79,15 +84,18 @@ export async function leerTubosDelTurno(turnoId) {
       });
     }
   }
+  // Van de la más vieja a la más nueva: queda el último tubo del tipo, salvo que reemplace a uno activo
   for (const muestra of muestras.data) {
     const grupo = porTipo.get(muestra.tipo_muestra_id);
-    if (grupo) grupo.muestra = muestra;
+    if (grupo && !(muestra.estado === 'rechazada' && grupo.muestra && grupo.muestra.estado !== 'rechazada')) {
+      grupo.muestra = muestra;
+    }
   }
 
   return {
     tubos: [...porTipo.values()].sort((a, b) => a.tipo.localeCompare(b.tipo, 'es')),
     sinOrden: ordenes.data.length === 0,
-    // Hay estudios sin tubo: falta rotular (o recepción agregó una orden después)
+    // Hay estudios sin tubo o con el tubo rechazado: falta rotular (o recepción agregó una orden después)
     faltaRotular: sinTubo > 0,
   };
 }
