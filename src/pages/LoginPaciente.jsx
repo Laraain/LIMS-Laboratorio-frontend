@@ -1,9 +1,7 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { Eye, EyeSlash } from '@phosphor-icons/react';
 import LoginLayout from '../components/LoginLayout.jsx';
-import LoginSuccess from '../components/LoginSuccess.jsx';
-import PerfilUsuario from '../components/PerfilUsuario.jsx';
 import PrimerIngreso from '../components/PrimerIngreso.jsx';
 import useMetadatos from '../hooks/useMetadatos.js';
 import { cerrarSesion, emailDePaciente, iniciarSesion, useSesion } from '../lib/auth.js';
@@ -37,9 +35,9 @@ function LoginPaciente() {
   const [passwordInvalido, setPasswordInvalido] = useState(false);
   // enviando: true mientras se espera la respuesta del servidor (deshabilita el botón)
   const [enviando, setEnviando] = useState(false);
-  // useSesion (src/lib/auth.js) devuelve la sesión activa: cargando (se está verificando), perfil (quién ingresó),
-  // fecha (cuándo ingresó) y refrescar (vuelve a leer la sesión)
-  const { cargando, perfil, fecha, refrescar } = useSesion(ROLES_PORTAL);
+  // useSesion (src/lib/auth.js) devuelve la sesión activa: cargando (se está verificando), perfil (quién ingresó)
+  // y refrescar (vuelve a leer la sesión)
+  const { cargando, perfil, refrescar } = useSesion(ROLES_PORTAL);
 
   // Título y descripción de la pestaña; noindex para que los buscadores no muestren el login
   useMetadatos({
@@ -89,6 +87,10 @@ function LoginPaciente() {
     setPasswordInvalido(false);
   }
 
+  // Con la sesión iniciada se entra al portal de sus estudios (salvo que todavía tenga la contraseña provisoria:
+  // antes tiene que elegir una propia)
+  if (perfil && !perfil.debe_cambiar_password) return <Navigate to="/mis-estudios" replace />;
+
   return (
     <LoginLayout
       etiqueta="Portal del paciente"
@@ -110,7 +112,8 @@ function LoginPaciente() {
       )}
 
       {/* Renderizado condicional: mientras se verifica la sesión se avisa; si el paciente todavía usa la contraseña
-         provisoria se le pide elegir una propia; si ya ingresó se muestra la bienvenida con su perfil; si no, el formulario.
+         provisoria se le pide elegir una propia; si no, el formulario. Con la sesión completa ya se redirigió al portal
+         de sus estudios (arriba).
          El formulario es controlado: cada input muestra el valor de su estado (value) y lo actualiza al escribir (onChange).
          noValidate desactiva los mensajes del navegador para usar los propios. */}
       {cargando ? (
@@ -119,17 +122,6 @@ function LoginPaciente() {
         </p>
       ) : perfil?.debe_cambiar_password ? (
         <PrimerIngreso nombre={perfil.nombre} onCompletado={refrescar} onCancelar={handleLogout} />
-      ) : perfil ? (
-        <LoginSuccess
-          heading={`Bienvenido/a, ${perfil.nombre} ${perfil.apellido}`}
-          fecha={fecha}
-          onLogout={handleLogout}
-          logoutLabel="Cerrar sesión"
-          variant="primary"
-        >
-          {/* Perfil traído de la API con Axios (ver PerfilUsuario.jsx) */}
-          <PerfilUsuario userId={perfil.id} />
-        </LoginSuccess>
       ) : (
         <form onSubmit={handleSubmit} noValidate className="lims-login-form">
           <div>

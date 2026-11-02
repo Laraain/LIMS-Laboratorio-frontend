@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { MagnifyingGlass, PencilSimple, Plus } from '@phosphor-icons/react';
+import { GenderIntersex, MagnifyingGlass, PencilSimple, Plus } from '@phosphor-icons/react';
 import Swal from 'sweetalert2';
 import { API_URL, encabezados } from '../lib/api.js';
 import { formatearNumero, textoReferencia } from '../lib/analisis.js';
 import ModalAnalisis from './ModalAnalisis.jsx';
+import ModalRangos from './ModalRangos.jsx';
 import './ListaPerfiles.css';
 import './ListaAnalisis.css';
 
@@ -32,6 +33,8 @@ function ListaAnalisis({ puedeEditar }) {
   // editando: el análisis abierto en la ventana · creando: true mientras está abierta la ventana de análisis nuevo
   const [editando, setEditando] = useState(null);
   const [creando, setCreando] = useState(false);
+  // conRangos: el estudio cuyos rangos por sexo y edad están abiertos en la ventana
+  const [conRangos, setConRangos] = useState(null);
 
   useEffect(() => {
     let vigente = true;
@@ -49,7 +52,9 @@ function ListaAnalisis({ puedeEditar }) {
             params: {
               select:
                 'id,codigo,nombre,tipo_muestra_id,unidad,valor_ref_min,valor_ref_max,valor_ref_texto,dias_demora,activo,' +
-                'padre_id,absoluto_min,absoluto_max,absoluto_unidad,ub,codigo_nbu,tipos_muestra(nombre,tubo)',
+                'padre_id,absoluto_min,absoluto_max,absoluto_unidad,ub,codigo_nbu,tipos_muestra(nombre,tubo),' +
+                // Solo los ids de sus rangos por sexo y edad, para contarlos
+                'analisis_rangos(id)',
               order: 'nombre.asc',
             },
           }),
@@ -140,6 +145,11 @@ function ListaAnalisis({ puedeEditar }) {
     .filter((item) => !item.padre_id || !enLista.has(item.padre_id))
     .flatMap((item) => [item, ...(componentesDe[item.id] ?? []).sort((a, b) => a.id - b.id)]);
   const tieneComponentes = new Set(analisis.filter((item) => item.padre_id).map((item) => item.padre_id));
+  // Los rangos por sexo y edad son para estudios numéricos (con mínimo o máximo, o con rangos ya cargados).
+  // No van en los que se informan con sus componentes ni en los de texto (ej: "Negativo").
+  const admiteRangos = (item) =>
+    !tieneComponentes.has(item.id) &&
+    (item.valor_ref_min !== null || item.valor_ref_max !== null || item.analisis_rangos.length > 0);
 
   // Botones del filtro: "Todos" más un botón por cada tipo de muestra que tenga al menos un análisis
   const opcionesFiltro = [
@@ -236,11 +246,9 @@ function ListaAnalisis({ puedeEditar }) {
                 <th scope="col">Demora</th>
                 <th scope="col">Arancel</th>
                 <th scope="col">Estado</th>
-                {puedeEditar && (
-                  <th scope="col">
-                    <span className="visually-hidden">Acciones</span>
-                  </th>
-                )}
+                <th scope="col">
+                  <span className="visually-hidden">Acciones</span>
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -270,6 +278,13 @@ function ListaAnalisis({ puedeEditar }) {
                     ) : (
                       <span>
                         <span className="d-block">{textoReferencia(item)}</span>
+                        {item.analisis_rangos.length > 0 && (
+                          <span className="lims-celda-identidad">
+                            {item.analisis_rangos.length === 1
+                              ? '1 rango por sexo y edad'
+                              : `${item.analisis_rangos.length} rangos por sexo y edad`}
+                          </span>
+                        )}
                         {/* Los componentes en % muestran también el rango del valor absoluto */}
                         {(item.absoluto_min !== null || item.absoluto_max !== null) && (
                           <span className="lims-celda-identidad">
@@ -306,19 +321,33 @@ function ListaAnalisis({ puedeEditar }) {
                       {item.activo ? 'Activo' : 'Dado de baja'}
                     </span>
                   </td>
-                  {puedeEditar && (
-                    <td className="text-end lims-celda-acciones">
-                      <button
-                        type="button"
-                        className="btn lims-btn-pill lims-btn-secundario lims-btn-chico"
-                        aria-label={`Editar ${item.nombre}`}
-                        onClick={() => setEditando(item)}
-                      >
-                        <PencilSimple className="lims-icono me-1" aria-hidden="true" />
-                        Editar
-                      </button>
-                    </td>
-                  )}
+                  <td className="text-end lims-celda-acciones">
+                    <div className="d-inline-flex flex-wrap justify-content-end gap-2">
+                      {/* Todo el personal ve los rangos; solo el administrador los cambia */}
+                      {admiteRangos(item) && (
+                        <button
+                          type="button"
+                          className="btn lims-btn-pill lims-btn-secundario lims-btn-chico"
+                          aria-label={`Rangos por sexo y edad de ${item.nombre}`}
+                          onClick={() => setConRangos(item)}
+                        >
+                          <GenderIntersex className="lims-icono me-1" aria-hidden="true" />
+                          Rangos
+                        </button>
+                      )}
+                      {puedeEditar && (
+                        <button
+                          type="button"
+                          className="btn lims-btn-pill lims-btn-secundario lims-btn-chico"
+                          aria-label={`Editar ${item.nombre}`}
+                          onClick={() => setEditando(item)}
+                        >
+                          <PencilSimple className="lims-icono me-1" aria-hidden="true" />
+                          Editar
+                        </button>
+                      )}
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -340,6 +369,18 @@ function ListaAnalisis({ puedeEditar }) {
             setCreando(false);
             setEditando(null);
             recargar();
+          }}
+        />
+      )}
+
+      {conRangos && (
+        <ModalRangos
+          key={conRangos.id}
+          analisis={conRangos}
+          puedeEditar={puedeEditar}
+          onCerrar={(huboCambios) => {
+            setConRangos(null);
+            if (huboCambios) recargar();
           }}
         />
       )}
