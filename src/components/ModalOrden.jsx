@@ -362,7 +362,8 @@ function ModalOrden({ orden, sucursal, pacienteInicial = null, onCerrar, onGuard
                     onClick={() => {
                       setPaciente(null);
                       setTurno(null);
-                      setObraSocial('');
+                      // Sin pedido médico sigue siendo particular: el select está deshabilitado y no se podría elegir
+                      setObraSocial(sinPedido ? PARTICULAR : '');
                     }}
                   >
                     Cambiar
