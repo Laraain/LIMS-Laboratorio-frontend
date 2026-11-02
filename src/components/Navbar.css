@@ -108,9 +108,9 @@
 /* Sucursal en la que trabaja: un botón con borde que la cambia */
 .lims-navbar-sucursal {
   display: inline-flex;
+  flex-shrink: 0;
   align-items: center;
   gap: 6px;
-  min-width: 0;
   padding: 4px 12px;
   border: 1px solid var(--lims-border);
   border-radius: 999px;
@@ -185,8 +185,9 @@
   }
 }
 
-/* Celular: el nombre pasa al menú lateral y el botón queda solo con el ícono */
-@media (max-width: 575.98px) {
+/* Celular y tablet angosta: el nombre pasa al menú lateral y el botón queda solo con el ícono.
+   Hasta 767px no entra todo: el nombre se apretaba contra la sucursal y se encimaban (LIMS-31) */
+@media (max-width: 767.98px) {
   .lims-navbar-usuario {
     display: none;
   }
@@ -238,8 +239,8 @@
   }
 }
 
-/* Celular: sin el enlace "Inicio" (está en el menú lateral) entran la sucursal, la hora y salir */
-@media (max-width: 575.98px) {
+/* Hasta tablet: sin el enlace "Inicio" (está en el menú lateral) entran la sucursal, el nombre, la hora y salir */
+@media (max-width: 991.98px) {
   .lims-navbar-inicio .lims-nav-link {
     display: none;
   }
