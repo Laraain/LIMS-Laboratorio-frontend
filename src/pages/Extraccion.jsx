@@ -3,6 +3,7 @@ import { Navigate, useOutletContext } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import { CheckCircle, Megaphone, SignOut } from '@phosphor-icons/react';
 import FilaDelDia from '../components/FilaDelDia.jsx';
+import MuestrasDelPaciente from '../components/MuestrasDelPaciente.jsx';
 import { ROLES_EXTRACCION } from '../data/roles.js';
 import { mensajeDeErrorApi } from '../lib/api.js';
 import { TIPOS_EXTRACCION, finalizarAtencion, llamarSiguiente, useFilaDelDia } from '../lib/fila.js';
@@ -100,6 +101,19 @@ function Extraccion() {
       });
       if (!isConfirmed) return;
     }
+    // Sin número de muestra no quedó registrado qué tubos se sacaron
+    if (estado === 'atendido' && !actual.numero_muestra) {
+      const { isConfirmed } = await Swal.fire({
+        icon: 'warning',
+        title: 'Todavía no rotuló las muestras',
+        text: '¿Marcar al paciente como atendido igual?',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, atendido',
+        cancelButtonText: 'Volver',
+        confirmButtonColor: '#1c4e80',
+      });
+      if (!isConfirmed) return;
+    }
     setTrabajando(true);
     try {
       await finalizarAtencion(actual.id, estado);
@@ -161,6 +175,8 @@ function Extraccion() {
                   DNI {actual.pacientes.dni} · {edadDesde(actual.pacientes.fecha_nacimiento)} años ·{' '}
                   {TIPOS_EXTRACCION[actual.tipo]} · llamado {horaDe(actual.llamado_at)}
                 </p>
+                {/* key: al llamar a otro paciente se vuelven a pedir sus tubos desde cero */}
+                <MuestrasDelPaciente key={actual.id} turno={actual} onRotulado={recargar} />
                 <div className="d-flex flex-wrap gap-2">
                   <button
                     type="button"
