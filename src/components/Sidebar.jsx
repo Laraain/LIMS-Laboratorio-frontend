@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom';
-import { Buildings, ClipboardText, CurrencyDollar, FileText, FirstAidKit, Flask, House, IdentificationCard, Syringe, TestTube, UserCircle, UsersThree, X } from '@phosphor-icons/react';
-import ROLES, { ROLES_BANDEJA, ROLES_EXTRACCION, ROLES_ORDENES, ROLES_PACIENTES, ROLES_RECEPCION, ROLES_RESULTADOS } from '../data/roles.js';
+import { Buildings, CashRegister, ClipboardText, CurrencyDollar, FileText, FirstAidKit, Flask, House, IdentificationCard, Syringe, TestTube, UserCircle, UsersThree, X } from '@phosphor-icons/react';
+import ROLES, { ROLES_BANDEJA, ROLES_CAJA, ROLES_EXTRACCION, ROLES_ORDENES, ROLES_PACIENTES, ROLES_RECEPCION, ROLES_RESULTADOS } from '../data/roles.js';
 import './Sidebar.css';
 
 // Opciones del menú lateral. roles: quiénes la ven (si no se indica, la ven todos los roles del personal).
@@ -11,6 +11,7 @@ const OPCIONES = [
   { ruta: '/panel/perfil', texto: 'Mi perfil', icono: UserCircle },
   { ruta: '/panel/recepcion', texto: 'Recepción', icono: ClipboardText, roles: ROLES_RECEPCION },
   { ruta: '/panel/ordenes', texto: 'Órdenes', icono: FileText, roles: ROLES_ORDENES },
+  { ruta: '/panel/caja', texto: 'Caja', icono: CashRegister, roles: ROLES_CAJA },
   { ruta: '/panel/resultados', texto: 'Resultados', icono: TestTube, roles: ROLES_RESULTADOS },
   { ruta: '/panel/pacientes', texto: 'Pacientes', icono: IdentificationCard, roles: ROLES_PACIENTES },
   { ruta: '/panel/extraccion', texto: 'Extracción', icono: Syringe, roles: ROLES_EXTRACCION },

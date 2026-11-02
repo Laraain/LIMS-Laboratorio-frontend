@@ -19,6 +19,7 @@ import Extraccion from './pages/Extraccion.jsx';
 import Sucursales from './pages/Sucursales.jsx';
 import ObrasSociales from './pages/ObrasSociales.jsx';
 import Aranceles from './pages/Aranceles.jsx';
+import Caja from './pages/Caja.jsx';
 import PortalPaciente from './pages/PortalPaciente.jsx';
 import { ROLES_BANDEJA } from './data/roles.js';
 
@@ -96,6 +97,7 @@ function App() {
           <Route path="recepcion" element={<Recepcion />} />
           {/* Órdenes médicas: recepción y el admin; la propia página redirige si el rol no corresponde */}
           <Route path="ordenes" element={<Ordenes />} />
+          <Route path="caja" element={<Caja />} />
           {/* Carga de resultados: recepción, bioquímico y admin; la propia página redirige si el rol no corresponde */}
           <Route path="resultados" element={<Resultados />} />
           {/* Gestión de pacientes: la ven recepción y el admin; la propia página redirige si el rol no corresponde */}
