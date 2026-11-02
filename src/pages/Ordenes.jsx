@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { Navigate, useLocation, useNavigate, useOutletContext } from 'react-router-dom';
 import Swal from 'sweetalert2';
-import { MagnifyingGlass, PencilSimple, Plus, Prohibit } from '@phosphor-icons/react';
+import { MagnifyingGlass, Money, PencilSimple, Plus, Prohibit } from '@phosphor-icons/react';
+import ModalCobro from '../components/ModalCobro.jsx';
 import ModalOrden from '../components/ModalOrden.jsx';
 import { ROLES_ORDENES } from '../data/roles.js';
 import useMetadatos from '../hooks/useMetadatos.js';
 import { mensajeDeErrorApi } from '../lib/api.js';
 import { formatearPesos, totalesDeOrden } from '../lib/aranceles.js';
+import { cuentaDeOrden } from '../lib/cobros.js';
 import { hoyTucuman } from '../lib/hora.js';
 import { ESTADOS_ORDEN, anularOrden, useOrdenes } from '../lib/ordenes.js';
 import '../components/ListaPerfiles.css';
@@ -43,6 +45,8 @@ function Ordenes() {
   // creando: paciente con el que se abre la carga (undefined = cerrada, null = sin paciente elegido)
   const [creando, setCreando] = useState(location.state?.paciente);
   const [editando, setEditando] = useState(null);
+  // cobrando: id de la orden cuya ventana de cobro está abierta (se busca en la lista para tener sus datos al día)
+  const [cobrando, setCobrando] = useState(null);
   const { ordenes, cargando, error, recargar } = useOrdenes(sucursal.id, fecha);
 
   if (!ROLES_ORDENES.includes(perfil.rol)) return <Navigate to="/panel" replace />;
@@ -212,6 +216,7 @@ function Ordenes() {
                   const pedidos = orden.orden_analisis.filter((estudio) => !estudio.padre_id);
                   const particulares = pedidos.filter((estudio) => !estudio.cubierto).length;
                   const importes = totalesDeOrden(orden);
+                  const cuenta = cuentaDeOrden(orden);
                   return (
                     <tr key={orden.id}>
                       <td className="lims-celda-nombre">
@@ -259,6 +264,16 @@ function Ordenes() {
                             {importes.sinArancel} sin arancel
                           </span>
                         )}
+                        {/* Estado del pago (LIMS-19): sale de sumar los cobros, no es un estado de la orden */}
+                        {orden.estado !== 'anulada' && cuenta.total > 0 && (
+                          <span className={`lims-celda-identidad fw-semibold ${cuenta.pagada ? 'text-success' : 'text-danger'}`}>
+                            {cuenta.pagada
+                              ? 'Pagada'
+                              : cuenta.cobrado > 0
+                                ? `Falta ${formatearPesos(cuenta.saldo)}`
+                                : 'Pendiente de pago'}
+                          </span>
+                        )}
                       </td>
                       <td data-label="Estado">
                         <span className={`lims-cuenta${orden.estado === 'anulada' ? ' lims-cuenta--inactiva' : ''}`}>
@@ -271,28 +286,42 @@ function Ordenes() {
                         )}
                       </td>
                       <td className="text-end lims-celda-acciones">
-                        {orden.estado === 'abierta' && (
-                          <div className="d-inline-flex flex-wrap justify-content-end gap-2">
+                        <div className="d-inline-flex flex-wrap justify-content-end gap-2">
+                          {/* Se cobra en cualquier estado menos anulada. Si ya tiene cobros, se ven aunque esté paga o anulada */}
+                          {(orden.cobros?.length > 0 || (orden.estado !== 'anulada' && cuenta.total > 0)) && (
                             <button
                               type="button"
-                              className="btn lims-btn-pill lims-btn-secundario lims-btn-chico"
-                              aria-label={`Editar la orden ${orden.nro_orden}`}
-                              onClick={() => setEditando(orden)}
+                              className={`btn lims-btn-pill lims-btn-chico ${orden.estado !== 'anulada' && cuenta.saldo > 0 ? 'lims-btn-primario' : 'lims-btn-secundario'}`}
+                              aria-label={`Cobros de la orden ${orden.nro_orden}`}
+                              onClick={() => setCobrando(orden.id)}
                             >
-                              <PencilSimple className="lims-icono me-1" aria-hidden="true" />
-                              Editar
+                              <Money className="lims-icono me-1" aria-hidden="true" />
+                              {orden.estado !== 'anulada' && cuenta.saldo > 0 ? 'Cobrar' : 'Cobros'}
                             </button>
-                            <button
-                              type="button"
-                              className="btn lims-btn-pill lims-btn-secundario lims-btn-chico"
-                              aria-label={`Anular la orden ${orden.nro_orden}`}
-                              onClick={() => anular(orden)}
-                            >
-                              <Prohibit className="lims-icono me-1" aria-hidden="true" />
-                              Anular
-                            </button>
-                          </div>
-                        )}
+                          )}
+                          {orden.estado === 'abierta' && (
+                            <>
+                              <button
+                                type="button"
+                                className="btn lims-btn-pill lims-btn-secundario lims-btn-chico"
+                                aria-label={`Editar la orden ${orden.nro_orden}`}
+                                onClick={() => setEditando(orden)}
+                              >
+                                <PencilSimple className="lims-icono me-1" aria-hidden="true" />
+                                Editar
+                              </button>
+                              <button
+                                type="button"
+                                className="btn lims-btn-pill lims-btn-secundario lims-btn-chico"
+                                aria-label={`Anular la orden ${orden.nro_orden}`}
+                                onClick={() => anular(orden)}
+                              >
+                                <Prohibit className="lims-icono me-1" aria-hidden="true" />
+                                Anular
+                              </button>
+                            </>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );
@@ -302,6 +331,18 @@ function Ordenes() {
           </div>
         )}
       </section>
+
+      {cobrando && ordenes.some((orden) => orden.id === cobrando) && (
+        <ModalCobro
+          key={cobrando}
+          orden={ordenes.find((orden) => orden.id === cobrando)}
+          onCerrar={() => setCobrando(null)}
+          onGuardado={() => {
+            setCobrando(null);
+            recargar();
+          }}
+        />
+      )}
 
       {/* La ventana solo existe mientras está abierta. key: cada orden arma su propio formulario */}
       {(creando !== undefined || editando) && (
