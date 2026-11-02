@@ -127,9 +127,12 @@ function PortalPaciente() {
                   <span className="lims-portal-codigo">{orden.nro_orden}</span>
                   <h2 className="lims-portal-estudio-titulo">Orden del {fechaDeLaOrden(orden.fecha_orden)}</h2>
                   <p className="lims-portal-estudio-medico">
+                    {/* medico_id vacío: vino por su cuenta (LIMS-33). Con médico pero sin datos: no se pudo leer */}
                     {orden.medicos
                       ? `Solicitada por ${orden.medicos.apellido}, ${orden.medicos.nombre}`
-                      : 'Médico no informado'}
+                      : orden.medico_id
+                        ? 'Médico no informado'
+                        : 'Sin pedido médico'}
                   </p>
                   <span
                     className={`lims-portal-estado ${

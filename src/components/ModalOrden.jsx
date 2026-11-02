@@ -49,7 +49,9 @@ function ModalOrden({ orden, sucursal, pacienteInicial = null, onCerrar, onGuard
   const [registrarHoy, setRegistrarHoy] = useState(true);
   const [tipoLlegada, setTipoLlegada] = useState('ambulatoria');
 
-  const [medico, setMedico] = useState(esNueva ? null : { id: orden.medico_id, ...orden.medicos });
+  // sinPedido: el paciente viene por su cuenta, sin pedido médico (LIMS-33). La orden queda particular.
+  const [sinPedido, setSinPedido] = useState(esNueva ? false : !orden.medico_id);
+  const [medico, setMedico] = useState(esNueva || !orden.medico_id ? null : { id: orden.medico_id, ...orden.medicos });
   const [busquedaMedico, setBusquedaMedico] = useState('');
   const [medicosEncontrados, setMedicosEncontrados] = useState([]);
   // nuevoMedico: datos del médico que se da de alta en el momento (null = no se está cargando uno)
@@ -148,7 +150,8 @@ function ModalOrden({ orden, sucursal, pacienteInicial = null, onCerrar, onGuard
         return;
       }
       setPaciente(encontrado);
-      setObraSocial(valorObraSocial(encontrado.obra_social_id));
+      // Sin pedido médico la orden sigue siendo particular, aunque el paciente tenga obra social
+      if (!sinPedido) setObraSocial(valorObraSocial(encontrado.obra_social_id));
       limpiarError('paciente');
     } catch (errorPeticion) {
       setErrores((previos) => ({ ...previos, paciente: mensajeDeErrorApi(errorPeticion) }));
@@ -183,6 +186,15 @@ function ModalOrden({ orden, sucursal, pacienteInicial = null, onCerrar, onGuard
     } finally {
       setGuardandoMedico(false);
     }
+  }
+
+  // Sin pedido médico: no se elige médico y la obra social queda fija en Particular.
+  // Al desmarcarlo se vuelve a proponer la obra social del paciente.
+  function cambiarSinPedido(marcado) {
+    setSinPedido(marcado);
+    setObraSocial(marcado ? PARTICULAR : paciente ? valorObraSocial(paciente.obra_social_id) : '');
+    limpiarError('medico');
+    limpiarError('obraSocial');
   }
 
   function agregarEstudio(analisis) {
@@ -226,7 +238,7 @@ function ModalOrden({ orden, sucursal, pacienteInicial = null, onCerrar, onGuard
     evento.preventDefault();
     const nuevosErrores = {
       paciente: !paciente ? 'Busque al paciente por su DNI.' : undefined,
-      medico: !medico ? 'Elija el médico que firmó la orden, o dele el alta.' : undefined,
+      medico: !sinPedido && !medico ? 'Elija el médico que firmó la orden, o dele el alta. Si no trae pedido, marque "Sin pedido médico".' : undefined,
       fechaOrden: fechaOrden === '' || fechaOrden > hoyTucuman() ? 'Ingrese la fecha de la orden (no puede ser futura).' : undefined,
       obraSocial: obraSocial === '' ? 'Elija la obra social, o "Particular".' : undefined,
       estudios: estudios.length === 0 ? 'Agregue al menos un estudio.' : undefined,
@@ -241,6 +253,7 @@ function ModalOrden({ orden, sucursal, pacienteInicial = null, onCerrar, onGuard
       title: esNueva ? '¿Guardar la orden?' : '¿Guardar los cambios?',
       html:
         `<p class="mb-1">${escapar(paciente.apellido)}, ${escapar(paciente.nombre)}</p>` +
+        (sinPedido ? '<p class="mb-1">Sin pedido médico: todo a valor particular</p>' : '') +
         `<p class="mb-1">${estudios.length} ${estudios.length === 1 ? 'estudio' : 'estudios'}` +
         (sinCobertura > 0 ? ` · ${sinCobertura} particular${sinCobertura === 1 ? '' : 'es'}` : '') +
         '</p>',
@@ -252,7 +265,8 @@ function ModalOrden({ orden, sucursal, pacienteInicial = null, onCerrar, onGuard
     if (!isConfirmed) return;
 
     const datos = {
-      medicoId: medico.id,
+      // Sin pedido médico se envía vacío: la base solo lo acepta si la orden es particular
+      medicoId: sinPedido ? null : medico.id,
       estudios: estudios.map(({ analisis_id: analisisId, cubierto, grupo_id: grupoId }) => ({
         analisis_id: analisisId,
         cubierto,
@@ -431,9 +445,24 @@ function ModalOrden({ orden, sucursal, pacienteInicial = null, onCerrar, onGuard
           {/* Médico */}
           <fieldset className="lims-orden-bloque">
             <legend className="lims-orden-subtitulo">
-              Médico <span className="text-danger">*</span>
+              Médico {!sinPedido && <span className="text-danger">*</span>}
             </legend>
-            {medico ? (
+            <div className="form-check form-switch mb-2">
+              <input
+                type="checkbox"
+                role="switch"
+                id="orden-sin-pedido"
+                className="form-check-input"
+                checked={sinPedido}
+                onChange={(evento) => cambiarSinPedido(evento.target.checked)}
+              />
+              <label htmlFor="orden-sin-pedido" className="form-check-label">
+                Sin pedido médico (viene por su cuenta)
+              </label>
+            </div>
+            {sinPedido ? (
+              <p className="form-text mt-0 mb-0">No se carga médico. La orden es particular: todos los estudios se cobran a valor particular.</p>
+            ) : medico ? (
               <div className="lims-orden-elegido">
                 <div>
                   <p className="lims-celda-nombre-texto mb-0">
@@ -598,7 +627,7 @@ function ModalOrden({ orden, sucursal, pacienteInicial = null, onCerrar, onGuard
               {errores.fechaOrden ? (
                 <div className="invalid-feedback">{errores.fechaOrden}</div>
               ) : (
-                <div className="form-text">La que firmó el médico.</div>
+                <div className="form-text">{sinPedido ? 'El día en que se pidieron los estudios.' : 'La que firmó el médico.'}</div>
               )}
             </div>
             <div className="col-sm-6">
@@ -609,7 +638,7 @@ function ModalOrden({ orden, sucursal, pacienteInicial = null, onCerrar, onGuard
                 id="orden-obra-social"
                 className={`form-select ${errores.obraSocial ? 'is-invalid' : ''}`}
                 value={obraSocial}
-                disabled={cargandoObras}
+                disabled={cargandoObras || sinPedido}
                 onChange={(evento) => {
                   setObraSocial(evento.target.value);
                   limpiarError('obraSocial');
@@ -627,7 +656,11 @@ function ModalOrden({ orden, sucursal, pacienteInicial = null, onCerrar, onGuard
               {errores.obraSocial ? (
                 <div className="invalid-feedback">{errores.obraSocial}</div>
               ) : (
-                <div className="form-text">Se propone la del paciente; se puede cambiar solo para esta orden.</div>
+                <div className="form-text">
+                  {sinPedido
+                    ? 'Sin pedido médico la orden es particular.'
+                    : 'Se propone la del paciente; se puede cambiar solo para esta orden.'}
+                </div>
               )}
             </div>
           </div>
