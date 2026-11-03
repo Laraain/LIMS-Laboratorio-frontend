@@ -20,6 +20,7 @@ const CAMPOS_ORDEN =
   'id,nro_orden,estado,fecha_orden,fecha_recepcion,observaciones,motivo_anulacion,turno_id,obra_social_id,' +
   'paciente_id,medico_id,pacientes(dni,nombre,apellido,obra_social_id,nro_afiliado),' +
   'medicos(nombre,apellido,matricula),obras_sociales(nombre),' +
+  'orden_adjuntos(id,path,nombre,tipo,tamano,subido_en),' +
   'orden_analisis(id,analisis_id,padre_id,cubierto,grupo_id,importe_paciente,importe_obra_social,' +
   'analisis(codigo,nombre),grupos_analisis(nombre),resultados(estado,fuera_de_rango)),' +
   'cobros(id,monto,medio_pago,observaciones,cobrado_en,motivo_anulacion,anulado_en,' +
