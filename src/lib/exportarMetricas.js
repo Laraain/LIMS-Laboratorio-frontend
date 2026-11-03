@@ -87,16 +87,29 @@ function armarHojas(datos, anterior, detalle, filtros) {
   const retirados = (d) => fraccion(d?.fila?.retirados, d?.fila?.llegadas);
 
   const hojas = [
+    // Los datos del informe van en su propia hoja: así todas las demás arrancan con los títulos en la
+    // fila 1, que es lo que esperan Power BI y las tablas dinámicas de Excel
     {
-      nombre: 'Resumen',
-      encabezado: [
-        ['Informe del laboratorio'],
-        ['Período', `${formatoFecha(filtros.desde)} al ${formatoFecha(filtros.hasta)}`],
+      nombre: 'Información',
+      tabla: 'Informacion',
+      columnas: [
+        { titulo: 'Dato', tipo: 'texto', ancho: 20 },
+        { titulo: 'Valor', tipo: 'texto', ancho: 34 },
+      ],
+      filas: [
+        ['Informe', 'Métricas del laboratorio'],
+        ['Desde', { valor: filtros.desde, tipo: 'fecha' }],
+        ['Hasta', { valor: filtros.hasta, tipo: 'fecha' }],
         ['Sucursal', filtros.sucursal],
-        ['Período anterior', `${formatoFecha(filtros.anteriorDesde)} al ${formatoFecha(filtros.anteriorHasta)}`],
+        ['Período anterior desde', { valor: filtros.anteriorDesde, tipo: 'fecha' }],
+        ['Período anterior hasta', { valor: filtros.anteriorHasta, tipo: 'fecha' }],
         // Hora de Tucumán en 24 h (toLocaleString en es-AR usa 12 h sin "p. m." y confunde)
         ['Generado', `${fechaDe(new Date())} ${horaDe(new Date())} h`],
       ],
+    },
+    {
+      nombre: 'Resumen',
+      tabla: 'Resumen',
       columnas: [
         { titulo: 'Indicador', tipo: 'texto', ancho: 34 },
         { titulo: 'Este período', tipo: 'numero', ancho: 18 },
@@ -127,6 +140,7 @@ function armarHojas(datos, anterior, detalle, filtros) {
     },
     {
       nombre: 'Por día',
+      tabla: 'PorDia',
       columnas: [
         { titulo: 'Día', tipo: 'fecha', ancho: 12 },
         { titulo: 'Órdenes', tipo: 'numero', ancho: 10 },
@@ -137,6 +151,7 @@ function armarHojas(datos, anterior, detalle, filtros) {
     },
     {
       nombre: 'Órdenes por estado',
+      tabla: 'OrdenesPorEstado',
       columnas: [
         { titulo: 'Estado', tipo: 'texto', ancho: 16 },
         { titulo: 'Órdenes', tipo: 'numero', ancho: 10 },
@@ -145,6 +160,7 @@ function armarHojas(datos, anterior, detalle, filtros) {
     },
     {
       nombre: 'Medios de pago',
+      tabla: 'MediosDePago',
       columnas: [
         { titulo: 'Medio de pago', tipo: 'texto', ancho: 16 },
         { titulo: 'Cobros', tipo: 'numero', ancho: 10 },
@@ -160,6 +176,7 @@ function armarHojas(datos, anterior, detalle, filtros) {
     },
     {
       nombre: 'Obras sociales',
+      tabla: 'ObrasSociales',
       columnas: [
         { titulo: 'Obra social', tipo: 'texto', ancho: 24 },
         { titulo: 'Órdenes', tipo: 'numero', ancho: 10 },
@@ -175,6 +192,7 @@ function armarHojas(datos, anterior, detalle, filtros) {
     },
     {
       nombre: 'Tubos rechazados',
+      tabla: 'TubosRechazados',
       columnas: [
         { titulo: 'Motivo', tipo: 'texto', ancho: 44 },
         { titulo: 'Tubos', tipo: 'numero', ancho: 10 },
@@ -183,6 +201,7 @@ function armarHojas(datos, anterior, detalle, filtros) {
     },
     {
       nombre: 'Horas pico',
+      tabla: 'HorasPico',
       columnas: [
         { titulo: 'Día de la semana', tipo: 'texto', ancho: 18 },
         { titulo: 'Hora', tipo: 'texto', ancho: 12 },
@@ -196,6 +215,7 @@ function armarHojas(datos, anterior, detalle, filtros) {
     },
     {
       nombre: 'Cajas con diferencia',
+      tabla: 'CajasConDiferencia',
       columnas: [
         { titulo: 'Fecha', tipo: 'fecha', ancho: 12 },
         { titulo: 'Sucursal', tipo: 'texto', ancho: 18 },
@@ -206,6 +226,7 @@ function armarHojas(datos, anterior, detalle, filtros) {
     },
     {
       nombre: 'Por sucursal',
+      tabla: 'PorSucursal',
       columnas: [
         { titulo: 'Sucursal', tipo: 'texto', ancho: 18 },
         { titulo: 'Órdenes', tipo: 'numero', ancho: 10 },
@@ -229,6 +250,7 @@ function armarHojas(datos, anterior, detalle, filtros) {
     },
     {
       nombre: 'Estudios más pedidos',
+      tabla: 'EstudiosMasPedidos',
       columnas: [
         { titulo: 'Código', tipo: 'texto', ancho: 10 },
         { titulo: 'Estudio', tipo: 'texto', ancho: 30 },
@@ -238,6 +260,7 @@ function armarHojas(datos, anterior, detalle, filtros) {
     },
     {
       nombre: 'Médicos que más derivan',
+      tabla: 'MedicosQueMasDerivan',
       columnas: [
         { titulo: 'Médico', tipo: 'texto', ancho: 28 },
         { titulo: 'Matrícula', tipo: 'texto', ancho: 12 },
@@ -248,6 +271,7 @@ function armarHojas(datos, anterior, detalle, filtros) {
     },
     {
       nombre: 'Detalle de órdenes',
+      tabla: 'DetalleOrdenes',
       columnas: [
         { titulo: 'Orden', tipo: 'texto', ancho: 16 },
         { titulo: 'Recibida', tipo: 'fecha', ancho: 12 },
@@ -303,8 +327,6 @@ function generarCsv(hojas) {
   const lineas = [];
   for (const hoja of hojas) {
     lineas.push(textoCsv(hoja.nombre.toUpperCase(), 'texto'));
-    for (const fila of hoja.encabezado ?? []) lineas.push(fila.map((valor) => textoCsv(valor, 'texto')).join(';'));
-    if (hoja.encabezado) lineas.push('');
     // En el CSV los porcentajes van como número (12,8) y el título de la columna dice "%"
     lineas.push(hoja.columnas.map((columna) => textoCsv(columna.tipo === 'porcentaje' ? `${columna.titulo} (%)` : columna.titulo, 'texto')).join(';'));
     if (hoja.filas.length === 0) lineas.push('Sin datos en este período');
@@ -326,6 +348,8 @@ function generarCsv(hojas) {
 
 // ── Excel ─────────────────────────────────────
 // ExcelJS es pesada: se descarga recién cuando alguien exporta, no al abrir el panel.
+// Cada hoja es una "Tabla de Excel" con nombre (ej: DetalleOrdenes) que empieza en A1: así Power BI y las
+// tablas dinámicas la reconocen sola, con los tipos de cada columna.
 
 const FORMATOS_EXCEL = {
   numero: '#,##0',
@@ -353,44 +377,39 @@ async function generarXlsx(hojas) {
 
   for (const hoja of hojas) {
     const ws = libro.addWorksheet(hoja.nombre.slice(0, 31));
-    let filaActual = 1;
-    for (const [indice, fila] of (hoja.encabezado ?? []).entries()) {
-      const r = ws.getRow(filaActual);
-      fila.forEach((valor, columna) => {
-        r.getCell(columna + 1).value = valor;
-      });
-      r.getCell(1).font = { bold: true, size: indice === 0 ? 14 : 11 };
-      filaActual += 1;
-    }
-    if (hoja.encabezado) filaActual += 1;
-
-    const titulos = ws.getRow(filaActual);
     hoja.columnas.forEach((columna, indice) => {
-      const c = titulos.getCell(indice + 1);
-      c.value = columna.titulo;
-      c.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-      c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1C4E80' } };
-      c.alignment = { vertical: 'middle', wrapText: true };
       ws.getColumn(indice + 1).width = columna.ancho;
     });
     // Los títulos quedan fijos al bajar
-    ws.views = [{ state: 'frozen', ySplit: filaActual }];
-    filaActual += 1;
+    ws.views = [{ state: 'frozen', ySplit: 1 }];
 
+    // Sin filas no se arma la tabla (Excel la marca como dañada): quedan solo los títulos, sin textos de
+    // aviso que le cambien el tipo a las columnas
     if (hoja.filas.length === 0) {
-      ws.getRow(filaActual).getCell(1).value = 'Sin datos en este período';
-      ws.getRow(filaActual).getCell(1).font = { italic: true, color: { argb: 'FF6B7280' } };
-    }
-    for (const fila of hoja.filas) {
-      const r = ws.getRow(filaActual);
-      fila.forEach((valor, indice) => {
-        const { valor: v, tipo } = celda(valor, hoja.columnas[indice]);
-        const c = r.getCell(indice + 1);
-        c.value = valorExcel(v, tipo);
-        if (FORMATOS_EXCEL[tipo]) c.numFmt = FORMATOS_EXCEL[tipo];
+      hoja.columnas.forEach((columna, indice) => {
+        const c = ws.getCell(1, indice + 1);
+        c.value = columna.titulo;
+        c.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+        c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1C4E80' } };
       });
-      filaActual += 1;
+      continue;
     }
+
+    const celdas = hoja.filas.map((fila) => fila.map((valor, indice) => celda(valor, hoja.columnas[indice])));
+    ws.addTable({
+      name: hoja.tabla,
+      ref: 'A1',
+      headerRow: true,
+      style: { theme: 'TableStyleMedium2', showRowStripes: true },
+      columns: hoja.columnas.map((columna) => ({ name: columna.titulo, filterButton: true })),
+      rows: celdas.map((fila) => fila.map(({ valor, tipo }) => valorExcel(valor, tipo))),
+    });
+    // El formato va celda por celda: en el resumen cada fila es de un tipo distinto (pesos, cantidad, %)
+    celdas.forEach((fila, numeroFila) => {
+      fila.forEach(({ tipo }, indice) => {
+        if (FORMATOS_EXCEL[tipo]) ws.getCell(numeroFila + 2, indice + 1).numFmt = FORMATOS_EXCEL[tipo];
+      });
+    });
   }
 
   const buffer = await libro.xlsx.writeBuffer();
