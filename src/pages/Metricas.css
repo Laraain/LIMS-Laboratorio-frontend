@@ -1,0 +1,591 @@
+/* Filtros: sucursal, período y atajos, en una sola fila alineada por abajo.
+   Las fechas toman el espacio que sobra; los atajos nunca quedan colgados a la derecha. */
+.lims-filtros {
+  display: grid;
+  grid-template-columns: minmax(180px, 260px) minmax(300px, 1fr) auto;
+  align-items: end;
+  gap: 12px 16px;
+  margin-bottom: 16px;
+  padding: 16px;
+  border: 1px solid var(--lims-border-soft);
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.lims-filtros-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.lims-filtros-campo label,
+.lims-filtros-campo legend {
+  float: none;
+  width: auto;
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--lims-ink);
+}
+
+.lims-filtros-periodo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lims-filtros-periodo .form-control {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.lims-filtros-periodo span {
+  color: var(--lims-muted);
+}
+
+/* Mismo alto que los campos, para que la fila quede pareja */
+.lims-filtros-atajos {
+  display: flex;
+  gap: 8px;
+}
+
+.lims-filtros-atajos .btn {
+  white-space: nowrap;
+}
+
+/* Tablet: sucursal y período arriba, atajos abajo a la izquierda */
+@media (max-width: 991.98px) {
+  .lims-filtros {
+    grid-template-columns: minmax(160px, 1fr) minmax(260px, 2fr);
+  }
+
+  .lims-filtros-atajos {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Tablet angosta y celular: todo en columna */
+@media (max-width: 767.98px) {
+  .lims-filtros {
+    grid-template-columns: 1fr;
+  }
+
+  .lims-filtros-atajos .btn {
+    flex: 1 1 0;
+  }
+}
+
+/* Secciones visibles: botones que se prenden y apagan */
+.lims-secciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.lims-secciones-etiqueta {
+  margin-right: 4px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--lims-muted);
+}
+
+.lims-seccion-chip {
+  padding: 4px 12px;
+  border: 1px solid var(--lims-border);
+  border-radius: 999px;
+  background: #ffffff;
+  font-size: 0.875rem;
+  color: var(--lims-muted);
+  text-decoration: line-through;
+}
+
+.lims-seccion-chip--activa {
+  border-color: rgba(var(--bs-primary-rgb), 0.35);
+  background: rgba(var(--bs-primary-rgb), 0.08);
+  color: var(--bs-primary);
+  text-decoration: none;
+}
+
+.lims-seccion-chip:focus-visible {
+  outline: 2px solid var(--bs-primary);
+  outline-offset: 2px;
+}
+
+/* En el celular los botones de secciones ocupan media pantalla: se reemplazan por un desplegable */
+.lims-secciones-movil {
+  display: none;
+  margin-bottom: 20px;
+  border: 1px solid var(--lims-border-soft);
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.lims-secciones-movil summary {
+  padding: 10px 14px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--lims-ink);
+  cursor: pointer;
+}
+
+.lims-secciones-movil-lista {
+  display: grid;
+  gap: 6px;
+  padding: 0 14px 12px;
+}
+
+@media (max-width: 767.98px) {
+  .lims-secciones-movil {
+    display: block;
+  }
+
+  .lims-secciones {
+    display: none;
+  }
+}
+
+/* Mientras llegan los números nuevos se atenúa lo anterior en lugar de vaciar la pantalla */
+.lims-dashboard {
+  transition: opacity 0.15s ease;
+}
+
+.lims-dashboard--cargando {
+  opacity: 0.55;
+}
+
+/* Tarjetas de totales */
+/* Las cuatro tarjetas: 4 en una fila, o 2 y 2 (nunca 3 y una sola abajo), o una debajo de otra */
+.lims-metricas {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 1199.98px) {
+  .lims-metricas {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 575.98px) {
+  .lims-metricas {
+    grid-template-columns: 1fr;
+  }
+}
+
+.lims-metrica {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 20px;
+  border: 1px solid var(--lims-border-soft);
+  border-radius: 16px;
+  background: #ffffff;
+  text-align: left;
+}
+
+/* Tarjetas de alerta: se tocan para ver las órdenes */
+.lims-metrica--boton {
+  width: 100%;
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.lims-metrica--boton:hover {
+  border-color: rgba(var(--bs-primary-rgb), 0.45);
+  box-shadow: 0 4px 14px rgba(28, 78, 128, 0.08);
+}
+
+.lims-metrica--boton:focus-visible {
+  outline: 2px solid var(--bs-primary);
+  outline-offset: 2px;
+}
+
+.lims-metrica-accion {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: auto;
+  padding-top: 10px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--bs-primary);
+}
+
+.lims-metrica-icono {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(var(--bs-primary-rgb), 0.08);
+  font-size: 1.25rem;
+  color: var(--bs-primary);
+}
+
+.lims-metrica-icono--alerta {
+  background: rgba(192, 57, 43, 0.1);
+  color: #c0392b;
+}
+
+.lims-metrica-titulo {
+  margin: 0 56px 4px 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--lims-muted);
+}
+
+.lims-metrica-valor {
+  margin: 0 0 4px;
+  font-size: clamp(1.5rem, 2.6vw, 2rem);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--lims-ink);
+}
+
+.lims-metrica-detalle {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--lims-muted);
+}
+
+.lims-metrica-comparacion {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 8px 0 0;
+  font-size: 0.875rem;
+  color: var(--lims-muted);
+}
+
+.lims-metrica-comparacion--sube {
+  color: #1e7a4f;
+}
+
+.lims-metrica-comparacion--baja {
+  color: #c0392b;
+}
+
+/* Secciones: dos columnas en pantallas grandes */
+.lims-graficos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+  /* dense: si se oculta una sección, la siguiente sube a ocupar el hueco */
+  grid-auto-flow: row dense;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.lims-grafico {
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid var(--lims-border-soft);
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.lims-grafico--ancho {
+  grid-column: 1 / -1;
+}
+
+.lims-grafico-titulo {
+  margin: 0 0 4px;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--lims-ink);
+}
+
+.lims-grafico-subtitulo {
+  margin: 20px 0 12px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--lims-ink);
+}
+
+.lims-grafico-descripcion {
+  margin: 0 0 16px;
+  font-size: 0.9375rem;
+  color: var(--lims-muted);
+}
+
+.lims-grafico-vacio {
+  margin: 0;
+  padding: 24px 0;
+  text-align: center;
+  color: var(--lims-muted);
+}
+
+/* Actividad: la línea por día y, al lado, las órdenes por estado */
+.lims-actividad {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(200px, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 767.98px) {
+  .lims-actividad {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Números chicos dentro de una sección */
+.lims-cifras {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.lims-cifra {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--lims-surface-2);
+}
+
+.lims-cifra-etiqueta {
+  font-size: 0.875rem;
+  color: var(--lims-muted);
+}
+
+.lims-cifra-valor {
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: var(--lims-ink);
+}
+
+.lims-cifra-detalle {
+  font-size: 0.8125rem;
+  color: var(--lims-muted);
+}
+
+/* Órdenes por estado */
+.lims-estados,
+.lims-barras,
+.lims-cajas {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lims-estados {
+  display: grid;
+  gap: 8px;
+}
+
+.lims-estado {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-left: 4px solid var(--lims-border);
+  border-radius: 0 8px 8px 0;
+  background: var(--lims-surface-2);
+}
+
+.lims-estado--abierta { border-left-color: #b7791f; }
+.lims-estado--en_proceso { border-left-color: var(--bs-primary); }
+.lims-estado--completa { border-left-color: var(--lims-accent); }
+.lims-estado--informada { border-left-color: var(--bs-success); }
+.lims-estado--anulada { border-left-color: #c0392b; }
+
+/* Listas con barras (medios de pago, obras sociales, médicos, motivos) */
+.lims-barras {
+  display: grid;
+  gap: 12px;
+}
+
+.lims-barras-linea {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.lims-barras-detalle {
+  display: block;
+  font-size: 0.8125rem;
+  color: var(--lims-muted);
+}
+
+.lims-barras-barra {
+  height: 8px;
+  margin-top: 4px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--lims-surface);
+}
+
+.lims-barras-barra span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+}
+
+/* Horas pico: cada celda se oscurece según cuántos pacientes llegaron. Siete columnas como máximo:
+   entra en el ancho de la sección sin desplazarse */
+.lims-calor {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 3px;
+  font-size: 0.8125rem;
+}
+
+.lims-calor thead th:first-child {
+  width: 88px;
+}
+
+.lims-calor th {
+  padding: 2px 6px;
+  font-weight: 600;
+  color: var(--lims-muted);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.lims-calor tbody th {
+  text-align: left;
+}
+
+.lims-calor td {
+  height: 28px;
+  border-radius: 6px;
+  background: rgba(var(--bs-primary-rgb), calc(0.06 + var(--intensidad) * 0.84));
+  color: #ffffff;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* En las celdas claras el número va oscuro para que se lea */
+.lims-calor td.lims-calor-claro {
+  color: var(--lims-ink);
+}
+
+/* Cajas con diferencia */
+.lims-cajas {
+  display: grid;
+  gap: 8px;
+}
+
+.lims-cajas li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--lims-surface-2);
+}
+
+.lims-cajas-nota {
+  display: block;
+  font-size: 0.8125rem;
+  color: var(--lims-muted);
+}
+
+.lims-tabla-sucursales {
+  --bs-table-bg: transparent;
+}
+
+.lims-tabla-sucursales th {
+  white-space: nowrap;
+}
+
+/* Cobrado por medio de pago: dona y leyenda lado a lado (una debajo de otra si no entran) */
+.lims-dona {
+  display: grid;
+  grid-template-columns: minmax(180px, 220px) minmax(0, 1fr);
+  align-items: center;
+  gap: 16px;
+}
+
+@media (max-width: 479.98px) {
+  .lims-dona {
+    grid-template-columns: 1fr;
+  }
+}
+
+.lims-dona-grafico {
+  position: relative;
+  min-width: 0;
+}
+
+/* Total en el agujero de la dona. pointer-events: none deja pasar el mouse al gráfico (detalle de cada porción) */
+.lims-dona-centro {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.lims-dona-total {
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--lims-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.lims-dona-etiqueta {
+  font-size: 0.8125rem;
+  color: var(--lims-muted);
+}
+
+.lims-dona-leyenda {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lims-dona-leyenda li {
+  display: grid;
+  grid-template-columns: 12px minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 10px;
+}
+
+.lims-dona-color {
+  width: 12px;
+  height: 12px;
+  margin-top: 5px;
+  border-radius: 3px;
+}
+
+.lims-dona-nombre {
+  color: var(--lims-ink);
+}
+
+.lims-dona-valor {
+  font-weight: 700;
+  color: var(--lims-ink);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.lims-dona-detalle {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 400;
+  color: var(--lims-muted);
+}
