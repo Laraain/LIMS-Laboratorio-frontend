@@ -256,7 +256,7 @@ export function abrirComprobante({ orden, cobro, sucursal }) {
       <p><strong>Este comprobante no es factura.</strong> La facturación electrónica se emite por separado.</p>
       <p>Los importes son lo que paga el paciente; la parte de la obra social se factura aparte.</p>
       <p>El saldo es el que quedaba al registrarse este cobro.</p>
-      <p>Para descargarlo, en el diálogo de impresión elegí «Guardar como PDF».</p>
+      <p>Para descargarlo, en el diálogo de impresión elija «Guardar como PDF».</p>
     </footer>
   </main>
 </body>

@@ -33,7 +33,7 @@ function ModalCobro({ orden, sucursal, perfil, onCerrar, onGuardado }) {
       Swal.fire({
         icon: 'warning',
         title: 'No se pudo abrir el comprobante',
-        text: 'Permití las ventanas emergentes para este sitio y volvé a intentarlo.',
+        text: 'Permita las ventanas emergentes para este sitio y vuelva a intentarlo.',
         confirmButtonText: 'Entendido',
         confirmButtonColor: '#1c4e80',
       });
