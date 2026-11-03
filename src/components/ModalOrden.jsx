@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import Modal from 'react-bootstrap/Modal';
-import { MagnifyingGlass, Plus, Stack, Trash, UserPlus, X } from '@phosphor-icons/react';
+import { Camera, Eye, FilePdf, MagnifyingGlass, Paperclip, Plus, Stack, Trash, UploadSimple, UserPlus, X } from '@phosphor-icons/react';
 import { API_URL, encabezados, mensajeDeErrorApi } from '../lib/api.js';
+import { MAX_ADJUNTOS, TIPOS_ADJUNTOS, eliminarAdjunto, linkDelAdjunto, subirAdjunto, validarAdjunto } from '../lib/adjuntos.js';
 import { TIPOS_EXTRACCION, registrarLlegada } from '../lib/fila.js';
 import { hoyTucuman } from '../lib/hora.js';
 import { listarGrupos } from '../lib/grupos.js';
@@ -35,7 +36,8 @@ const MEDICO_VACIO = { nombre: '', apellido: '', matricula: '', especialidad: ''
 // Ventana para cargar una orden médica nueva o corregir una abierta (recepción y admin).
 // Props: orden (null para una nueva) · sucursal (donde se carga) · pacienteInicial (opcional: viene de la fila de atención)
 // onCerrar: cierra sin guardar · onGuardado: recibe la orden guardada
-function ModalOrden({ orden, sucursal, pacienteInicial = null, onCerrar, onGuardado }) {
+// onAdjuntosCambiados: avisa que cambió el pedido médico adjunto, para refrescar el listado
+function ModalOrden({ orden, sucursal, pacienteInicial = null, onCerrar, onGuardado, onAdjuntosCambiados = null }) {
   const esNueva = !orden;
   const { obras, cargando: cargandoObras } = useObrasSociales();
 
@@ -86,6 +88,20 @@ function ModalOrden({ orden, sucursal, pacienteInicial = null, onCerrar, onGuard
 
   const [errores, setErrores] = useState({});
   const [guardando, setGuardando] = useState(false);
+
+  // Pedido médico adjunto (LIMS-34): los ya subidos y los elegidos para una orden nueva
+  const [adjuntos, setAdjuntos] = useState(esNueva ? [] : (orden.orden_adjuntos ?? []));
+  const [pendientes, setPendientes] = useState([]);
+  // vistas: link firmado de cada foto ya subida, para mostrar la miniatura
+  const [vistas, setVistas] = useState({});
+  const [subiendoAdjuntos, setSubiendoAdjuntos] = useState(false);
+  const [abriendoAdjunto, setAbriendoAdjunto] = useState(null);
+  const [quitandoAdjunto, setQuitandoAdjunto] = useState(null);
+  const [errorAdjuntos, setErrorAdjuntos] = useState('');
+  const inputArchivos = useRef(null);
+  const inputCamara = useRef(null);
+  const vistasPrevias = useRef([]);
+
   const esParticular = obraSocial === PARTICULAR;
 
   // El catálogo y los grupos se piden una sola vez al abrir la ventana
@@ -128,6 +144,43 @@ function ModalOrden({ orden, sucursal, pacienteInicial = null, onCerrar, onGuard
       clearTimeout(id);
     };
   }, [busquedaMedico, medico, nuevoMedico]);
+
+  // Miniaturas de las fotos ya subidas: se piden links firmados al abrir la ventana
+  useEffect(() => {
+    if (esNueva) return undefined;
+    let vigente = true;
+    const fotos = (orden.orden_adjuntos ?? []).filter((adjunto) => adjunto.tipo !== 'application/pdf');
+    Promise.all(
+      fotos.map((adjunto) =>
+        linkDelAdjunto(adjunto.path, 600)
+          .then((link) => [adjunto.id, link])
+          .catch((errorPeticion) => {
+            console.error('No se pudo abrir la miniatura del pedido médico:', errorPeticion);
+            return null;
+          }),
+      ),
+    ).then((pares) => {
+      if (vigente) setVistas((previas) => ({ ...previas, ...Object.fromEntries(pares.filter(Boolean)) }));
+    });
+    return () => {
+      vigente = false;
+    };
+  }, [esNueva, orden]);
+
+  // Las fotos elegidas para una orden nueva se muestran desde el navegador.
+  // Al quitarlas o subirlas se libera la vista previa.
+  useEffect(() => {
+    const actuales = pendientes.map((pendiente) => pendiente.vistaPrevia).filter(Boolean);
+    vistasPrevias.current
+      .filter((url) => !actuales.includes(url))
+      .forEach((url) => URL.revokeObjectURL(url));
+    vistasPrevias.current = actuales;
+  }, [pendientes]);
+
+  useEffect(
+    () => () => vistasPrevias.current.forEach((url) => URL.revokeObjectURL(url)),
+    [],
+  );
 
   function limpiarError(campo) {
     setErrores((previos) => ({ ...previos, [campo]: undefined }));
@@ -234,6 +287,109 @@ function ModalOrden({ orden, sucursal, pacienteInicial = null, onCerrar, onGuard
     setEstudios((previos) => previos.filter((estudio) => estudio.analisis_id !== analisisId));
   }
 
+  function quitarPendiente(indice) {
+    setPendientes((previos) => previos.filter((_, posicion) => posicion !== indice));
+  }
+
+  // Elegir o sacar una foto: en una orden nueva quedan en espera hasta guardarla;
+  // en una orden abierta se suben en el momento.
+  async function handleArchivos(evento) {
+    const archivos = [...evento.target.files];
+    evento.target.value = '';
+    if (archivos.length === 0) return;
+
+    setErrorAdjuntos('');
+    const libres = MAX_ADJUNTOS - adjuntos.length - pendientes.length;
+    if (libres <= 0) {
+      setErrorAdjuntos(`La orden ya tiene ${MAX_ADJUNTOS} adjuntos: quite uno para agregar otro.`);
+      return;
+    }
+
+    const elegidos = archivos.slice(0, libres);
+    if (esNueva) {
+      const nuevos = [];
+      for (const archivo of elegidos) {
+        const problema = validarAdjunto(archivo);
+        if (problema) {
+          setErrorAdjuntos(problema);
+          continue;
+        }
+        nuevos.push({
+          archivo,
+          vistaPrevia: archivo.type === 'application/pdf' ? null : URL.createObjectURL(archivo),
+        });
+      }
+      setPendientes((previos) => [...previos, ...nuevos]);
+    } else {
+      setSubiendoAdjuntos(true);
+      const problemas = [];
+      let subidos = 0;
+      for (const archivo of elegidos) {
+        try {
+          const adjunto = await subirAdjunto(orden.id, archivo);
+          subidos += 1;
+          setAdjuntos((previos) => [...previos, adjunto]);
+          if (adjunto.tipo !== 'application/pdf') {
+            const link = await linkDelAdjunto(adjunto.path, 600).catch(() => null);
+            if (link) setVistas((previas) => ({ ...previas, [adjunto.id]: link }));
+          }
+        } catch (errorPeticion) {
+          console.error('No se pudo subir el pedido médico:', errorPeticion);
+          problemas.push(mensajeDeErrorApi(errorPeticion));
+        }
+      }
+      setSubiendoAdjuntos(false);
+      if (subidos > 0) onAdjuntosCambiados?.();
+      if (problemas.length > 0) setErrorAdjuntos(problemas[0]);
+    }
+
+    if (archivos.length > elegidos.length) {
+      setErrorAdjuntos(`Solo se agregaron ${elegidos.length}: la orden admite hasta ${MAX_ADJUNTOS} adjuntos.`);
+    }
+  }
+
+  function olvidarVista(id) {
+    setVistas((previas) => {
+      const siguientes = { ...previas };
+      delete siguientes[id];
+      return siguientes;
+    });
+  }
+
+  async function quitarAdjunto(adjunto) {
+    setErrorAdjuntos('');
+    setQuitandoAdjunto(adjunto.id);
+    try {
+      await eliminarAdjunto(adjunto);
+      setAdjuntos((previos) => previos.filter((otro) => otro.id !== adjunto.id));
+      olvidarVista(adjunto.id);
+      onAdjuntosCambiados?.();
+    } catch (errorPeticion) {
+      console.error('No se pudo quitar el pedido médico:', errorPeticion);
+      setErrorAdjuntos(mensajeDeErrorApi(errorPeticion));
+    } finally {
+      setQuitandoAdjunto(null);
+    }
+  }
+
+  // Abre el adjunto en otra pestaña. La pestaña se abre antes de pedir el link
+  // para que el navegador no la bloquee como ventana emergente.
+  async function abrirAdjunto(adjunto) {
+    const pestania = window.open('', '_blank');
+    setAbriendoAdjunto(adjunto.id);
+    try {
+      const link = await linkDelAdjunto(adjunto.path);
+      if (pestania) pestania.location.href = link;
+      else window.location.assign(link);
+    } catch (errorPeticion) {
+      pestania?.close();
+      console.error('No se pudo abrir el pedido médico:', errorPeticion);
+      setErrorAdjuntos(mensajeDeErrorApi(errorPeticion));
+    } finally {
+      setAbriendoAdjunto(null);
+    }
+  }
+
   async function handleSubmit(evento) {
     evento.preventDefault();
     const nuevosErrores = {
@@ -292,10 +448,32 @@ function ModalOrden({ orden, sucursal, pacienteInicial = null, onCerrar, onGuard
       const guardada = esNueva
         ? await crearOrden({ ...datos, pacienteId: paciente.id, turnoId, sucursalId: sucursal.id })
         : await modificarOrden(orden.id, datos);
+
+      // Los adjuntos de una orden nueva se suben una vez que la base le dio el id.
+      // Si alguno falla, la orden ya está guardada: se avisa y se puede agregar editándola.
+      let fallaronAdjuntos = false;
+      if (esNueva && pendientes.length > 0) {
+        setSubiendoAdjuntos(true);
+        for (const pendiente of pendientes) {
+          try {
+            await subirAdjunto(guardada.id, pendiente.archivo);
+          } catch (errorPeticion) {
+            console.error('No se pudo subir el pedido médico:', errorPeticion);
+            fallaronAdjuntos = true;
+          }
+        }
+        setSubiendoAdjuntos(false);
+        setPendientes([]);
+      }
+
       await Swal.fire({
         icon: 'success',
         title: esNueva ? 'Orden cargada' : 'Cambios guardados',
-        html: `<p class="mb-0">Número de orden</p><p class="fs-3 fw-bold mb-0">${escapar(guardada.nro_orden)}</p>`,
+        html:
+          `<p class="mb-0">Número de orden</p><p class="fs-3 fw-bold mb-0">${escapar(guardada.nro_orden)}</p>` +
+          (fallaronAdjuntos
+            ? '<p class="mb-0 mt-2 text-danger">La orden se guardó, pero el pedido médico no se pudo subir. Agreguelo editando la orden.</p>'
+            : ''),
         confirmButtonText: 'Listo',
         confirmButtonColor: '#1c4e80',
       });
@@ -332,8 +510,8 @@ function ModalOrden({ orden, sucursal, pacienteInicial = null, onCerrar, onGuard
 
   return (
     // enforceFocus={false}: deja que la ventana de SweetAlert2 reciba el foco encima de este modal
-    <Modal show onHide={guardando ? undefined : onCerrar} backdrop="static" enforceFocus={false} centered scrollable size="lg" contentClassName="lims-modal">
-      <Modal.Header closeButton={!guardando}>
+    <Modal show onHide={guardando || subiendoAdjuntos ? undefined : onCerrar} backdrop="static" enforceFocus={false} centered scrollable size="lg" contentClassName="lims-modal">
+      <Modal.Header closeButton={!guardando && !subiendoAdjuntos}>
         <Modal.Title as="h2" className="h5 fw-bold mb-0">
           {esNueva ? 'Nueva orden' : `Orden ${orden.nro_orden}`}
         </Modal.Title>
@@ -758,6 +936,122 @@ function ModalOrden({ orden, sucursal, pacienteInicial = null, onCerrar, onGuard
             )}
           </fieldset>
 
+          {/* Pedido médico adjunto (opcional, LIMS-34) */}
+          <fieldset className="lims-orden-bloque">
+            <legend className="lims-orden-subtitulo">Pedido médico (opcional)</legend>
+            <p className="form-text mt-0">
+              Hasta {MAX_ADJUNTOS} fotos JPG o PNG, o PDF. Las fotos se achican antes de subirlas.
+              {esNueva ? ' Se suben al guardar la orden.' : ''}
+            </p>
+
+            {(adjuntos.length > 0 || pendientes.length > 0) && (
+              <ul className="lims-orden-adjuntos">
+                {adjuntos.map((adjunto) => (
+                  <li key={adjunto.id}>
+                    {vistas[adjunto.id] ? (
+                      <img
+                        src={vistas[adjunto.id]}
+                        alt=""
+                        className="lims-adjunto-miniatura"
+                        onError={() => olvidarVista(adjunto.id)}
+                      />
+                    ) : (
+                      <span className="lims-adjunto-icono" aria-hidden="true">
+                        {adjunto.tipo === 'application/pdf' ? <FilePdf /> : <Paperclip />}
+                      </span>
+                    )}
+                    <span className="lims-adjunto-nombre" title={adjunto.nombre}>
+                      {adjunto.nombre}
+                    </span>
+                    <button
+                      type="button"
+                      className="btn lims-btn-pill lims-btn-secundario lims-btn-chico"
+                      onClick={() => abrirAdjunto(adjunto)}
+                      disabled={abriendoAdjunto === adjunto.id}
+                    >
+                      <Eye className="lims-icono me-1" aria-hidden="true" />
+                      {abriendoAdjunto === adjunto.id ? 'Abriendo…' : 'Abrir'}
+                    </button>
+                    <button
+                      type="button"
+                      className="lims-orden-quitar"
+                      aria-label={`Quitar ${adjunto.nombre}`}
+                      onClick={() => quitarAdjunto(adjunto)}
+                      disabled={quitandoAdjunto === adjunto.id}
+                    >
+                      <Trash aria-hidden="true" />
+                    </button>
+                  </li>
+                ))}
+                {pendientes.map((pendiente, indice) => (
+                  <li key={`pendiente-${indice}`}>
+                    {pendiente.vistaPrevia ? (
+                      <img src={pendiente.vistaPrevia} alt="" className="lims-adjunto-miniatura" />
+                    ) : (
+                      <span className="lims-adjunto-icono" aria-hidden="true">
+                        <FilePdf />
+                      </span>
+                    )}
+                    <span className="lims-adjunto-nombre" title={pendiente.archivo.name}>
+                      {pendiente.archivo.name}
+                    </span>
+                    <span className="lims-celda-identidad">Se sube al guardar</span>
+                    <button
+                      type="button"
+                      className="lims-orden-quitar"
+                      aria-label={`Quitar ${pendiente.archivo.name}`}
+                      onClick={() => quitarPendiente(indice)}
+                    >
+                      <Trash aria-hidden="true" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            <div className="d-flex flex-wrap align-items-center gap-2 mt-2">
+              <button
+                type="button"
+                className="btn lims-btn-pill lims-btn-secundario lims-btn-chico"
+                onClick={() => inputArchivos.current?.click()}
+                disabled={subiendoAdjuntos || adjuntos.length + pendientes.length >= MAX_ADJUNTOS}
+              >
+                <UploadSimple className="lims-icono me-1" aria-hidden="true" />
+                Elegir archivos
+              </button>
+              <button
+                type="button"
+                className="btn lims-btn-pill lims-btn-secundario lims-btn-chico"
+                onClick={() => inputCamara.current?.click()}
+                disabled={subiendoAdjuntos || adjuntos.length + pendientes.length >= MAX_ADJUNTOS}
+              >
+                <Camera className="lims-icono me-1" aria-hidden="true" />
+                Sacar foto
+              </button>
+              {subiendoAdjuntos && <span className="lims-celda-identidad">Subiendo…</span>}
+            </div>
+
+            <input
+              ref={inputArchivos}
+              type="file"
+              className="visually-hidden"
+              accept={TIPOS_ADJUNTOS.join(',')}
+              multiple
+              tabIndex={-1}
+              onChange={handleArchivos}
+            />
+            <input
+              ref={inputCamara}
+              type="file"
+              className="visually-hidden"
+              accept="image/jpeg,image/png"
+              capture="environment"
+              tabIndex={-1}
+              onChange={handleArchivos}
+            />
+            {errorAdjuntos && <div className="text-danger small mt-1">{errorAdjuntos}</div>}
+          </fieldset>
+
           <div className="lims-orden-bloque">
             <label htmlFor="orden-observaciones" className="form-label fw-semibold small">
               Observaciones
@@ -775,11 +1069,11 @@ function ModalOrden({ orden, sucursal, pacienteInicial = null, onCerrar, onGuard
       </Modal.Body>
 
       <Modal.Footer>
-        <button type="button" className="btn lims-btn-pill lims-btn-secundario" onClick={onCerrar} disabled={guardando}>
+        <button type="button" className="btn lims-btn-pill lims-btn-secundario" onClick={onCerrar} disabled={guardando || subiendoAdjuntos}>
           <X className="lims-icono me-1" aria-hidden="true" />
           Cancelar
         </button>
-        <button type="submit" form="form-orden" className="btn lims-btn-pill lims-btn-primario" disabled={guardando}>
+        <button type="submit" form="form-orden" className="btn lims-btn-pill lims-btn-primario" disabled={guardando || subiendoAdjuntos}>
           {guardando ? 'Guardando…' : esNueva ? 'Guardar orden' : 'Guardar cambios'}
         </button>
       </Modal.Footer>

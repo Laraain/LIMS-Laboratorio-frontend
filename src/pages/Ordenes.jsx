@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Navigate, useLocation, useNavigate, useOutletContext } from 'react-router-dom';
 import Swal from 'sweetalert2';
-import { MagnifyingGlass, Money, PencilSimple, Plus, Prohibit } from '@phosphor-icons/react';
+import { MagnifyingGlass, Money, Paperclip, PencilSimple, Plus, Prohibit } from '@phosphor-icons/react';
 import ModalCobro from '../components/ModalCobro.jsx';
 import ModalOrden from '../components/ModalOrden.jsx';
 import { ROLES_ORDENES } from '../data/roles.js';
@@ -225,6 +225,12 @@ function Ordenes() {
                           <span className="lims-celda-identidad">
                             Orden del {new Date(`${orden.fecha_orden}T00:00:00`).toLocaleDateString('es-AR')}
                           </span>
+                          {orden.orden_adjuntos?.length > 0 && (
+                            <span className="lims-celda-identidad" title="Tiene el pedido médico adjunto">
+                              <Paperclip className="lims-icono me-1" aria-hidden="true" />
+                              Pedido médico adjunto
+                            </span>
+                          )}
                         </span>
                       </td>
                       <td data-label="Paciente">
@@ -352,6 +358,7 @@ function Ordenes() {
           sucursal={sucursal}
           pacienteInicial={editando ? null : creando}
           onCerrar={cerrar}
+          onAdjuntosCambiados={recargar}
           onGuardado={() => {
             cerrar();
             // Una orden nueva se ve en la lista de hoy
