@@ -4,6 +4,7 @@ import Swal from 'sweetalert2';
 import { MagnifyingGlass, Money, Paperclip, PencilSimple, Plus, Prohibit } from '@phosphor-icons/react';
 import ModalCobro from '../components/ModalCobro.jsx';
 import ModalOrden from '../components/ModalOrden.jsx';
+import ModalPedidoMedico from '../components/ModalPedidoMedico.jsx';
 import { ROLES_ORDENES } from '../data/roles.js';
 import useMetadatos from '../hooks/useMetadatos.js';
 import { mensajeDeErrorApi } from '../lib/api.js';
@@ -47,6 +48,8 @@ function Ordenes() {
   const [editando, setEditando] = useState(null);
   // cobrando: id de la orden cuya ventana de cobro está abierta (se busca en la lista para tener sus datos al día)
   const [cobrando, setCobrando] = useState(null);
+  // viendoPedido: id de la orden cuyo pedido médico adjunto se está mirando (en cualquier estado)
+  const [viendoPedido, setViendoPedido] = useState(null);
   const { ordenes, cargando, error, recargar } = useOrdenes(sucursal.id, fecha);
 
   if (!ROLES_ORDENES.includes(perfil.rol)) return <Navigate to="/panel" replace />;
@@ -226,10 +229,15 @@ function Ordenes() {
                             Orden del {new Date(`${orden.fecha_orden}T00:00:00`).toLocaleDateString('es-AR')}
                           </span>
                           {orden.orden_adjuntos?.length > 0 && (
-                            <span className="lims-celda-identidad" title="Tiene el pedido médico adjunto">
+                            <button
+                              type="button"
+                              className="btn btn-link p-0 lims-celda-identidad text-start"
+                              aria-label={`Ver el pedido médico adjunto de la orden ${orden.nro_orden}`}
+                              onClick={() => setViendoPedido(orden.id)}
+                            >
                               <Paperclip className="lims-icono me-1" aria-hidden="true" />
                               Pedido médico adjunto
-                            </span>
+                            </button>
                           )}
                         </span>
                       </td>
@@ -347,6 +355,14 @@ function Ordenes() {
             setCobrando(null);
             recargar();
           }}
+        />
+      )}
+
+      {viendoPedido && ordenes.some((orden) => orden.id === viendoPedido && orden.orden_adjuntos?.length > 0) && (
+        <ModalPedidoMedico
+          key={viendoPedido}
+          orden={ordenes.find((orden) => orden.id === viendoPedido)}
+          onCerrar={() => setViendoPedido(null)}
         />
       )}
 
