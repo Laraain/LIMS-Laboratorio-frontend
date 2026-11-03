@@ -589,3 +589,19 @@
   font-weight: 400;
   color: var(--lims-muted);
 }
+
+/* Botones para exportar el informe, a la derecha del título (abajo en el celular) */
+.lims-exportar {
+  display: flex;
+  gap: 8px;
+}
+
+@media (max-width: 575.98px) {
+  .lims-exportar {
+    width: 100%;
+  }
+
+  .lims-exportar .btn {
+    flex: 1 1 0;
+  }
+}

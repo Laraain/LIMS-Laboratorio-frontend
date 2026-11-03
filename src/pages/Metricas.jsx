@@ -16,9 +16,10 @@ import {
   YAxis,
 } from 'recharts';
 import Modal from 'react-bootstrap/Modal';
-import { ArrowDown, ArrowRight, ArrowUp, Clock, Coins, Receipt, Warning } from '@phosphor-icons/react';
+import { ArrowDown, ArrowRight, ArrowUp, Clock, Coins, FileCsv, FileXls, Receipt, Warning } from '@phosphor-icons/react';
 import useMetadatos from '../hooks/useMetadatos.js';
 import { mensajeDeErrorApi } from '../lib/api.js';
+import { exportarInforme } from '../lib/exportarMetricas.js';
 import { ATAJOS, detalleDeAlertas, metricasDashboard, periodoAnterior, rangoDeAtajo } from '../lib/metricas.js';
 import { useSucursales } from '../lib/sucursal.js';
 import './Metricas.css';
@@ -404,6 +405,9 @@ function Metricas() {
   const [estado, setEstado] = useState({ clave: '', datos: null, anterior: null, error: '' });
   // alertas: la lista abierta desde una tarjeta ({ tipo, detalle, error }) o null
   const [alertas, setAlertas] = useState(null);
+  // exportando: el formato que se está armando ('xlsx' | 'csv') o null · errorExportar: mensaje si falló
+  const [exportando, setExportando] = useState(null);
+  const [errorExportar, setErrorExportar] = useState('');
 
   const { desde, hasta } = rango;
   const rangoValido = Boolean(desde && hasta && desde <= hasta);
@@ -463,6 +467,28 @@ function Metricas() {
     }
   }
 
+  // Descarga el informe del período y la sucursal que se están mirando (LIMS-23)
+  async function exportar(formato) {
+    setExportando(formato);
+    setErrorExportar('');
+    const previo = periodoAnterior(desde, hasta);
+    try {
+      await exportarInforme(formato, datos, anterior, {
+        desde,
+        hasta,
+        anteriorDesde: previo.desde,
+        anteriorHasta: previo.hasta,
+        sucursalId: sucursalId ? Number(sucursalId) : null,
+        sucursal: todas ? 'Todas las sucursales' : sucursales.find((sucursal) => String(sucursal.id) === sucursalId)?.nombre ?? '',
+        todas,
+      });
+    } catch (errorPeticion) {
+      console.error('No se pudo exportar el informe:', errorPeticion);
+      setErrorExportar(`No pudimos armar el informe. ${mensajeDeErrorApi(errorPeticion)}`);
+    }
+    setExportando(null);
+  }
+
   const seccionesDisponibles = SECCIONES.filter((seccion) => seccion.clave !== 'sucursales' || todas);
   const cantidadVisibles = seccionesDisponibles.filter((seccion) => !ocultas.includes(seccion.clave)).length;
   const totales = datos?.totales;
@@ -476,7 +502,34 @@ function Metricas() {
           <h1 className="lims-panel-titulo">Métricas del laboratorio</h1>
           <p className="lims-panel-texto mb-0">Actividad, facturación, tiempos y calidad de cada sucursal.</p>
         </div>
+        {/* Exporta lo que se está mirando: mismo período y sucursal, todas las secciones y el detalle de órdenes */}
+        <div className="lims-exportar" role="group" aria-label="Exportar informe">
+          <button
+            type="button"
+            className="btn lims-btn-pill lims-btn-secundario"
+            disabled={!datos || cargando || exportando !== null}
+            onClick={() => exportar('xlsx')}
+          >
+            <FileXls className="lims-icono me-2" aria-hidden="true" />
+            {exportando === 'xlsx' ? 'Armando Excel…' : 'Excel'}
+          </button>
+          <button
+            type="button"
+            className="btn lims-btn-pill lims-btn-secundario"
+            disabled={!datos || cargando || exportando !== null}
+            onClick={() => exportar('csv')}
+          >
+            <FileCsv className="lims-icono me-2" aria-hidden="true" />
+            {exportando === 'csv' ? 'Armando CSV…' : 'CSV'}
+          </button>
+        </div>
       </header>
+
+      {errorExportar && (
+        <p className="alert alert-danger" role="alert">
+          {errorExportar}
+        </p>
+      )}
 
       <form className="lims-filtros" onSubmit={(evento) => evento.preventDefault()} aria-label="Filtros de métricas">
         <div className="lims-filtros-campo lims-filtros-sucursal">
