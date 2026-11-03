@@ -336,6 +336,8 @@ function Ordenes() {
         <ModalCobro
           key={cobrando}
           orden={ordenes.find((orden) => orden.id === cobrando)}
+          sucursal={sucursal}
+          perfil={perfil}
           onCerrar={() => setCobrando(null)}
           onGuardado={() => {
             setCobrando(null);

@@ -42,3 +42,23 @@ export function cuentaDeOrden(orden) {
   const saldo = Math.round((total - cobrado) * 100) / 100;
   return { total, cobrado, saldo, pagada: total > 0 && saldo <= 0 };
 }
+
+// Lo que faltaba pagar al momento de un cobro, para el comprobante (LIMS-46).
+// Se suman los cobros que estaban vigentes en ese momento (no se habían anulado todavía),
+// para que una reimpresión muestre los mismos números aunque después haya otro cobro o
+// una anulación. Si el cobro todavía no está en la lista (recién registrado), se suma igual.
+export function saldoAlCobro(orden, cobro) {
+  const total = totalesDeOrden(orden).paciente;
+  const momento = new Date(cobro.cobrado_en).getTime();
+  const cobros = orden.cobros ?? [];
+  const estaEnLaLista = cobros.some((otro) => otro.id === cobro.id);
+  const cobrado = cobros
+    .filter((otro) => {
+      if (new Date(otro.cobrado_en).getTime() > momento) return false;
+      // Estaba vigente en ese momento: todavía no se había anulado
+      return !otro.anulado_en || new Date(otro.anulado_en).getTime() > momento;
+    })
+    .reduce((suma, otro) => suma + Number(otro.monto), 0);
+  const cobradoConEste = !estaEnLaLista && !cobro.anulado_en ? cobrado + Number(cobro.monto) : cobrado;
+  return Math.round((total - cobradoConEste) * 100) / 100;
+}
