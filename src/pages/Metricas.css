@@ -506,3 +506,86 @@
 .lims-tabla-sucursales th {
   white-space: nowrap;
 }
+
+/* Cobrado por medio de pago: dona y leyenda lado a lado (una debajo de otra si no entran) */
+.lims-dona {
+  display: grid;
+  grid-template-columns: minmax(180px, 220px) minmax(0, 1fr);
+  align-items: center;
+  gap: 16px;
+}
+
+@media (max-width: 479.98px) {
+  .lims-dona {
+    grid-template-columns: 1fr;
+  }
+}
+
+.lims-dona-grafico {
+  position: relative;
+  min-width: 0;
+}
+
+/* Total en el agujero de la dona. pointer-events: none deja pasar el mouse al gráfico (detalle de cada porción) */
+.lims-dona-centro {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.lims-dona-total {
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--lims-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.lims-dona-etiqueta {
+  font-size: 0.8125rem;
+  color: var(--lims-muted);
+}
+
+.lims-dona-leyenda {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lims-dona-leyenda li {
+  display: grid;
+  grid-template-columns: 12px minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 10px;
+}
+
+.lims-dona-color {
+  width: 12px;
+  height: 12px;
+  margin-top: 5px;
+  border-radius: 3px;
+}
+
+.lims-dona-nombre {
+  color: var(--lims-ink);
+}
+
+.lims-dona-valor {
+  font-weight: 700;
+  color: var(--lims-ink);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.lims-dona-detalle {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 400;
+  color: var(--lims-muted);
+}

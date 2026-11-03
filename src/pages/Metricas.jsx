@@ -1,6 +1,20 @@
 import { useEffect, useState } from 'react';
 import { Navigate, useOutletContext } from 'react-router-dom';
-import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 import Modal from 'react-bootstrap/Modal';
 import { ArrowDown, ArrowRight, ArrowUp, Clock, Coins, Receipt, Warning } from '@phosphor-icons/react';
 import useMetadatos from '../hooks/useMetadatos.js';
@@ -13,6 +27,8 @@ const COLOR_PRIMARIO = '#1c4e80';
 const COLOR_ACENTO = '#2bb59a';
 
 const NOMBRES_MEDIO_PAGO = { efectivo: 'Efectivo', debito: 'Débito', credito: 'Crédito', transferencia: 'Transferencia' };
+// Un color fijo por medio de pago, así se reconocen aunque cambie el orden
+const COLORES_MEDIO_PAGO = { efectivo: COLOR_ACENTO, debito: COLOR_PRIMARIO, credito: '#5b6fd6', transferencia: '#d08a2c' };
 const NOMBRES_ESTADO = {
   abierta: 'Abiertas',
   en_proceso: 'En proceso',
@@ -254,6 +270,68 @@ function ListaConBarras({ filas, color = 'var(--bs-primary)' }) {
         </li>
       ))}
     </ul>
+  );
+}
+
+// Cobrado por medio de pago: dona con el total en el centro (se arma con una animación) y,
+// al lado, cada medio con su color, monto, porcentaje y cantidad de cobros
+function DonaMediosPago({ medios }) {
+  const filas = medios.map((fila) => ({
+    clave: fila.medio_pago,
+    nombre: NOMBRES_MEDIO_PAGO[fila.medio_pago] ?? fila.medio_pago,
+    monto: Number(fila.monto),
+    cantidad: fila.cantidad,
+    color: COLORES_MEDIO_PAGO[fila.medio_pago] ?? '#888780',
+  }));
+  const total = filas.reduce((suma, fila) => suma + fila.monto, 0);
+
+  return (
+    <div className="lims-dona">
+      <div className="lims-dona-grafico">
+        <ResponsiveContainer width="100%" height={200}>
+          <PieChart>
+            <Tooltip formatter={(valor, nombre) => [`${formatoPesos.format(valor)} (${porcentaje(valor, total)})`, nombre]} />
+            <Pie
+              data={filas}
+              dataKey="monto"
+              nameKey="nombre"
+              innerRadius={62}
+              outerRadius={92}
+              paddingAngle={filas.length > 1 ? 2 : 0}
+              stroke="#ffffff"
+              strokeWidth={2}
+              animationDuration={700}
+            >
+              {filas.map((fila) => (
+                <Cell key={fila.clave} fill={fila.color} />
+              ))}
+            </Pie>
+          </PieChart>
+        </ResponsiveContainer>
+        {/* El total va encima, centrado en el agujero de la dona */}
+        <div className="lims-dona-centro" aria-hidden="true">
+          <span className="lims-dona-total">{formatoPesos.format(total)}</span>
+          <span className="lims-dona-etiqueta">cobrado</span>
+        </div>
+      </div>
+      <ul className="lims-dona-leyenda">
+        {filas.map((fila) => (
+          <li key={fila.clave}>
+            <span className="lims-dona-color" style={{ background: fila.color }} aria-hidden="true" />
+            <span className="lims-dona-nombre">
+              {fila.nombre}
+              <span className="lims-dona-detalle">
+                {formatoNumero.format(fila.cantidad)} {fila.cantidad === 1 ? 'cobro' : 'cobros'}
+              </span>
+            </span>
+            <span className="lims-dona-valor">
+              {formatoPesos.format(fila.monto)}
+              <span className="lims-dona-detalle">{porcentaje(fila.monto, total)}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
 
@@ -552,15 +630,7 @@ function Metricas() {
                 {datos.por_medio_pago.length === 0 ? (
                   <Vacio texto="No hay cobros en este período." />
                 ) : (
-                  <ListaConBarras
-                    filas={datos.por_medio_pago.map((fila) => ({
-                      clave: fila.medio_pago,
-                      nombre: NOMBRES_MEDIO_PAGO[fila.medio_pago] ?? fila.medio_pago,
-                      valor: Number(fila.monto),
-                      texto: formatoPesos.format(fila.monto),
-                      detalle: `${formatoNumero.format(fila.cantidad)} ${fila.cantidad === 1 ? 'cobro' : 'cobros'}`,
-                    }))}
-                  />
+                  <DonaMediosPago medios={datos.por_medio_pago} />
                 )}
               </Seccion>
             )}
