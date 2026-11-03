@@ -5,6 +5,7 @@ import { mensajeDeErrorApi } from '../lib/api.js';
 import { leerNumero, numeroParaCampo } from '../lib/analisis.js';
 import { formatearPesos } from '../lib/aranceles.js';
 import { MEDIOS_PAGO, anularCobro, cuentaDeOrden, registrarCobro } from '../lib/cobros.js';
+import { abrirComprobante } from '../lib/comprobante.js';
 import { fechaDe, horaDe } from '../lib/hora.js';
 
 const OBSERVACIONES_MAXIMO = 200;
@@ -12,8 +13,8 @@ const OBSERVACIONES_MAXIMO = 200;
 // Ventana de cobro de una orden (LIMS-19): cuánto paga el paciente, lo que ya pagó y el formulario para
 // registrar un cobro nuevo. Se puede pagar en partes (ej: una parte en efectivo y otra con débito).
 // Los cobros cargados no se borran: se anulan con motivo.
-// Props: orden (con sus estudios y cobros) · onCerrar · onGuardado (después de registrar o anular)
-function ModalCobro({ orden, onCerrar, onGuardado }) {
+// Props: orden (con sus estudios y cobros) · sucursal · perfil · onCerrar · onGuardado (después de registrar o anular)
+function ModalCobro({ orden, sucursal, perfil, onCerrar, onGuardado }) {
   const cuenta = cuentaDeOrden(orden);
   const puedeCobrar = orden.estado !== 'anulada' && cuenta.saldo > 0;
   // Se propone cobrar todo lo que falta
@@ -24,6 +25,20 @@ function ModalCobro({ orden, onCerrar, onGuardado }) {
   const [guardando, setGuardando] = useState(false);
   // Los más nuevos arriba
   const cobros = [...(orden.cobros ?? [])].sort((a, b) => b.cobrado_en.localeCompare(a.cobrado_en));
+
+  // Comprobante de cobro para el paciente (LIMS-46). Se abre en una pestaña aparte, lista para imprimir o
+  // guardar como PDF. El cobro recién registrado todavía no tiene el perfil embebido: se lo agrega el que cobró.
+  function verComprobante(cobro) {
+    if (!abrirComprobante({ orden, cobro, sucursal })) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'No se pudo abrir el comprobante',
+        text: 'Permita las ventanas emergentes para este sitio y vuelva a intentarlo.',
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#1c4e80',
+      });
+    }
+  }
 
   function avisarError(titulo, errorPeticion) {
     console.error(titulo, errorPeticion);
@@ -63,13 +78,20 @@ function ModalCobro({ orden, onCerrar, onGuardado }) {
     try {
       const resultado = await registrarCobro(orden.id, valor, medio, observaciones.trim());
       const saldo = Number(resultado.saldo);
-      await Swal.fire({
+      const cobroConCobrador = {
+        ...resultado.cobro,
+        cobrador: perfil ? { nombre: perfil.nombre, apellido: perfil.apellido } : resultado.cobro.cobrador,
+      };
+      const { isConfirmed } = await Swal.fire({
         icon: 'success',
         title: saldo <= 0 ? 'Orden pagada' : 'Cobro registrado',
-        text: saldo <= 0 ? undefined : `Falta cobrar ${formatearPesos(saldo)}.`,
-        timer: 1800,
-        showConfirmButton: false,
+        text: saldo <= 0 ? 'El paciente pagó el total de la orden.' : `Falta cobrar ${formatearPesos(saldo)}.`,
+        showCancelButton: true,
+        confirmButtonText: 'Comprobante',
+        cancelButtonText: 'Cerrar',
+        confirmButtonColor: '#1c4e80',
       });
+      if (isConfirmed) verComprobante(cobroConCobrador);
       onGuardado();
     } catch (errorPeticion) {
       await avisarError('No pudimos registrar el cobro', errorPeticion);
@@ -210,6 +232,15 @@ function ModalCobro({ orden, onCerrar, onGuardado }) {
                     <span className={`fw-semibold${cobro.anulado_en ? ' text-muted text-decoration-line-through' : ''}`}>
                       {formatearPesos(cobro.monto)}
                     </span>
+                    <button
+                      type="button"
+                      className="btn lims-btn-pill lims-btn-secundario lims-btn-chico"
+                      disabled={guardando}
+                      aria-label={`Ver el comprobante del cobro de ${formatearPesos(cobro.monto)}`}
+                      onClick={() => verComprobante(cobro)}
+                    >
+                      Comprobante
+                    </button>
                     {!cobro.anulado_en && (
                       <button
                         type="button"

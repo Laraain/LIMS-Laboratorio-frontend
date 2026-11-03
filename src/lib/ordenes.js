@@ -22,7 +22,9 @@ const CAMPOS_ORDEN =
   'medicos(nombre,apellido,matricula),obras_sociales(nombre),' +
   'orden_analisis(id,analisis_id,padre_id,cubierto,grupo_id,importe_paciente,importe_obra_social,' +
   'analisis(codigo,nombre),grupos_analisis(nombre),resultados(estado,fuera_de_rango)),' +
-  'cobros(id,monto,medio_pago,observaciones,cobrado_en,motivo_anulacion,anulado_en)';
+  'cobros(id,monto,medio_pago,observaciones,cobrado_en,motivo_anulacion,anulado_en,' +
+  'cobrador:perfiles!cobros_cobrado_por_fkey(nombre,apellido),' +
+  'anulador:perfiles!cobros_anulado_por_fkey(nombre,apellido))';
 
 // Lo que se pide de cada orden para la bandeja de trabajo: el paciente y, por cada estudio,
 // el estado de su resultado (si ya se cargó).
