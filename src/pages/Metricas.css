@@ -117,6 +117,39 @@
   outline-offset: 2px;
 }
 
+/* En el celular los botones de secciones ocupan media pantalla: se reemplazan por un desplegable */
+.lims-secciones-movil {
+  display: none;
+  margin-bottom: 20px;
+  border: 1px solid var(--lims-border-soft);
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.lims-secciones-movil summary {
+  padding: 10px 14px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--lims-ink);
+  cursor: pointer;
+}
+
+.lims-secciones-movil-lista {
+  display: grid;
+  gap: 6px;
+  padding: 0 14px 12px;
+}
+
+@media (max-width: 767.98px) {
+  .lims-secciones-movil {
+    display: block;
+  }
+
+  .lims-secciones {
+    display: none;
+  }
+}
+
 /* Mientras llegan los números nuevos se atenúa lo anterior en lugar de vaciar la pantalla */
 .lims-dashboard {
   transition: opacity 0.15s ease;
@@ -149,10 +182,43 @@
 
 .lims-metrica {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   padding: 20px;
   border: 1px solid var(--lims-border-soft);
   border-radius: 16px;
   background: #ffffff;
+  text-align: left;
+}
+
+/* Tarjetas de alerta: se tocan para ver las órdenes */
+.lims-metrica--boton {
+  width: 100%;
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.lims-metrica--boton:hover {
+  border-color: rgba(var(--bs-primary-rgb), 0.45);
+  box-shadow: 0 4px 14px rgba(28, 78, 128, 0.08);
+}
+
+.lims-metrica--boton:focus-visible {
+  outline: 2px solid var(--bs-primary);
+  outline-offset: 2px;
+}
+
+.lims-metrica-accion {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: auto;
+  padding-top: 10px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--bs-primary);
 }
 
 .lims-metrica-icono {
@@ -218,6 +284,8 @@
 .lims-graficos {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+  /* dense: si se oculta una sección, la siguiente sube a ocupar el hueco */
+  grid-auto-flow: row dense;
   gap: 16px;
   margin-bottom: 16px;
 }

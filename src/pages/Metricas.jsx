@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Navigate, useOutletContext } from 'react-router-dom';
 import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { ArrowDown, ArrowUp, Clock, Coins, Receipt, Warning } from '@phosphor-icons/react';
+import Modal from 'react-bootstrap/Modal';
+import { ArrowDown, ArrowRight, ArrowUp, Clock, Coins, Receipt, Warning } from '@phosphor-icons/react';
 import useMetadatos from '../hooks/useMetadatos.js';
 import { mensajeDeErrorApi } from '../lib/api.js';
-import { ATAJOS, metricasDashboard, periodoAnterior, rangoDeAtajo } from '../lib/metricas.js';
+import { ATAJOS, detalleDeAlertas, metricasDashboard, periodoAnterior, rangoDeAtajo } from '../lib/metricas.js';
 import { useSucursales } from '../lib/sucursal.js';
 import './Metricas.css';
 
@@ -21,33 +22,38 @@ const NOMBRES_ESTADO = {
 };
 const DIAS_SEMANA = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
-// Secciones que el admin puede mostrar u ocultar. "sucursales" solo aparece con "Todas las sucursales"
+// Secciones que el admin puede mostrar u ocultar, en el orden en que aparecen: primero lo que más se mira.
+// "sucursales" solo aparece con "Todas las sucursales"
 const SECCIONES = [
-  { clave: 'actividad', texto: 'Actividad' },
   { clave: 'facturacion', texto: 'Facturación y cobros' },
-  { clave: 'obras', texto: 'Por obra social' },
   { clave: 'tiempos', texto: 'Tiempos' },
+  { clave: 'caja', texto: 'Control de caja' },
+  { clave: 'obras', texto: 'Por obra social' },
+  { clave: 'actividad', texto: 'Actividad' },
   { clave: 'calidad', texto: 'Calidad' },
   { clave: 'fila', texto: 'Fila de atención' },
-  { clave: 'caja', texto: 'Control de caja' },
+  { clave: 'sucursales', texto: 'Por sucursal' },
   { clave: 'estudios', texto: 'Estudios más pedidos' },
   { clave: 'medicos', texto: 'Médicos que más derivan' },
-  { clave: 'sucursales', texto: 'Por sucursal' },
 ];
 const CLAVE_SECCIONES = 'lims-metricas-secciones';
+// Las de consulta ocasional arrancan ocultas; cada uno las prende si las necesita
+const OCULTAS_POR_DEFECTO = ['estudios', 'medicos'];
 
 const formatoPesos = new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 });
 const formatoNumero = new Intl.NumberFormat('es-AR');
 const formatoDecimal = new Intl.NumberFormat('es-AR', { maximumFractionDigits: 1 });
 
-// Las secciones ocultas se recuerdan en este navegador. localStorage puede fallar (navegación privada):
-// en ese caso se muestran todas
+// Las secciones ocultas se recuerdan en este navegador. Si nunca se eligió nada, o localStorage falla
+// (navegación privada), se usan las de por defecto
 function leerOcultas() {
   try {
-    const guardado = JSON.parse(localStorage.getItem(CLAVE_SECCIONES) ?? '[]');
-    return Array.isArray(guardado) ? guardado : [];
+    const texto = localStorage.getItem(CLAVE_SECCIONES);
+    if (texto === null) return OCULTAS_POR_DEFECTO;
+    const guardado = JSON.parse(texto);
+    return Array.isArray(guardado) ? guardado : OCULTAS_POR_DEFECTO;
   } catch {
-    return [];
+    return OCULTAS_POR_DEFECTO;
   }
 }
 
@@ -79,17 +85,18 @@ function variacion(actual, anterior) {
 }
 
 // Tarjeta con un número grande. comparacion: resultado de variacion() · alerta: resalta el valor en rojo
-function TarjetaMetrica({ icono: Icono, titulo, valor, detalle, comparacion, alerta = false }) {
-  return (
-    <article className="lims-metrica">
+// onAbrir: si viene, la tarjeta es un botón que abre la lista de órdenes detrás del número
+function TarjetaMetrica({ icono: Icono, titulo, valor, detalle, comparacion, alerta = false, onAbrir }) {
+  const contenido = (
+    <>
       <span className={`lims-metrica-icono${alerta ? ' lims-metrica-icono--alerta' : ''}`} aria-hidden="true">
         <Icono />
       </span>
-      <p className="lims-metrica-titulo">{titulo}</p>
-      <p className={`lims-metrica-valor${alerta ? ' text-danger' : ''}`}>{valor}</p>
-      {detalle && <p className="lims-metrica-detalle">{detalle}</p>}
+      <span className="lims-metrica-titulo">{titulo}</span>
+      <span className={`lims-metrica-valor${alerta ? ' text-danger' : ''}`}>{valor}</span>
+      {detalle && <span className="lims-metrica-detalle">{detalle}</span>}
       {comparacion && (
-        <p
+        <span
           className={`lims-metrica-comparacion${
             comparacion.sube === null ? '' : comparacion.sube ? ' lims-metrica-comparacion--sube' : ' lims-metrica-comparacion--baja'
           }`}
@@ -97,9 +104,109 @@ function TarjetaMetrica({ icono: Icono, titulo, valor, detalle, comparacion, ale
           {comparacion.sube === true && <ArrowUp aria-hidden="true" />}
           {comparacion.sube === false && <ArrowDown aria-hidden="true" />}
           {comparacion.texto}
-        </p>
+        </span>
       )}
-    </article>
+      {onAbrir && (
+        <span className="lims-metrica-accion">
+          Ver órdenes <ArrowRight aria-hidden="true" />
+        </span>
+      )}
+    </>
+  );
+  return onAbrir ? (
+    <button type="button" className="lims-metrica lims-metrica--boton" onClick={onAbrir}>
+      {contenido}
+    </button>
+  ) : (
+    <article className="lims-metrica">{contenido}</article>
+  );
+}
+
+// Lista de las órdenes detrás de una tarjeta de alerta (atrasadas o con saldo).
+// tipo: 'atrasadas' | 'conSaldo' · detalle: lo que devuelve detalleDeAlertas (null mientras carga)
+function ModalAlertas({ tipo, detalle, error, onCerrar }) {
+  const atrasadas = tipo === 'atrasadas';
+  const filas = detalle ? detalle[tipo] : [];
+  return (
+    <Modal show onHide={onCerrar} centered scrollable size="lg" contentClassName="lims-modal">
+      <Modal.Header closeButton>
+        <Modal.Title as="h2" className="h5 fw-bold mb-0">
+          {atrasadas ? 'Órdenes atrasadas' : 'Órdenes con saldo pendiente'}
+        </Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <p className="small text-muted">
+          {atrasadas
+            ? 'Sin informar y con el plazo vencido (recepción más los días de demora del estudio más lento). Primero las que más esperan.'
+            : 'Lo que paga el paciente menos lo cobrado. Primero las que más deben.'}
+        </p>
+        {error && <p className="alert alert-danger mb-0">{error}</p>}
+        {!error && !detalle && (
+          <p className="text-muted text-center py-4 mb-0" role="status">
+            Cargando órdenes…
+          </p>
+        )}
+        {detalle && filas.length === 0 && <p className="text-muted text-center py-4 mb-0">No hay órdenes en este período.</p>}
+        {filas.length > 0 && (
+          <div className="table-responsive">
+            <table className="table align-middle mb-0 lims-tabla-alertas">
+              <thead>
+                <tr>
+                  <th scope="col">Orden</th>
+                  <th scope="col">Paciente</th>
+                  <th scope="col">Recibida</th>
+                  {atrasadas ? (
+                    <>
+                      <th scope="col">Estado</th>
+                      <th scope="col" className="text-end">
+                        Atraso
+                      </th>
+                    </>
+                  ) : (
+                    <>
+                      <th scope="col" className="text-end">
+                        Total
+                      </th>
+                      <th scope="col" className="text-end">
+                        Falta
+                      </th>
+                    </>
+                  )}
+                </tr>
+              </thead>
+              <tbody>
+                {filas.map((orden) => (
+                  <tr key={orden.id}>
+                    <td>
+                      <span className="fw-semibold">{orden.nro}</span>
+                      <span className="lims-celda-identidad">{orden.sucursal}</span>
+                    </td>
+                    <td>
+                      {orden.paciente}
+                      <span className="lims-celda-identidad">DNI {orden.dni}</span>
+                    </td>
+                    <td>{diaCorto(orden.recibida)}</td>
+                    {atrasadas ? (
+                      <>
+                        <td>{NOMBRES_ESTADO[orden.estado]?.replace(/s$/, '') ?? orden.estado}</td>
+                        <td className="text-end text-danger fw-semibold">
+                          {orden.diasDeAtraso} {orden.diasDeAtraso === 1 ? 'día' : 'días'}
+                        </td>
+                      </>
+                    ) : (
+                      <>
+                        <td className="text-end">{formatoPesos.format(orden.total)}</td>
+                        <td className="text-end text-danger fw-semibold">{formatoPesos.format(orden.saldo)}</td>
+                      </>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Modal.Body>
+    </Modal>
   );
 }
 
@@ -217,6 +324,8 @@ function Metricas() {
   const [sucursalId, setSucursalId] = useState('');
   const [ocultas, setOcultas] = useState(leerOcultas);
   const [estado, setEstado] = useState({ clave: '', datos: null, anterior: null, error: '' });
+  // alertas: la lista abierta desde una tarjeta ({ tipo, detalle, error }) o null
+  const [alertas, setAlertas] = useState(null);
 
   const { desde, hasta } = rango;
   const rangoValido = Boolean(desde && hasta && desde <= hasta);
@@ -264,6 +373,20 @@ function Metricas() {
     setRango((previo) => ({ ...previo, [campo]: valor }));
   }
 
+  // Abre la lista de órdenes atrasadas o con saldo del período y la sucursal elegidos
+  async function abrirAlertas(tipo) {
+    setAlertas({ tipo, detalle: null, error: '' });
+    try {
+      const detalle = await detalleDeAlertas(desde, hasta, sucursalId ? Number(sucursalId) : null);
+      setAlertas((previo) => previo && { ...previo, detalle });
+    } catch (errorPeticion) {
+      console.error('No se pudieron cargar las órdenes:', errorPeticion);
+      setAlertas((previo) => previo && { ...previo, error: mensajeDeErrorApi(errorPeticion) });
+    }
+  }
+
+  const seccionesDisponibles = SECCIONES.filter((seccion) => seccion.clave !== 'sucursales' || todas);
+  const cantidadVisibles = seccionesDisponibles.filter((seccion) => !ocultas.includes(seccion.clave)).length;
   const totales = datos?.totales;
   const previos = anterior?.totales;
 
@@ -326,9 +449,29 @@ function Metricas() {
         </div>
       </form>
 
+      {/* Celular: las secciones se eligen en un desplegable para no ocupar media pantalla */}
+      <details className="lims-secciones-movil">
+        <summary>
+          Secciones ({cantidadVisibles} de {seccionesDisponibles.length})
+        </summary>
+        <div className="lims-secciones-movil-lista">
+          {seccionesDisponibles.map((seccion) => (
+            <label key={seccion.clave} className="form-check">
+              <input
+                type="checkbox"
+                className="form-check-input"
+                checked={!ocultas.includes(seccion.clave)}
+                onChange={() => alternarSeccion(seccion.clave)}
+              />
+              <span className="form-check-label">{seccion.texto}</span>
+            </label>
+          ))}
+        </div>
+      </details>
+
       <div className="lims-secciones" role="group" aria-label="Secciones visibles">
         <span className="lims-secciones-etiqueta">Mostrar:</span>
-        {SECCIONES.filter((seccion) => seccion.clave !== 'sucursales' || todas).map((seccion) => {
+        {seccionesDisponibles.map((seccion) => {
           const activa = !ocultas.includes(seccion.clave);
           return (
             <button
@@ -378,6 +521,7 @@ function Metricas() {
               valor={formatoPesos.format(totales.pendiente_cobro)}
               detalle={`${formatoNumero.format(totales.ordenes_con_saldo)} ${totales.ordenes_con_saldo === 1 ? 'orden con saldo' : 'órdenes con saldo'}`}
               alerta={Number(totales.pendiente_cobro) > 0}
+              onAbrir={totales.ordenes_con_saldo > 0 ? () => abrirAlertas('conSaldo') : undefined}
             />
             <TarjetaMetrica
               icono={Clock}
@@ -385,48 +529,11 @@ function Metricas() {
               valor={formatoNumero.format(totales.atrasadas)}
               detalle="Sin informar y con el plazo vencido"
               alerta={totales.atrasadas > 0}
+              onAbrir={totales.atrasadas > 0 ? () => abrirAlertas('atrasadas') : undefined}
             />
           </div>
 
           <div className="lims-graficos">
-            {visible('actividad') && (
-              <Seccion titulo="Actividad por día" descripcion="Órdenes recibidas y estudios pedidos cada día." ancho>
-                {totales.ordenes === 0 ? (
-                  <Vacio />
-                ) : (
-                  <div className="lims-actividad">
-                    <div className="lims-grafico-area">
-                      <ResponsiveContainer width="100%" height={260}>
-                        <LineChart
-                          data={datos.por_dia.map((fila) => ({ ...fila, etiqueta: diaCorto(fila.dia) }))}
-                          margin={{ top: 8, right: 12, left: -16, bottom: 0 }}
-                        >
-                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eef1f5" />
-                          <XAxis dataKey="etiqueta" tick={{ fontSize: 12 }} tickLine={false} interval="preserveStartEnd" minTickGap={16} />
-                          <YAxis allowDecimals={false} tick={{ fontSize: 12 }} tickLine={false} axisLine={false} />
-                          <Tooltip />
-                          <Legend iconType="plainline" wrapperStyle={{ fontSize: 13 }} />
-                          <Line type="monotone" dataKey="ordenes" name="Órdenes" stroke={COLOR_PRIMARIO} strokeWidth={2} dot={false} />
-                          <Line type="monotone" dataKey="estudios" name="Estudios" stroke={COLOR_ACENTO} strokeWidth={2} dot={false} />
-                        </LineChart>
-                      </ResponsiveContainer>
-                    </div>
-                    <div>
-                      <h3 className="lims-grafico-subtitulo mt-0">Órdenes por estado</h3>
-                      <ul className="lims-estados">
-                        {datos.por_estado.map((fila) => (
-                          <li key={fila.estado} className={`lims-estado lims-estado--${fila.estado}`}>
-                            <span>{NOMBRES_ESTADO[fila.estado] ?? fila.estado}</span>
-                            <strong>{formatoNumero.format(fila.cantidad)}</strong>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                )}
-              </Seccion>
-            )}
-
             {visible('facturacion') && (
               <Seccion titulo="Facturación y cobros" descripcion="Lo que se factura por los estudios del período y lo que se cobró.">
                 <div className="lims-cifras">
@@ -458,27 +565,6 @@ function Metricas() {
               </Seccion>
             )}
 
-            {visible('obras') && (
-              <Seccion titulo="Por obra social" descripcion="Órdenes de cada obra social y lo que hay que facturarle.">
-                {datos.por_obra_social.length === 0 ? (
-                  <Vacio />
-                ) : (
-                  <ListaConBarras
-                    color="#5b6fd6"
-                    filas={datos.por_obra_social.map((fila) => ({
-                      clave: fila.obra_social_id ?? 'particular',
-                      nombre: fila.nombre,
-                      valor: fila.ordenes,
-                      texto: `${formatoNumero.format(fila.ordenes)} ${fila.ordenes === 1 ? 'orden' : 'órdenes'}`,
-                      detalle: fila.obra_social_id
-                        ? `A facturar ${formatoPesos.format(fila.facturado_obra_social)} · paciente ${formatoPesos.format(fila.facturado_paciente)}`
-                        : `Paciente ${formatoPesos.format(fila.facturado_paciente)}`,
-                    }))}
-                  />
-                )}
-              </Seccion>
-            )}
-
             {visible('tiempos') && (
               <Seccion titulo="Tiempos" descripcion="Cuánto tardan los resultados y cuánto esperan los pacientes.">
                 <div className="lims-cifras">
@@ -498,6 +584,149 @@ function Metricas() {
                     detalle={`Promedio de ${formatoNumero.format(datos.tiempos.llamados)} ${datos.tiempos.llamados === 1 ? 'paciente llamado' : 'pacientes llamados'}`}
                   />
                 </div>
+              </Seccion>
+            )}
+
+            {visible('caja') && (
+              <Seccion titulo="Control de caja" descripcion="Cobros anulados y cajas que cerraron con diferencia de efectivo.">
+                <div className="lims-cifras">
+                  <Dato
+                    etiqueta="Cobros anulados"
+                    valor={formatoNumero.format(datos.caja.cobros_anulados)}
+                    detalle={formatoPesos.format(datos.caja.monto_anulado)}
+                  />
+                  <Dato etiqueta="Faltante" valor={formatoPesos.format(datos.caja.faltante)} />
+                  <Dato etiqueta="Sobrante" valor={formatoPesos.format(datos.caja.sobrante)} />
+                </div>
+                <h3 className="lims-grafico-subtitulo">Cajas con diferencia</h3>
+                {datos.caja.con_diferencia.length === 0 ? (
+                  <Vacio
+                    texto={
+                      datos.caja.cajas_cerradas === 0
+                        ? 'No se cerró ninguna caja en este período.'
+                        : `Las ${formatoNumero.format(datos.caja.cajas_cerradas)} cajas cerradas coinciden con lo esperado.`
+                    }
+                  />
+                ) : (
+                  <ul className="lims-cajas">
+                    {datos.caja.con_diferencia.map((fila) => (
+                      <li key={`${fila.fecha}-${fila.sucursal}`}>
+                        <div>
+                          <strong>{diaCorto(fila.fecha)}</strong> · {fila.sucursal}
+                          {fila.observaciones && <span className="lims-cajas-nota">{fila.observaciones}</span>}
+                        </div>
+                        <strong className={Number(fila.diferencia) < 0 ? 'text-danger' : 'text-success'}>
+                          {Number(fila.diferencia) < 0 ? 'Faltan ' : 'Sobran '}
+                          {formatoPesos.format(Math.abs(fila.diferencia))}
+                        </strong>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </Seccion>
+            )}
+
+            {visible('obras') && (
+              <Seccion
+                titulo="Por obra social"
+                descripcion="Lo que hay que facturarle a cada obra social, de mayor a menor. Los particulares, por lo que pagan."
+              >
+                {datos.por_obra_social.length === 0 ? (
+                  <Vacio />
+                ) : (
+                  <ListaConBarras
+                    color="#5b6fd6"
+                    filas={datos.por_obra_social
+                      .map((fila) => {
+                        // A una obra social se le factura su parte; un particular paga todo él
+                        const monto = Number(fila.obra_social_id ? fila.facturado_obra_social : fila.facturado_paciente);
+                        const ordenes = `${formatoNumero.format(fila.ordenes)} ${fila.ordenes === 1 ? 'orden' : 'órdenes'}`;
+                        return {
+                          clave: fila.obra_social_id ?? 'particular',
+                          nombre: fila.nombre,
+                          valor: monto,
+                          texto: formatoPesos.format(monto),
+                          detalle: fila.obra_social_id
+                            ? `${ordenes} · coseguro del paciente ${formatoPesos.format(fila.facturado_paciente)}`
+                            : `${ordenes} · lo paga el paciente`,
+                        };
+                      })
+                      .sort((a, b) => b.valor - a.valor)}
+                  />
+                )}
+              </Seccion>
+            )}
+
+            {visible('actividad') && (
+              <Seccion
+                titulo="Actividad por día"
+                descripcion="Órdenes recibidas (escala de la izquierda) y estudios pedidos (escala de la derecha) cada día."
+                ancho
+              >
+                {totales.ordenes === 0 ? (
+                  <Vacio />
+                ) : (
+                  <div className="lims-actividad">
+                    <div className="lims-grafico-area">
+                      <ResponsiveContainer width="100%" height={260}>
+                        <LineChart
+                          data={datos.por_dia.map((fila) => ({ ...fila, etiqueta: diaCorto(fila.dia) }))}
+                          margin={{ top: 8, right: 0, left: -16, bottom: 0 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eef1f5" />
+                          <XAxis dataKey="etiqueta" tick={{ fontSize: 12 }} tickLine={false} interval="preserveStartEnd" minTickGap={16} />
+                          {/* Dos escalas: con una sola, los estudios (decenas por día) aplastan a las órdenes */}
+                          <YAxis
+                            yAxisId="ordenes"
+                            allowDecimals={false}
+                            tick={{ fontSize: 12, fill: COLOR_PRIMARIO }}
+                            tickLine={false}
+                            axisLine={false}
+                          />
+                          <YAxis
+                            yAxisId="estudios"
+                            orientation="right"
+                            allowDecimals={false}
+                            tick={{ fontSize: 12, fill: COLOR_ACENTO }}
+                            tickLine={false}
+                            axisLine={false}
+                          />
+                          <Tooltip />
+                          <Legend iconType="plainline" wrapperStyle={{ fontSize: 13 }} />
+                          <Line
+                            yAxisId="ordenes"
+                            type="monotone"
+                            dataKey="ordenes"
+                            name="Órdenes"
+                            stroke={COLOR_PRIMARIO}
+                            strokeWidth={2}
+                            dot={false}
+                          />
+                          <Line
+                            yAxisId="estudios"
+                            type="monotone"
+                            dataKey="estudios"
+                            name="Estudios"
+                            stroke={COLOR_ACENTO}
+                            strokeWidth={2}
+                            dot={false}
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <div>
+                      <h3 className="lims-grafico-subtitulo mt-0">Órdenes por estado</h3>
+                      <ul className="lims-estados">
+                        {datos.por_estado.map((fila) => (
+                          <li key={fila.estado} className={`lims-estado lims-estado--${fila.estado}`}>
+                            <span>{NOMBRES_ESTADO[fila.estado] ?? fila.estado}</span>
+                            <strong>{formatoNumero.format(fila.cantidad)}</strong>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                )}
               </Seccion>
             )}
 
@@ -547,42 +776,38 @@ function Metricas() {
               </Seccion>
             )}
 
-            {visible('caja') && (
-              <Seccion titulo="Control de caja" descripcion="Cobros anulados y cajas que cerraron con diferencia de efectivo.">
-                <div className="lims-cifras">
-                  <Dato
-                    etiqueta="Cobros anulados"
-                    valor={formatoNumero.format(datos.caja.cobros_anulados)}
-                    detalle={formatoPesos.format(datos.caja.monto_anulado)}
-                  />
-                  <Dato etiqueta="Faltante" valor={formatoPesos.format(datos.caja.faltante)} />
-                  <Dato etiqueta="Sobrante" valor={formatoPesos.format(datos.caja.sobrante)} />
+            {visible('sucursales') && (
+              <Seccion titulo="Por sucursal" descripcion="Las mismas cifras de cada sucursal, lado a lado." ancho>
+                <div className="table-responsive">
+                  <table className="table align-middle mb-0 lims-tabla-sucursales">
+                    <thead>
+                      <tr>
+                        <th scope="col">Sucursal</th>
+                        <th scope="col" className="text-end">Órdenes</th>
+                        <th scope="col" className="text-end">Estudios</th>
+                        <th scope="col" className="text-end">Facturado</th>
+                        <th scope="col" className="text-end">Cobrado</th>
+                        <th scope="col" className="text-end">Pendiente</th>
+                        <th scope="col" className="text-end">Atrasadas</th>
+                        <th scope="col" className="text-end">Días hasta informar</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {datos.por_sucursal.map((fila) => (
+                        <tr key={fila.sucursal_id}>
+                          <th scope="row">{fila.nombre}</th>
+                          <td className="text-end">{formatoNumero.format(fila.ordenes)}</td>
+                          <td className="text-end">{formatoNumero.format(fila.estudios)}</td>
+                          <td className="text-end">{formatoPesos.format(fila.facturado)}</td>
+                          <td className="text-end">{formatoPesos.format(fila.cobrado)}</td>
+                          <td className="text-end">{formatoPesos.format(fila.pendiente_cobro)}</td>
+                          <td className={`text-end${fila.atrasadas > 0 ? ' text-danger fw-semibold' : ''}`}>{formatoNumero.format(fila.atrasadas)}</td>
+                          <td className="text-end">{fila.dias_hasta_informar === null ? '—' : formatoDecimal.format(fila.dias_hasta_informar)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
-                <h3 className="lims-grafico-subtitulo">Cajas con diferencia</h3>
-                {datos.caja.con_diferencia.length === 0 ? (
-                  <Vacio
-                    texto={
-                      datos.caja.cajas_cerradas === 0
-                        ? 'No se cerró ninguna caja en este período.'
-                        : `Las ${formatoNumero.format(datos.caja.cajas_cerradas)} cajas cerradas coinciden con lo esperado.`
-                    }
-                  />
-                ) : (
-                  <ul className="lims-cajas">
-                    {datos.caja.con_diferencia.map((fila) => (
-                      <li key={`${fila.fecha}-${fila.sucursal}`}>
-                        <div>
-                          <strong>{diaCorto(fila.fecha)}</strong> · {fila.sucursal}
-                          {fila.observaciones && <span className="lims-cajas-nota">{fila.observaciones}</span>}
-                        </div>
-                        <strong className={Number(fila.diferencia) < 0 ? 'text-danger' : 'text-success'}>
-                          {Number(fila.diferencia) < 0 ? 'Faltan ' : 'Sobran '}
-                          {formatoPesos.format(Math.abs(fila.diferencia))}
-                        </strong>
-                      </li>
-                    ))}
-                  </ul>
-                )}
               </Seccion>
             )}
 
@@ -623,43 +848,12 @@ function Metricas() {
                 )}
               </Seccion>
             )}
-
-            {visible('sucursales') && (
-              <Seccion titulo="Por sucursal" descripcion="Las mismas cifras de cada sucursal, lado a lado." ancho>
-                <div className="table-responsive">
-                  <table className="table align-middle mb-0 lims-tabla-sucursales">
-                    <thead>
-                      <tr>
-                        <th scope="col">Sucursal</th>
-                        <th scope="col" className="text-end">Órdenes</th>
-                        <th scope="col" className="text-end">Estudios</th>
-                        <th scope="col" className="text-end">Facturado</th>
-                        <th scope="col" className="text-end">Cobrado</th>
-                        <th scope="col" className="text-end">Pendiente</th>
-                        <th scope="col" className="text-end">Atrasadas</th>
-                        <th scope="col" className="text-end">Días hasta informar</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {datos.por_sucursal.map((fila) => (
-                        <tr key={fila.sucursal_id}>
-                          <th scope="row">{fila.nombre}</th>
-                          <td className="text-end">{formatoNumero.format(fila.ordenes)}</td>
-                          <td className="text-end">{formatoNumero.format(fila.estudios)}</td>
-                          <td className="text-end">{formatoPesos.format(fila.facturado)}</td>
-                          <td className="text-end">{formatoPesos.format(fila.cobrado)}</td>
-                          <td className="text-end">{formatoPesos.format(fila.pendiente_cobro)}</td>
-                          <td className={`text-end${fila.atrasadas > 0 ? ' text-danger fw-semibold' : ''}`}>{formatoNumero.format(fila.atrasadas)}</td>
-                          <td className="text-end">{fila.dias_hasta_informar === null ? '—' : formatoDecimal.format(fila.dias_hasta_informar)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </Seccion>
-            )}
           </div>
         </div>
+      )}
+
+      {alertas && (
+        <ModalAlertas tipo={alertas.tipo} detalle={alertas.detalle} error={alertas.error} onCerrar={() => setAlertas(null)} />
       )}
 
       {!datos && cargando && (
