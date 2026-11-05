@@ -23,6 +23,14 @@ import './ModalResultados.css';
 
 const SEXOS = { F: 'Femenino', M: 'Masculino', X: 'X' };
 
+// Cómo terminó el aviso por mail al paciente al publicar (LIMS-18). El informe se publica igual
+const AVISOS_MAIL = {
+  enviado: 'Se le avisó al paciente por mail.',
+  sin_email: 'El paciente no tiene un email cargado: no se le avisó por mail.',
+  sin_configurar: 'El envío de mails todavía no está configurado: no se le avisó por mail.',
+  error: 'No se pudo enviar el aviso por mail; el informe igual quedó publicado.',
+};
+
 // Escapa los caracteres especiales antes de armar el HTML de una ventana de SweetAlert2
 function escapar(texto) {
   return String(texto).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -355,6 +363,7 @@ function ModalResultados({ ordenId, perfil, onCerrar, onGuardado, lectura = fals
         title: 'Informe publicado',
         html:
           '<p class="mb-2">El informe quedó firmado y el paciente ya lo puede ver.</p>' +
+          (AVISOS_MAIL[publicado.aviso_mail] ? `<p class="mb-2 small">${AVISOS_MAIL[publicado.aviso_mail]}</p>` : '') +
           (publicado.url
             ? `<a class="btn lims-btn-pill lims-btn-secundario" href="${escapar(publicado.url)}" target="_blank" rel="noopener">Abrir el PDF</a>`
             : ''),
