@@ -118,3 +118,49 @@
   background: #fdecec;
   color: var(--bs-danger);
 }
+
+/* Pedido médico adjunto (LIMS-34) */
+.lims-orden-adjuntos {
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lims-orden-adjuntos li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--lims-border);
+}
+
+.lims-adjunto-miniatura,
+.lims-adjunto-icono {
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--lims-border);
+  border-radius: 8px;
+  background: #f7f9fc;
+}
+
+.lims-adjunto-miniatura {
+  object-fit: cover;
+}
+
+.lims-adjunto-icono {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--lims-muted);
+  font-size: 1.35rem;
+}
+
+.lims-adjunto-nombre {
+  flex: 1 1 10rem;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}

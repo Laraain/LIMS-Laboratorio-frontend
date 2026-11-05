@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { Suspense, lazy, useEffect, useRef } from 'react';
 import { Routes, Route, Navigate, useLocation, useNavigate, useOutletContext } from 'react-router-dom';
 import Navbar from './components/Navbar.jsx';
 import Footer from './components/Footer.jsx';
@@ -22,6 +22,9 @@ import Aranceles from './pages/Aranceles.jsx';
 import Caja from './pages/Caja.jsx';
 import PortalPaciente from './pages/PortalPaciente.jsx';
 import { ROLES_BANDEJA } from './data/roles.js';
+
+// Métricas usa la librería de gráficos (recharts): se descarga aparte, solo cuando el admin abre la pantalla
+const Metricas = lazy(() => import('./pages/Metricas.jsx'));
 
 // Primera página del panel: el bioquímico y el técnico arrancan en su bandeja de trabajo;
 // el resto (recepción y admin) ve la bienvenida de siempre.
@@ -112,6 +115,15 @@ function App() {
           <Route path="configuracion" element={<Navigate to="/panel/sucursales" replace />} />
           {/* Solo para administradores: la propia página redirige al inicio del panel si el rol no es admin */}
           <Route path="usuarios" element={<Usuarios />} />
+          {/* Dashboard del dueño: solo administradores (la página redirige si el rol no es admin) */}
+          <Route
+            path="metricas"
+            element={
+              <Suspense fallback={<p className="text-muted text-center py-5" role="status">Cargando métricas…</p>}>
+                <Metricas />
+              </Suspense>
+            }
+          />
         </Route>
         {/* La administración de perfiles ahora vive dentro del panel; la ruta vieja redirige ahí */}
         <Route path="/usuarios" element={<Navigate to="/panel/usuarios" replace />} />
