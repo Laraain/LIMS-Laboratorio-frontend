@@ -51,7 +51,7 @@ function PrimerIngreso({ nombre, pedirEmail = true, onCompletado, onCancelar }) 
       setError(
         pedirEmail
           ? 'Su contraseña se cambió, pero no se pudo guardar el email. Intente nuevamente.'
-          : 'Su contraseña se cambió, pero no se pudo completar el primer ingreso. Intente nuevamente.',
+          : 'Su contraseña se cambió, pero no se pudo guardar el resto. Intente nuevamente.',
       );
       return;
     }
@@ -63,8 +63,8 @@ function PrimerIngreso({ nombre, pedirEmail = true, onCompletado, onCancelar }) 
       <div className="alert alert-info small" role="status">
         <strong>Hola, {nombre}.</strong>{' '}
         {pedirEmail
-          ? 'Es su primer ingreso: elija una contraseña propia y cargue el email donde quiere recibir el aviso cuando sus resultados estén listos.'
-          : 'Es su primer ingreso: la contraseña que recibió es provisoria. Elija una contraseña propia para continuar.'}
+          ? 'Está usando una contraseña provisoria: elija una propia y confirme el email donde quiere recibir los avisos (el de sus resultados y el link si olvida la contraseña).'
+          : 'La contraseña que recibió es provisoria: elija una propia para continuar.'}
       </div>
 
       {error && (
