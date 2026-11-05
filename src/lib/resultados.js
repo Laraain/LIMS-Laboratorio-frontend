@@ -91,7 +91,8 @@ export function validarOrden(ordenId, items) {
 }
 
 // Firma el informe de una orden validada: la función de servidor arma el PDF, lo guarda y lo publica.
-// Devuelve { informe_id, pdf_path, publicado_en, url } (url: link para abrir el PDF, vence en minutos)
+// Devuelve { informe_id, pdf_path, publicado_en, url, aviso_mail } (url: link para abrir el PDF, vence en minutos;
+// aviso_mail: enviado, sin_email, sin_configurar o error, ver functions/_shared/aviso-resultado.ts)
 export async function firmarInforme(ordenId) {
   const response = await axios.post(
     `${FUNCIONES_URL}/generar-informe`,
