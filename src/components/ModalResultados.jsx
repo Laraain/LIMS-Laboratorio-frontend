@@ -56,10 +56,12 @@ function fueraDeRango(valor, rango, numerico, absoluto, analisis) {
     const numero = leerNumero(valor);
     if (Number.isNaN(numero) || numero === null) return false;
     const fueraValor = (rango.valor_min !== null && numero < rango.valor_min) || (rango.valor_max !== null && numero > rango.valor_max);
+    // El absoluto puede cambiar con la edad (neutrófilos y linfocitos en los chicos):
+    // se usa el del rango y, si no trae, el general del catálogo
+    const absMin = rango.absoluto_min ?? analisis.absoluto_min;
+    const absMax = rango.absoluto_max ?? analisis.absoluto_max;
     const fueraAbsoluto =
-      absoluto !== null &&
-      ((analisis.absoluto_min !== null && absoluto < analisis.absoluto_min) ||
-        (analisis.absoluto_max !== null && absoluto > analisis.absoluto_max));
+      absoluto !== null && ((absMin !== null && absoluto < absMin) || (absMax !== null && absoluto > absMax));
     return fueraValor || fueraAbsoluto;
   }
   return Boolean(rango.valor_texto) && rango.valor_texto !== 'Ver informe' && valor.trim().toLowerCase() !== rango.valor_texto.toLowerCase();
@@ -419,6 +421,9 @@ function ModalResultados({ ordenId, perfil, onCerrar, onGuardado, lectura = fals
     const fuera = estaFuera(estudio);
     const idCampo = `resultado-${estudio.id}`;
     const analisis = estudio.analisis;
+    // El absoluto de referencia puede cambiar con la edad (neutrófilos y linfocitos en los chicos)
+    const absMin = rango?.absoluto_min ?? analisis.absoluto_min;
+    const absMax = rango?.absoluto_max ?? analisis.absoluto_max;
     return (
       <li key={estudio.id} className={`${componente ? 'lims-resultado--componente' : ''}${fuera ? ' lims-resultado--fuera' : ''}`}>
         <label htmlFor={idCampo} className="lims-resultado-estudio">
@@ -466,10 +471,9 @@ function ModalResultados({ ordenId, perfil, onCerrar, onGuardado, lectura = fals
               : '—'}
             {analisis.unidad && esNumerico(rango) ? ` ${analisis.unidad}` : ''}
           </span>
-          {analisis.absoluto_de && (analisis.absoluto_min !== null || analisis.absoluto_max !== null) && (
+          {analisis.absoluto_de && (absMin !== null || absMax !== null) && (
             <span>
-              {textoReferencia({ valor_ref_min: analisis.absoluto_min, valor_ref_max: analisis.absoluto_max })}{' '}
-              {analisis.absoluto_unidad}
+              {textoReferencia({ valor_ref_min: absMin, valor_ref_max: absMax })} {analisis.absoluto_unidad}
             </span>
           )}
           {fuera && (
