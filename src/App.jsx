@@ -4,6 +4,7 @@ import Navbar from './components/Navbar.jsx';
 import Footer from './components/Footer.jsx';
 import Home from './pages/Home.jsx';
 import LoginPaciente from './pages/LoginPaciente.jsx';
+import RestablecerPassword from './pages/RestablecerPassword.jsx';
 import LoginPersonal from './pages/LoginPersonal.jsx';
 import Panel from './pages/Panel.jsx';
 import PanelInicio from './pages/PanelInicio.jsx';
@@ -87,6 +88,7 @@ function App() {
         {/* Los servicios ahora son una sección de la home; la ruta vieja redirige ahí */}
         <Route path="/servicios" element={<Navigate to={{ pathname: '/', hash: '#servicios' }} replace />} />
         <Route path="/login-paciente" element={<LoginPaciente />} />
+        <Route path="/restablecer-password" element={<RestablecerPassword />} />
         {/* Portal del paciente: sus estudios y la descarga de los informes publicados */}
         <Route path="/mis-estudios" element={<PortalPaciente />} />
         <Route path="/login-personal" element={<LoginPersonal />} />
