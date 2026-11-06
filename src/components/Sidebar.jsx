@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { Buildings, CashRegister, ChartBar, ClipboardText, CurrencyDollar, FileText, FirstAidKit, Flask, House, IdentificationCard, Syringe, TestTube, UserCircle, UsersThree, X } from '@phosphor-icons/react';
+import { Buildings, CashRegister, ChartBar, ClipboardText, CurrencyDollar, FileText, FirstAidKit, Flask, House, IdentificationCard, Receipt, Syringe, TestTube, UserCircle, UsersThree, X } from '@phosphor-icons/react';
 import ROLES, { ROLES_BANDEJA, ROLES_CAJA, ROLES_EXTRACCION, ROLES_ORDENES, ROLES_PACIENTES, ROLES_RECEPCION, ROLES_RESULTADOS } from '../data/roles.js';
 import './Sidebar.css';
 
@@ -21,6 +21,7 @@ const OPCIONES = [
   { ruta: '/panel/sucursales', texto: 'Sucursales', icono: Buildings, roles: ['admin'] },
   { ruta: '/panel/obras-sociales', texto: 'Obras sociales', icono: FirstAidKit, roles: ['admin'] },
   { ruta: '/panel/aranceles', texto: 'Aranceles', icono: CurrencyDollar, roles: ['admin'] },
+  { ruta: '/panel/liquidacion', texto: 'Liquidación a obras sociales', icono: Receipt, roles: ['admin'] },
 ];
 
 // Menú lateral del panel del personal: muestra solo las opciones habilitadas para el rol de quien ingresó.
