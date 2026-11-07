@@ -1,14 +1,11 @@
 import axios from 'axios';
 import { API_URL, encabezados } from './api.js';
 import { diaDe, fechaDe, horaDe } from './hora.js';
+import { descargar, generarCsv, generarXlsx, paraNombreDeArchivo } from './hojasDeCalculo.js';
 
 // Informe exportable del dashboard (LIMS-23): las cifras de metricas_dashboard del período (y del anterior,
 // para comparar) más el detalle de las órdenes, en Excel (.xlsx, una hoja por sección) o CSV.
-//
-// Cada hoja se describe una sola vez y sirve para los dos formatos:
-// { nombre, columnas: [{ titulo, tipo, ancho }], filas: [[valor, ...]] }
-// tipo: 'texto' | 'numero' | 'pesos' | 'porcentaje' (valor entre 0 y 1) | 'fecha' ("AAAA-MM-DD") | 'decimal'
-// Una celda puede traer su propio tipo: { valor, tipo } (en el resumen cada fila es de un tipo distinto).
+// Cómo se describe cada hoja y cómo se arman los archivos: ver hojasDeCalculo.js (lo comparte con LIMS-47).
 
 const NOMBRES_MEDIO_PAGO = { efectivo: 'Efectivo', debito: 'Débito', credito: 'Crédito', transferencia: 'Transferencia' };
 const NOMBRES_ESTADO = {
@@ -295,149 +292,9 @@ function armarHojas(datos, anterior, detalle, filtros) {
   return filtros.todas ? hojas : hojas.filter((hoja) => hoja.nombre !== 'Por sucursal');
 }
 
-// "2026-11-02" → "02/11/2026"
-function formatoFecha(texto) {
-  if (!texto) return '';
-  const [anio, mes, dia] = texto.split('-');
-  return `${dia}/${mes}/${anio}`;
-}
-
-// Celda → { valor, tipo }, tomando el tipo de la columna si la celda no trae el suyo
-function celda(valor, columna) {
-  if (valor !== null && typeof valor === 'object') return { valor: valor.valor, tipo: valor.tipo };
-  return { valor, tipo: columna.tipo };
-}
-
-// ── CSV ───────────────────────────────────────
-// Separador ";" y coma decimal (como lo abre Excel en español), BOM para que respete los acentos.
-// Las secciones van una debajo de otra, separadas por una línea en blanco.
-
-function textoCsv(valor, tipo) {
-  if (valor === null || valor === undefined || valor === '') return '';
-  if (tipo === 'fecha') return formatoFecha(valor);
-  if (tipo === 'porcentaje') return (Number(valor) * 100).toFixed(1).replace('.', ',');
-  if (tipo === 'pesos') return Number(valor).toFixed(2).replace('.', ',');
-  if (tipo === 'decimal') return String(Number(valor)).replace('.', ',');
-  if (tipo === 'numero') return String(valor);
-  const texto = String(valor);
-  return /[;"\n\r]/.test(texto) ? `"${texto.replace(/"/g, '""')}"` : texto;
-}
-
-function generarCsv(hojas) {
-  const lineas = [];
-  for (const hoja of hojas) {
-    lineas.push(textoCsv(hoja.nombre.toUpperCase(), 'texto'));
-    // En el CSV los porcentajes van como número (12,8) y el título de la columna dice "%"
-    lineas.push(hoja.columnas.map((columna) => textoCsv(columna.tipo === 'porcentaje' ? `${columna.titulo} (%)` : columna.titulo, 'texto')).join(';'));
-    if (hoja.filas.length === 0) lineas.push('Sin datos en este período');
-    for (const fila of hoja.filas) {
-      lineas.push(
-        fila
-          .map((valor, indice) => {
-            const { valor: v, tipo } = celda(valor, hoja.columnas[indice]);
-            return textoCsv(v, tipo);
-          })
-          .join(';'),
-      );
-    }
-    lineas.push('');
-  }
-  // BOM (U+FEFF) al principio: así Excel abre el archivo como UTF-8 y respeta los acentos
-  return String.fromCharCode(0xfeff) + lineas.join('\r\n');
-}
-
-// ── Excel ─────────────────────────────────────
-// ExcelJS es pesada: se descarga recién cuando alguien exporta, no al abrir el panel.
-// Cada hoja es una "Tabla de Excel" con nombre (ej: DetalleOrdenes) que empieza en A1: así Power BI y las
-// tablas dinámicas la reconocen sola, con los tipos de cada columna.
-
-const FORMATOS_EXCEL = {
-  numero: '#,##0',
-  decimal: '#,##0.0',
-  pesos: '"$" #,##0.00',
-  porcentaje: '0.0%',
-  fecha: 'dd/mm/yyyy',
-};
-
-function valorExcel(valor, tipo) {
-  if (valor === null || valor === undefined || valor === '') return null;
-  if (tipo === 'fecha') {
-    const [anio, mes, dia] = valor.split('-').map(Number);
-    return new Date(Date.UTC(anio, mes - 1, dia));
-  }
-  if (['numero', 'decimal', 'pesos', 'porcentaje'].includes(tipo)) return Number(valor);
-  return String(valor);
-}
-
-async function generarXlsx(hojas) {
-  const { default: ExcelJS } = await import('exceljs');
-  const libro = new ExcelJS.Workbook();
-  libro.creator = 'LIMS Laboratorio';
-  libro.created = new Date();
-
-  for (const hoja of hojas) {
-    const ws = libro.addWorksheet(hoja.nombre.slice(0, 31));
-    hoja.columnas.forEach((columna, indice) => {
-      ws.getColumn(indice + 1).width = columna.ancho;
-    });
-    // Los títulos quedan fijos al bajar
-    ws.views = [{ state: 'frozen', ySplit: 1 }];
-
-    // Sin filas no se arma la tabla (Excel la marca como dañada): quedan solo los títulos, sin textos de
-    // aviso que le cambien el tipo a las columnas
-    if (hoja.filas.length === 0) {
-      hoja.columnas.forEach((columna, indice) => {
-        const c = ws.getCell(1, indice + 1);
-        c.value = columna.titulo;
-        c.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-        c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1C4E80' } };
-      });
-      continue;
-    }
-
-    const celdas = hoja.filas.map((fila) => fila.map((valor, indice) => celda(valor, hoja.columnas[indice])));
-    ws.addTable({
-      name: hoja.tabla,
-      ref: 'A1',
-      headerRow: true,
-      style: { theme: 'TableStyleMedium2', showRowStripes: true },
-      columns: hoja.columnas.map((columna) => ({ name: columna.titulo, filterButton: true })),
-      rows: celdas.map((fila) => fila.map(({ valor, tipo }) => valorExcel(valor, tipo))),
-    });
-    // El formato va celda por celda: en el resumen cada fila es de un tipo distinto (pesos, cantidad, %)
-    celdas.forEach((fila, numeroFila) => {
-      fila.forEach(({ tipo }, indice) => {
-        if (FORMATOS_EXCEL[tipo]) ws.getCell(numeroFila + 2, indice + 1).numFmt = FORMATOS_EXCEL[tipo];
-      });
-    });
-  }
-
-  const buffer = await libro.xlsx.writeBuffer();
-  return new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-}
-
-function descargar(blob, nombreArchivo) {
-  const url = URL.createObjectURL(blob);
-  const enlace = document.createElement('a');
-  enlace.href = url;
-  enlace.download = nombreArchivo;
-  document.body.appendChild(enlace);
-  enlace.click();
-  enlace.remove();
-  // Se libera después de que el navegador empezó la descarga
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
-
 // Nombre del archivo: metricas_todas_2026-10-04_al_2026-11-02.xlsx
 function nombreDeArchivo(filtros, extension) {
-  const sucursal = filtros.todas
-    ? 'todas'
-    : filtros.sucursal
-        .normalize('NFD')
-        .replace(/[̀-ͯ]/g, '')
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-|-$/g, '');
+  const sucursal = filtros.todas ? 'todas' : paraNombreDeArchivo(filtros.sucursal);
   return `metricas_${sucursal}_${filtros.desde}_al_${filtros.hasta}.${extension}`;
 }
 

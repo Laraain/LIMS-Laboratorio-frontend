@@ -3,6 +3,7 @@ import { Link, Navigate } from 'react-router-dom';
 import { Eye, EyeSlash } from '@phosphor-icons/react';
 import LoginLayout from '../components/LoginLayout.jsx';
 import PrimerIngreso from '../components/PrimerIngreso.jsx';
+import RecuperarPassword from '../components/RecuperarPassword.jsx';
 import useMetadatos from '../hooks/useMetadatos.js';
 import { cerrarSesion, emailDePaciente, iniciarSesion, useSesion } from '../lib/auth.js';
 // Foto de Gabrielle Henderson en Unsplash (licencia libre)
@@ -35,6 +36,8 @@ function LoginPaciente() {
   const [passwordInvalido, setPasswordInvalido] = useState(false);
   // enviando: true mientras se espera la respuesta del servidor (deshabilita el botón)
   const [enviando, setEnviando] = useState(false);
+  // recuperando: muestra el pedido del link para restablecer la contraseña en lugar del formulario
+  const [recuperando, setRecuperando] = useState(false);
   // useSesion (src/lib/auth.js) devuelve la sesión activa: cargando (se está verificando), perfil (quién ingresó)
   // y refrescar (vuelve a leer la sesión)
   const { cargando, perfil, refrescar } = useSesion(ROLES_PORTAL);
@@ -95,7 +98,7 @@ function LoginPaciente() {
     <LoginLayout
       etiqueta="Portal del paciente"
       titulo="Ingrese a su cuenta"
-      descripcion="Use su DNI y su contraseña. Si es su primer ingreso, use la contraseña provisoria que le entregamos en recepción."
+      descripcion="Use su DNI y su contraseña. Si es su primer ingreso o pidió una contraseña nueva, use la provisoria que le entregamos en recepción."
       foto={fotoPaciente}
       altFoto="Mujer en un sillón de su casa mirando el celular"
       leyenda="Sus resultados, validados por un bioquímico matriculado, disponibles desde el celular."
@@ -122,6 +125,8 @@ function LoginPaciente() {
         </p>
       ) : perfil?.debe_cambiar_password ? (
         <PrimerIngreso nombre={perfil.nombre} onCompletado={refrescar} onCancelar={handleLogout} />
+      ) : recuperando ? (
+        <RecuperarPassword dniInicial={dni} onVolver={() => setRecuperando(false)} />
       ) : (
         <form onSubmit={handleSubmit} noValidate className="lims-login-form">
           <div>
@@ -158,9 +163,16 @@ function LoginPaciente() {
               <label htmlFor="password" className="lims-login-label">
                 Contraseña
               </label>
-              <Link to="/#contacto" className="lims-login-link">
+              <button
+                type="button"
+                className="btn btn-link p-0 lims-login-link"
+                onClick={() => {
+                  setError('');
+                  setRecuperando(true);
+                }}
+              >
                 ¿Olvidó su contraseña?
-              </Link>
+              </button>
             </div>
             <div className={`lims-campo${passwordInvalido ? ' is-invalid' : ''}`}>
               <input

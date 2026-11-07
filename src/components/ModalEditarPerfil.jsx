@@ -9,6 +9,12 @@ import { datosObraSocial, erroresObraSocial, PARTICULAR } from '../lib/obrasSoci
 import { useSucursales } from '../lib/sucursal.js';
 import CamposObraSocial from './CamposObraSocial.jsx';
 import { hoyTucuman } from '../lib/hora.js';
+import { restablecerPassword } from '../lib/password.js';
+
+// Escapa los caracteres especiales antes de armar el HTML de una ventana de SweetAlert2
+function escapar(texto) {
+  return String(texto).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+}
 
 // PATCH a una tabla: modifica la fila cuya columna sea igual al valor indicado.
 // Si la política de seguridad no deja modificar esa fila, la API responde bien pero sin filas:
@@ -36,6 +42,9 @@ function ModalEditarPerfil({ perfil, idActual, pacienteId, soloDatos = false, on
   const esMiCuenta = perfil.id === idActual;
   // Con soloDatos el estado de la cuenta no se muestra ni se envía; sin perfil tampoco hay cuenta que administrar
   const puedeAdministrarCuenta = !soloDatos && Boolean(perfil.id);
+  // Restablecer la contraseña (LIMS-45): la de un paciente, recepción o el admin; la del personal, solo el admin
+  // (recepción abre esta ventana con soloDatos). La propia se cambia desde Mi perfil.
+  const puedeRestablecer = Boolean(perfil.id) && !esMiCuenta && (!esPersonal || !soloDatos);
 
   // Estados (useState): cada campo del formulario arranca con el valor actual del perfil.
   // La ventana se crea de nuevo para cada perfil (ver key en ListaPerfiles), por eso alcanza con inicializarlos así.
@@ -61,8 +70,52 @@ function ModalEditarPerfil({ perfil, idActual, pacienteId, soloDatos = false, on
   const [nroAfiliado, setNroAfiliado] = useState(perfil.pacientes?.nro_afiliado ?? '');
   const [errores, setErrores] = useState({});
   const [guardando, setGuardando] = useState(false);
+  const [restableciendo, setRestableciendo] = useState(false);
   // Sucursales para elegir dónde trabaja la persona (solo si el perfil es de personal)
   const { sucursales } = useSucursales(esPersonal);
+
+  // Le da una contraseña provisoria nueva a quien la olvidó. Se muestra una sola vez, para entregársela;
+  // en su siguiente ingreso el sistema le pide elegir una propia
+  async function handleRestablecer() {
+    const { isConfirmed } = await Swal.fire({
+      icon: 'question',
+      title: '¿Restablecer la contraseña?',
+      text: `${perfil.apellido}, ${perfil.nombre} va a recibir una contraseña provisoria nueva. La actual deja de servir.`,
+      showCancelButton: true,
+      confirmButtonText: 'Restablecer',
+      cancelButtonText: 'Volver',
+      confirmButtonColor: '#1c4e80',
+    });
+    if (!isConfirmed) return;
+
+    setRestableciendo(true);
+    try {
+      const { password } = await restablecerPassword(perfil.id);
+      await Swal.fire({
+        icon: 'success',
+        title: 'Contraseña restablecida',
+        html:
+          `<p class="mb-2">${esPersonal ? 'Usuario' : 'DNI'}: <strong>${escapar(perfil.pacientes?.dni ?? perfil.personal?.usuario ?? '')}</strong></p>` +
+          `<p class="mb-2">Contraseña provisoria: <strong style="font-family: monospace; font-size: 1.25em;">${escapar(password)}</strong></p>` +
+          '<p class="text-muted small mb-0">Anótela y entréguesela a la persona: no se vuelve a mostrar. ' +
+          'En su siguiente ingreso el sistema le va a pedir elegir una contraseña propia.</p>',
+        confirmButtonText: 'Ya la anoté',
+        confirmButtonColor: '#1c4e80',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+      });
+    } catch (errorPeticion) {
+      console.error('No se pudo restablecer la contraseña:', errorPeticion);
+      await Swal.fire({
+        icon: 'error',
+        title: 'No se pudo restablecer la contraseña',
+        text: mensajeDeErrorApi(errorPeticion),
+        confirmButtonColor: '#1c4e80',
+      });
+    } finally {
+      setRestableciendo(false);
+    }
+  }
 
   async function handleSubmit(evento) {
     // Evita que el navegador recargue la página al enviar el formulario
@@ -444,6 +497,25 @@ function ModalEditarPerfil({ perfil, idActual, pacienteId, soloDatos = false, on
                   {esMiCuenta
                     ? 'Su propia cuenta no se puede desactivar ni cambiar de rol.'
                     : 'Una cuenta inactiva no puede iniciar sesión.'}
+                </div>
+              </div>
+            )}
+
+            {puedeRestablecer && (
+              <div className="col-12">
+                <span className="form-label fw-semibold small d-block">Contraseña</span>
+                <button
+                  type="button"
+                  className="btn lims-btn-pill lims-btn-secundario lims-btn-chico"
+                  onClick={handleRestablecer}
+                  disabled={restableciendo || guardando || !perfil.activo}
+                >
+                  {restableciendo ? 'Restableciendo…' : 'Restablecer contraseña'}
+                </button>
+                <div className="form-text">
+                  {perfil.activo
+                    ? 'Si la olvidó: se genera una contraseña provisoria nueva para entregarle.'
+                    : 'La cuenta está desactivada: actívela antes de restablecer la contraseña.'}
                 </div>
               </div>
             )}
