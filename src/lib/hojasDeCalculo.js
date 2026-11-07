@@ -140,8 +140,9 @@ export async function generarXlsx(hojas) {
         name: columna.titulo,
         filterButton: true,
         ...(sumas && indice === 0 ? { totalsRowLabel: hoja.total.etiqueta } : {}),
-        // totalsRowResult: el valor ya calculado, para que se vea aunque Excel no recalcule al abrir
-        ...(sumas && indice in sumas ? { totalsRowFunction: 'sum', totalsRowResult: sumas[indice] } : {}),
+        // totalsRowResult: el valor ya calculado, para que se vea aunque Excel no recalcule al abrir.
+        // ExcelJS no guarda un resultado 0: esa columna va sin fórmula y el 0 se escribe después (abajo)
+        ...(sumas && indice in sumas && sumas[indice] !== 0 ? { totalsRowFunction: 'sum', totalsRowResult: sumas[indice] } : {}),
       })),
       rows: celdas.map((fila) => fila.map(({ valor, tipo }) => valorExcel(valor, tipo))),
     });
@@ -156,6 +157,8 @@ export async function generarXlsx(hojas) {
       filaTotal.font = { bold: true };
       Object.keys(sumas).forEach((indice) => {
         const formato = FORMATOS_EXCEL[hoja.columnas[indice].tipo];
+        // Si todas las celdas son 0 o están vacías, el total es 0 aunque se filtre: no hace falta la fórmula
+        if (sumas[indice] === 0) filaTotal.getCell(Number(indice) + 1).value = 0;
         if (formato) filaTotal.getCell(Number(indice) + 1).numFmt = formato;
       });
     }
