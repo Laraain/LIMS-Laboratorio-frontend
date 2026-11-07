@@ -24,13 +24,20 @@ export async function leerLiquidacion(obraSocialId, mes) {
   return response.data;
 }
 
-// Total a facturar y estudios sin arancel (importe vacío: hay que cargar el valor de la UB antes de presentar)
+// Un estudio con 0 UB en el catálogo (ej: VCM, HCM y CHCM, que salen del hemograma) se presenta en $ 0
+export function esImporteCero(fila) {
+  return fila.importe_obra_social !== null && Number(fila.importe_obra_social) === 0;
+}
+
+// Total a facturar, estudios sin arancel (importe vacío: hay que cargar el valor de la UB antes de presentar)
+// y estudios en $ 0 (sin UB en el catálogo: revisar si la obra social los factura aparte)
 export function totalesDeLiquidacion(filas) {
   const total = filas.reduce((suma, fila) => suma + Number(fila.importe_obra_social ?? 0), 0);
   return {
     total: Math.round(total * 100) / 100,
     ordenes: new Set(filas.map((fila) => fila.nro_orden)).size,
     sinArancel: filas.filter((fila) => fila.importe_obra_social === null).length,
+    enCero: filas.filter(esImporteCero).length,
   };
 }
 
