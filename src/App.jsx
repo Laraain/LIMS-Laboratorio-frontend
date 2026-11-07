@@ -4,6 +4,7 @@ import Navbar from './components/Navbar.jsx';
 import Footer from './components/Footer.jsx';
 import Home from './pages/Home.jsx';
 import LoginPaciente from './pages/LoginPaciente.jsx';
+import RestablecerPassword from './pages/RestablecerPassword.jsx';
 import LoginPersonal from './pages/LoginPersonal.jsx';
 import Panel from './pages/Panel.jsx';
 import PanelInicio from './pages/PanelInicio.jsx';
@@ -19,6 +20,7 @@ import Extraccion from './pages/Extraccion.jsx';
 import Sucursales from './pages/Sucursales.jsx';
 import ObrasSociales from './pages/ObrasSociales.jsx';
 import Aranceles from './pages/Aranceles.jsx';
+import Liquidacion from './pages/Liquidacion.jsx';
 import Caja from './pages/Caja.jsx';
 import PortalPaciente from './pages/PortalPaciente.jsx';
 import { ROLES_BANDEJA } from './data/roles.js';
@@ -87,6 +89,7 @@ function App() {
         {/* Los servicios ahora son una sección de la home; la ruta vieja redirige ahí */}
         <Route path="/servicios" element={<Navigate to={{ pathname: '/', hash: '#servicios' }} replace />} />
         <Route path="/login-paciente" element={<LoginPaciente />} />
+        <Route path="/restablecer-password" element={<RestablecerPassword />} />
         {/* Portal del paciente: sus estudios y la descarga de los informes publicados */}
         <Route path="/mis-estudios" element={<PortalPaciente />} />
         <Route path="/login-personal" element={<LoginPersonal />} />
@@ -111,6 +114,8 @@ function App() {
           <Route path="obras-sociales" element={<ObrasSociales />} />
           {/* Valor de la UB por obra social: solo administradores (la página redirige si el rol no es admin) */}
           <Route path="aranceles" element={<Aranceles />} />
+          {/* Liquidación a obras sociales: solo administradores (la página redirige si el rol no es admin) */}
+          <Route path="liquidacion" element={<Liquidacion />} />
           {/* "Configuración" pasó a llamarse "Sucursales": la ruta vieja redirige */}
           <Route path="configuracion" element={<Navigate to="/panel/sucursales" replace />} />
           {/* Solo para administradores: la propia página redirige al inicio del panel si el rol no es admin */}

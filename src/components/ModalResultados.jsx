@@ -23,6 +23,14 @@ import './ModalResultados.css';
 
 const SEXOS = { F: 'Femenino', M: 'Masculino', X: 'X' };
 
+// Cómo terminó el aviso por mail al paciente al publicar (LIMS-18). El informe se publica igual
+const AVISOS_MAIL = {
+  enviado: 'Se le avisó al paciente por mail.',
+  sin_email: 'El paciente no tiene un email cargado: no se le avisó por mail.',
+  sin_configurar: 'El envío de mails todavía no está configurado: no se le avisó por mail.',
+  error: 'No se pudo enviar el aviso por mail; el informe igual quedó publicado.',
+};
+
 // Escapa los caracteres especiales antes de armar el HTML de una ventana de SweetAlert2
 function escapar(texto) {
   return String(texto).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -48,10 +56,12 @@ function fueraDeRango(valor, rango, numerico, absoluto, analisis) {
     const numero = leerNumero(valor);
     if (Number.isNaN(numero) || numero === null) return false;
     const fueraValor = (rango.valor_min !== null && numero < rango.valor_min) || (rango.valor_max !== null && numero > rango.valor_max);
+    // El absoluto puede cambiar con la edad (neutrófilos y linfocitos en los chicos):
+    // se usa el del rango y, si no trae, el general del catálogo
+    const absMin = rango.absoluto_min ?? analisis.absoluto_min;
+    const absMax = rango.absoluto_max ?? analisis.absoluto_max;
     const fueraAbsoluto =
-      absoluto !== null &&
-      ((analisis.absoluto_min !== null && absoluto < analisis.absoluto_min) ||
-        (analisis.absoluto_max !== null && absoluto > analisis.absoluto_max));
+      absoluto !== null && ((absMin !== null && absoluto < absMin) || (absMax !== null && absoluto > absMax));
     return fueraValor || fueraAbsoluto;
   }
   return Boolean(rango.valor_texto) && rango.valor_texto !== 'Ver informe' && valor.trim().toLowerCase() !== rango.valor_texto.toLowerCase();
@@ -355,6 +365,7 @@ function ModalResultados({ ordenId, perfil, onCerrar, onGuardado, lectura = fals
         title: 'Informe publicado',
         html:
           '<p class="mb-2">El informe quedó firmado y el paciente ya lo puede ver.</p>' +
+          (AVISOS_MAIL[publicado.aviso_mail] ? `<p class="mb-2 small">${AVISOS_MAIL[publicado.aviso_mail]}</p>` : '') +
           (publicado.url
             ? `<a class="btn lims-btn-pill lims-btn-secundario" href="${escapar(publicado.url)}" target="_blank" rel="noopener">Abrir el PDF</a>`
             : ''),
@@ -410,6 +421,9 @@ function ModalResultados({ ordenId, perfil, onCerrar, onGuardado, lectura = fals
     const fuera = estaFuera(estudio);
     const idCampo = `resultado-${estudio.id}`;
     const analisis = estudio.analisis;
+    // El absoluto de referencia puede cambiar con la edad (neutrófilos y linfocitos en los chicos)
+    const absMin = rango?.absoluto_min ?? analisis.absoluto_min;
+    const absMax = rango?.absoluto_max ?? analisis.absoluto_max;
     return (
       <li key={estudio.id} className={`${componente ? 'lims-resultado--componente' : ''}${fuera ? ' lims-resultado--fuera' : ''}`}>
         <label htmlFor={idCampo} className="lims-resultado-estudio">
@@ -457,10 +471,9 @@ function ModalResultados({ ordenId, perfil, onCerrar, onGuardado, lectura = fals
               : '—'}
             {analisis.unidad && esNumerico(rango) ? ` ${analisis.unidad}` : ''}
           </span>
-          {analisis.absoluto_de && (analisis.absoluto_min !== null || analisis.absoluto_max !== null) && (
+          {analisis.absoluto_de && (absMin !== null || absMax !== null) && (
             <span>
-              {textoReferencia({ valor_ref_min: analisis.absoluto_min, valor_ref_max: analisis.absoluto_max })}{' '}
-              {analisis.absoluto_unidad}
+              {textoReferencia({ valor_ref_min: absMin, valor_ref_max: absMax })} {analisis.absoluto_unidad}
             </span>
           )}
           {fuera && (
