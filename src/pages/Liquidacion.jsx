@@ -6,7 +6,7 @@ import useMetadatos from '../hooks/useMetadatos.js';
 import { mensajeDeErrorApi } from '../lib/api.js';
 import { formatearPesos } from '../lib/aranceles.js';
 import { hoyTucuman } from '../lib/hora.js';
-import { exportarLiquidacion, leerLiquidacion, nombreDelMes, totalesDeLiquidacion } from '../lib/liquidacion.js';
+import { esImporteCero, exportarLiquidacion, leerLiquidacion, nombreDelMes, totalesDeLiquidacion } from '../lib/liquidacion.js';
 import { listarObrasSociales } from '../lib/obrasSociales.js';
 import '../components/ListaPerfiles.css';
 import '../components/ListaAnalisis.css';
@@ -195,6 +195,13 @@ function Liquidacion() {
                 importe queda vacío. Cargue el valor de la UB en Aranceles antes de presentar.
               </p>
             )}
+            {totales.enCero > 0 && (
+              <p className="small text-warning-emphasis px-3 px-md-4 mt-3 mb-0">
+                {totales.enCero} {totales.enCero === 1 ? 'estudio sale' : 'estudios salen'} en $ 0 porque no{' '}
+                {totales.enCero === 1 ? 'tiene' : 'tienen'} UB en el catálogo (por ejemplo, los índices del hemograma). Si la
+                obra social los factura aparte, cargue sus UB en el Catálogo de análisis antes de presentar.
+              </p>
+            )}
             <div className="lims-tabla-contenedor mt-3">
               <table className="table align-middle mb-0 lims-tabla-perfiles">
                 <thead>
@@ -228,7 +235,8 @@ function Liquidacion() {
                       </td>
                       <td data-label="Médico">
                         {fila.medico ?? '—'}
-                        {fila.matricula && <span className="lims-celda-identidad">MP {fila.matricula}</span>}
+                        {/* La matrícula se muestra como está cargada (puede venir con "MP-" adelante) */}
+                        {fila.matricula && <span className="lims-celda-identidad">Matrícula {fila.matricula}</span>}
                       </td>
                       <td data-label="Estudio">
                         {fila.estudio}
@@ -241,7 +249,10 @@ function Liquidacion() {
                         {fila.importe_obra_social === null ? (
                           <span className="text-warning-emphasis">Sin arancel</span>
                         ) : (
-                          formatearPesos(fila.importe_obra_social)
+                          <>
+                            {formatearPesos(fila.importe_obra_social)}
+                            {esImporteCero(fila) && <span className="lims-celda-identidad text-warning-emphasis">Sin UB</span>}
+                          </>
                         )}
                       </td>
                     </tr>
