@@ -1,7 +1,8 @@
 import { useEffect, useState, useSyncExternalStore } from 'react';
-import { Navigate, Outlet, useNavigate } from 'react-router-dom';
+import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import ElegirSucursal from '../components/ElegirSucursal.jsx';
+import ErrorBoundary from '../components/ErrorBoundary.jsx';
 import Navbar from '../components/Navbar.jsx';
 import Sidebar from '../components/Sidebar.jsx';
 import { ROLES_PERSONAL, cerrarSesion, useSesion } from '../lib/auth.js';
@@ -46,6 +47,7 @@ function guardarMenuAbierto(abierto) {
 // Solo se entra con una sesión del personal; si no, se vuelve al login.
 function Panel() {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const { cargando, perfil, fecha } = useSesion(ROLES_PERSONAL);
   const sesionValida = Boolean(perfil && !perfil.debe_cambiar_password);
   // El admin elige la sucursal al entrar; el resto trabaja siempre en la que tiene asignada
@@ -206,7 +208,10 @@ function Panel() {
         <main id="contenido" className="lims-panel-contenido">
           {/* Cada página del panel recibe con useOutletContext() quién ingresó, cuándo y en qué sucursal trabaja.
               recargarSucursales: la página Sucursales lo usa después de modificar una sucursal */}
-          <Outlet context={{ perfil, fecha, sucursal, sucursales, recargarSucursales }} />
+          {/* Si la página falla, el aviso de error ocupa su lugar y el menú lateral sigue a mano */}
+          <ErrorBoundary enPanel reinicio={pathname}>
+            <Outlet context={{ perfil, fecha, sucursal, sucursales, recargarSucursales }} />
+          </ErrorBoundary>
         </main>
       </div>
     </>
