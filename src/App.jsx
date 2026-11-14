@@ -2,6 +2,8 @@ import { Suspense, lazy, useEffect, useRef } from 'react';
 import { Routes, Route, Navigate, useLocation, useNavigate, useOutletContext } from 'react-router-dom';
 import Navbar from './components/Navbar.jsx';
 import Footer from './components/Footer.jsx';
+import ErrorBoundary from './components/ErrorBoundary.jsx';
+import NoEncontrada from './pages/NoEncontrada.jsx';
 import Home from './pages/Home.jsx';
 import LoginPaciente from './pages/LoginPaciente.jsx';
 import RestablecerPassword from './pages/RestablecerPassword.jsx';
@@ -83,6 +85,9 @@ function App() {
     <>
       {/* Navbar y Footer quedan fuera de <Routes>: se muestran en todas las páginas del sitio público */}
       {!enPanel && <Navbar />}
+      {/* Si una página falla al dibujarse se muestra un aviso en lugar de la pantalla en blanco
+          (dentro del panel hay otro, para que el menú lateral siga visible) */}
+      <ErrorBoundary reinicio={pathname}>
       {/* Cada Route asocia una dirección (path) con la página que se muestra */}
       <Routes>
         <Route path="/" element={<Home />} />
@@ -129,12 +134,17 @@ function App() {
               </Suspense>
             }
           />
+          {/* Una dirección del panel que no existe: aviso dentro del panel, con el menú lateral */}
+          <Route path="*" element={<NoEncontrada enPanel />} />
         </Route>
         {/* La administración de perfiles ahora vive dentro del panel; la ruta vieja redirige ahí */}
         <Route path="/usuarios" element={<Navigate to="/panel/usuarios" replace />} />
         {/* Atajo a la administración de obras sociales */}
         <Route path="/obras-sociales" element={<Navigate to="/panel/obras-sociales" replace />} />
+        {/* Cualquier otra dirección: página 404 */}
+        <Route path="*" element={<NoEncontrada />} />
       </Routes>
+      </ErrorBoundary>
       {!enPanel && <Footer />}
     </>
   );
