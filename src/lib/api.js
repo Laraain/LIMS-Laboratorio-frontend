@@ -8,9 +8,18 @@ const API_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
 // Encabezados de cada petición: la clave pública del proyecto y el token de la sesión.
 // Con el token, la base sabe quién consulta y aplica sus permisos (políticas RLS).
+// Sin sesión (venció o se cerró en otra pestaña) no se hace la petición: mandaría "Bearer undefined"
+// y la base respondería con un error genérico. Se corta acá con un mensaje claro para el usuario.
 export async function encabezados() {
   const { data } = await supabase.auth.getSession();
-  return { apikey: API_KEY, Authorization: `Bearer ${data.session?.access_token}` };
+  const token = data.session?.access_token;
+  if (!token) {
+    throw Object.assign(new Error('Sin sesión activa'), {
+      sinSesion: true,
+      mensajeUsuario: 'Su sesión se cerró. Vuelva a ingresar para continuar.',
+    });
+  }
+  return { apikey: API_KEY, Authorization: `Bearer ${token}` };
 }
 
 // Traduce el error de una petición Axios a un mensaje para mostrarle al usuario

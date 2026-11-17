@@ -1,0 +1,26 @@
+/* Página 404 y aviso de error (ErrorBoundary): mensaje centrado con un botón para volver */
+.lims-no-encontrada {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 72px 16px;
+  text-align: center;
+}
+
+.lims-no-encontrada-titulo {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--lims-ink);
+  margin-bottom: 12px;
+}
+
+.lims-no-encontrada-texto {
+  color: var(--lims-muted);
+  margin-bottom: 24px;
+}
+
+.lims-no-encontrada-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
